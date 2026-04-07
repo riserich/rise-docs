@@ -10,6 +10,18 @@ Use our REST API to buy/sell Rise tokens in minutes. No Solana knowledge needed 
 
 → [**Quick API Integration Guide**](./docs/API.md)
 
+## SDK Integration
+
+Use our TypeScript SDK to fetch market data, get quotes, and build buy/sell transactions. Fully standalone — no backend dependency, just an RPC URL.
+
+**Best for:** Bots, aggregators, and anyone who wants full control with minimal setup.
+
+```bash
+npm install @riserich/sdk
+```
+
+→ <a href="https://www.npmjs.com/package/@riserich/sdk" target="_blank">**https://www.npmjs.com/package/@riserich/sdk**</a>
+
 ## API Base URLs
 
 | Environment | URL |
