@@ -194,6 +194,86 @@ function deserializeRustDecimal(buf: Buffer): number {
 
 ---
 
+## Floor Raise Events
+
+The Rise program has two floor raise methods. Both emit events but **neither includes the resulting floor price** — only the increase ratio.
+
+### RaiseFloorEvent (PreserveArea)
+
+Emitted when the floor is raised by preserving the curve area while shifting the floor up.
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `market` | PublicKey | Rise market address |
+| `newLevel` | u32 | New floor level index |
+| `newShoulderEnd` | u64 | New x2 boundary (shoulder → main transition) |
+| `floorIncreaseRatio` | Decimal (u128) | Ratio of floor increase (e.g. 0.002 = 0.2%) |
+| `timestamp` | u64 | Unix timestamp |
+
+### RaiseFloorExcessLiquidityEvent
+
+Emitted when the floor is raised using surplus collateral in the vault.
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `market` | PublicKey | Rise market address |
+| `newLevel` | u32 | New floor level index |
+| `increaseRatioMicroBasisPoints` | u32 | Floor increase ratio in micro basis points |
+| `timestamp` | u64 | Unix timestamp |
+
+### Event Discriminators
+
+```typescript
+const RAISE_FLOOR_DISC = eventDiscriminator("RaiseFloorEvent");
+const RAISE_FLOOR_EXCESS_DISC = eventDiscriminator("RaiseFloorExcessLiquidityEvent");
+```
+
+---
+
+## Tracking the Floor Price
+
+The floor price can be tracked in two ways:
+
+### 1. From Buy/Sell Events (real-time)
+
+Every `BuyWithExactCashInEvent` and `SellWithExactTokenInEvent` includes the current `floor` field. This is the easiest way — just read it from every trade event.
+
+### 2. After Floor Raise Instructions (fetch on-chain)
+
+Floor raise events don't contain the resulting floor value. After detecting a `raiseFloorPreserveArea` or `raiseFloorExcessLiquidity` instruction, fetch the Mayflower market account (account index 5) to read the updated floor:
+
+```typescript
+// After detecting a floor raise instruction:
+// Account index 5 = Mayflower market account
+const mayflowerMarketKey = instruction.accounts[5];
+
+// Fetch the account on-chain to get updated floor
+const accountInfo = await connection.getAccountInfo(
+  new PublicKey(mayflowerMarketKey)
+);
+const mayflowerData = program.coder.accounts.decode(
+  "MarketLinear",
+  accountInfo.data
+);
+
+// Floor price is a Rust Decimal
+const floor = mayflowerData.floor;
+console.log("New floor:", floor.toString());
+```
+
+The on-chain account is already updated by the time the transaction confirms, so the `floor` value is immediately available.
+
+### 3. Read Anytime (polling)
+
+You can read the current floor at any time by fetching the Market account — no need to wait for an event:
+
+```typescript
+const mayflowerData = await program.account.marketLinear.fetch(mayflowerMarketKey);
+const currentFloor = mayflowerData.floor;
+```
+
+---
+
 ## What You Can Build
 
 With these events you can build:
