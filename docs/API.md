@@ -42,6 +42,30 @@ Trade Rise tokens in 3 steps: **quote → trade → sign & send**.
 
 ---
 
+## Rate limits
+
+Limits are per API key, measured over a rolling 60-second window.
+
+| Endpoint | Requests / min |
+|---|---|
+| `GET /markets` | 40 |
+| `GET /markets/{address}` | 55 |
+| `GET /markets/{address}/transactions` | 60 |
+| `GET /markets/{address}/ohlc/{timeframe}` | 20 |
+| `POST /markets/{address}/quote` | 40 |
+| `POST /markets/{address}/borrow/quote` | 40 |
+| `POST /program/buyToken` | 30 |
+| `POST /program/sellToken` | 30 |
+| `POST /program/deposit-and-borrow` | 10 |
+| `POST /program/repay-and-withdraw` | 10 |
+| `GET /users/{wallet}/portfolio/summary` | 60 |
+| `GET /users/{wallet}/portfolio/positions` | 60 |
+| **Global cap (all endpoints combined)** | **150** |
+
+Exceeding a limit returns HTTP `429` with `{ "ok": false, "error": "..." }`. Repeated violations across separate minutes trigger progressive cooldowns: **1 min → 5 min → 20 min → 1 day** after the 4th violation. Stay within the limits or back off on `429` and you'll never hit a cooldown.
+
+---
+
 ## Quick start
 
 **Quote:**
