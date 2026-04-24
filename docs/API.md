@@ -36,8 +36,7 @@ Trade Rise tokens in 3 steps: **quote → trade → sign & send**.
 | 9 | [`POST /markets/{address}/borrow/quote`](#post-marketsaddressborrowquote) | Preview borrowing capacity |
 | 10 | [`POST /program/deposit-and-borrow`](#post-programdeposit-and-borrow) | Deposit collateral + borrow in one tx |
 | 11 | [`POST /program/repay-and-withdraw`](#post-programrepay-and-withdraw) | Repay debt + withdraw in one tx |
-| 12 | [`GET /markets/stream/new`](#get-marketsstreamnew) | SSE stream — new token creation |
-| 13 | [`GET /markets`](#get-markets) | List all markets |
+| 12 | [`GET /markets`](#get-markets) | List all markets (filter, sort, paginate) |
 
 > **Minimum integration:** just endpoints 4 + 5 (quote + buy). Endpoint 1 is useful to get all market data (price, floor, volume, holders, etc.).
 
@@ -638,90 +637,63 @@ Combines repay + withdraw into a single atomic transaction. The backend computes
 ---
 
 <details>
-<summary><strong>GET /markets/stream/new</strong> — SSE stream for new token creation events</summary>
+<summary><strong>GET /markets</strong> — List all markets (filter, sort, paginate)</summary>
 
 ```
-GET /markets/stream/new
+GET /markets?page=1&limit=20&sort=created&order=desc
 ```
 
-Server-Sent Events (SSE) endpoint. Subscribe to receive real-time notifications when new tokens are created on Rise.
-
-**Connection:**
-```typescript
-const eventSource = new EventSource(`${API}/markets/stream/new`, {
-  headers: { "x-api-key": "YOUR_API_KEY" }
-});
-
-eventSource.addEventListener("new_market", (event) => {
-  const data = JSON.parse(event.data);
-  console.log("New token:", data.market.token_name);
-});
-```
-
-**Events:**
-
-| Event | When |
-|-------|------|
-| `connected` | Connection established |
-| `new_market` | New token created |
-| `heartbeat` | Every 15 seconds (keep-alive) |
-
-**`new_market` event data:**
-```json
-{
-  "type": "new_market",
-  "market": {
-    "rise_market_address": "HfYP1dq4cqx8Yg7nqg4j5Z2k5L8M9V2K5Q8S1U4X",
-    "mint_token": "DezXAZ8z7PnrnRJjz3wXBoRgixCaSKHY2q9BvRISE",
-    "mint_main": "So11111111111111111111111111111111111111112",
-    "creator": "9B5X1CK5m2Q6S9V1W4Y7Z3A5B8C1D2E5F9G2H5J",
-    "token_name": "Bear Token",
-    "token_symbol": "BEAR",
-    "token_decimals": 9,
-    "token_uri": "https://arweave.net/abc123",
-    "image_uri": "https://arweave.net/abc123/image.png",
-    "twitter": "https://x.com/beartoken",
-    "discord": "",
-    "telegram": "",
-    "starting_price": 0.001,
-    "price": 0.001,
-    "floor_price": 0.0008,
-    "market_cap_usd": 50.0,
-    "token_supply": 1000000,
-    "buy_fee_bps": 12500,
-    "sell_fee_bps": 12500,
-    "creator_fee_percent": 5,
-    "disable_sell": false,
-    "created_at": "2025-01-15T10:30:00.000Z"
-  }
-}
-```
-
-</details>
-
----
-
-<details>
-<summary><strong>GET /markets</strong> — List all markets</summary>
-
-```
-GET /markets?page=1&limit=50
-```
+**Pagination**
 
 | Param | Type | |
 |-------|------|-|
-| `page` | number | Page number (default: 1) |
-| `limit` | number | Results per page (default: 50) |
+| `page` | number | Page number (default: `1`) |
+| `limit` | number | Results per page (default: `20`, max: `1000`) |
+
+**Sorting**
+
+| Param | Type | |
+|-------|------|-|
+| `sort` | string | One of: `created` (default), `marketcap`, `volume24h`, `holders`, `floor`, `price`, `variation`, `near_floor`, `liquidity` |
+| `order` | string | `desc` (default) or `asc` |
+
+- `price` and `variation` both sort by 24h price change %.
+- `near_floor` sorts by `(price − floor) / floor` ascending-friendliest (tokens trading closest to floor first when `order=asc`).
+- `liquidity` groups markets by their collateral mint (`mint_main`) — useful to cluster all SOL-collateral markets, then USDC, etc.
+
+**Filtering**
+
+| Param | Type | |
+|-------|------|-|
+| `is_verified` | boolean | `true` / `false` — only verified (or unverified) markets |
+| `creator_fee_min` | integer | Min `creator_fee_percent` (e.g. `0`) |
+| `creator_fee_max` | integer | Max `creator_fee_percent` |
+| `mcap_min` | number | Min `market_cap_usd` |
+| `mcap_max` | number | Max `market_cap_usd` |
+| `vol24h_min` | number | Min 24h USD volume |
+| `vol24h_max` | number | Max 24h USD volume |
+| `locked_min` | integer | Min `locked_supply_percentage` (0–100) |
+| `locked_max` | integer | Max `locked_supply_percentage` (0–100) |
+| `created_period` | string | `today` \| `yesterday` \| `week` \| `month` |
+
+All filters are optional and can be combined. Responses are cached for 10s per unique param combination.
+
+**Computed fields (added to each market row)**
+
+| Field | Meaning |
+|-------|---------|
+| `delta_to_floor_percentage` | `((price − floor) / floor) × 100`, rounded to 1 decimal. `"0"` if floor or price is 0. |
+| `locked_supply_percentage` | `(mayflower_total_collateral / mayflower_token_supply) × 100`, rounded to 1 decimal. `"0"` if supply is 0. |
 
 **Response:**
 ```json
 {
   "ok": true,
-  "count": 50,
+  "count": 20,
   "total": 142,
   "page": 1,
-  "limit": 50,
-  "totalPages": 3,
+  "limit": 20,
+  "totalPages": 8,
   "markets": [
     {
       "rise_market_address": "HfYP1dq4cqx8Yg7nqg4j5Z2k5L8M9V2K5Q8S1U4X",
@@ -750,13 +722,15 @@ GET /markets?page=1&limit=50
       "twitter": "https://x.com/beartoken",
       "discord": "",
       "telegram": "",
-      "created_at": "2025-01-15T10:30:00.000Z"
+      "created_at": "2025-01-15T10:30:00.000Z",
+      "delta_to_floor_percentage": "276.9",
+      "locked_supply_percentage": "8.0"
     }
   ]
 }
 ```
 
-Returns the same fields as `GET /markets/{address}` for each market.
+Base fields mirror `GET /markets/{address}`; the two `*_percentage` fields are added by this endpoint.
 
 </details>
 
