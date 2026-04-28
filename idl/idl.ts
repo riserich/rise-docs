@@ -1292,7 +1292,10 @@ export type Rise = {
           name: "repayer";
           isMut: true;
           isSigner: true;
-          docs: ["User repaying debt - pays from their token account"];
+          docs: [
+            "User repaying debt - pays from their token account.",
+            "Note: repay is permissionless, so `repayer` need not be the debtor.",
+          ];
         },
         {
           name: "marketMeta";
@@ -2157,6 +2160,65 @@ export type Rise = {
       args: [];
     },
     {
+      name: "updateMarket";
+      docs: [
+        "Update market metadata, creator wallet, and creator fee percentage.",
+        "",
+        "Admin-only instruction for CTO (Community Takeover) scenarios.",
+        "Updates Metaplex token metadata and Rise market state.",
+        "",
+        "# Parameters",
+        "- `args.metadata`: New token metadata (name, symbol, uri).",
+        "- `args.new_creator`: New creator wallet address.",
+        "- `args.creator_fee_percent`: New creator fee percentage (0-25).",
+        "",
+        "# Accounts",
+        "- `admin`: Tenant admin (signer).",
+        "- `tenant`: Rise tenant PDA.",
+        "- `market`: Rise market to update (PDA signs as Metaplex update_authority).",
+        "- `metadata`: Metaplex metadata PDA.",
+        "- `token_metadata_program`: Metaplex program.",
+        "",
+        "# CPI Calls",
+        "- `mpl_token_metadata::update_metadata_account_v2`: Updates token metadata.",
+      ];
+      accounts: [
+        {
+          name: "admin";
+          isMut: true;
+          isSigner: true;
+        },
+        {
+          name: "tenant";
+          isMut: false;
+          isSigner: false;
+        },
+        {
+          name: "market";
+          isMut: true;
+          isSigner: false;
+        },
+        {
+          name: "metadata";
+          isMut: true;
+          isSigner: false;
+        },
+        {
+          name: "tokenMetadataProgram";
+          isMut: false;
+          isSigner: false;
+        },
+      ];
+      args: [
+        {
+          name: "args";
+          type: {
+            defined: "UpdateMarketArgs";
+          };
+        },
+      ];
+    },
+    {
       name: "leverageSell";
       docs: [
         "Leveraged sell: withdraw + sell + repay in a single atomic transaction.",
@@ -2586,7 +2648,7 @@ export type Rise = {
           {
             name: "creatorRevPercent";
             docs: [
-              "Creator's revenue share percentage (0-10).",
+              "Creator's revenue share percentage (0-25).",
               "Floor gets (25 - creator_rev_percent)%, team gets 75%.",
             ];
             type: "u8";
@@ -3114,6 +3176,30 @@ export type Rise = {
       };
     },
     {
+      name: "UpdateMarketArgs";
+      type: {
+        kind: "struct";
+        fields: [
+          {
+            name: "metadata";
+            type: {
+              option: {
+                defined: "TokenMetadata";
+              };
+            };
+          },
+          {
+            name: "newCreator";
+            type: "publicKey";
+          },
+          {
+            name: "creatorFeePercent";
+            type: "u8";
+          },
+        ];
+      };
+    },
+    {
       name: "rise::num::DecimalSerialized";
       docs: [
         "Serializable Decimal wrapper for on-chain storage.",
@@ -3394,18 +3480,28 @@ export type Rise = {
       name: "BorrowEvent";
       fields: [
         {
-          name: "amount";
+          name: "depositedTokenBalance";
           type: "u64";
           index: false;
         },
         {
-          name: "borrower";
-          type: "publicKey";
+          name: "debt";
+          type: "u64";
           index: false;
         },
         {
-          name: "market";
-          type: "publicKey";
+          name: "totalMarketDebt";
+          type: "u64";
+          index: false;
+        },
+        {
+          name: "totalMarketDepositedCollateral";
+          type: "u64";
+          index: false;
+        },
+        {
+          name: "totalMainTokenInLiquidityPool";
+          type: "u64";
           index: false;
         },
         {
@@ -3533,26 +3629,6 @@ export type Rise = {
       ];
     },
     {
-      name: "DepositEvent";
-      fields: [
-        {
-          name: "amount";
-          type: "u64";
-          index: false;
-        },
-        {
-          name: "depositor";
-          type: "publicKey";
-          index: false;
-        },
-        {
-          name: "market";
-          type: "publicKey";
-          index: false;
-        },
-      ];
-    },
-    {
       name: "InitMarketGroupEvent";
       fields: [
         {
@@ -3613,6 +3689,36 @@ export type Rise = {
         {
           name: "tallyCooldownSeconds";
           type: "u32";
+          index: false;
+        },
+      ];
+    },
+    {
+      name: "LendingEvent";
+      fields: [
+        {
+          name: "depositedTokenBalance";
+          type: "u64";
+          index: false;
+        },
+        {
+          name: "debt";
+          type: "u64";
+          index: false;
+        },
+        {
+          name: "totalMarketDebt";
+          type: "u64";
+          index: false;
+        },
+        {
+          name: "totalMarketDepositedCollateral";
+          type: "u64";
+          index: false;
+        },
+        {
+          name: "totalMainTokenInLiquidityPool";
+          type: "u64";
           index: false;
         },
       ];
@@ -3757,18 +3863,33 @@ export type Rise = {
       name: "RepayEvent";
       fields: [
         {
-          name: "amount";
+          name: "positionOwner";
+          type: "publicKey";
+          index: false;
+        },
+        {
+          name: "depositedTokenBalance";
           type: "u64";
           index: false;
         },
         {
-          name: "repayer";
-          type: "publicKey";
+          name: "debt";
+          type: "u64";
           index: false;
         },
         {
-          name: "market";
-          type: "publicKey";
+          name: "totalMarketDebt";
+          type: "u64";
+          index: false;
+        },
+        {
+          name: "totalMarketDepositedCollateral";
+          type: "u64";
+          index: false;
+        },
+        {
+          name: "totalMainTokenInLiquidityPool";
+          type: "u64";
           index: false;
         },
       ];
@@ -3910,26 +4031,6 @@ export type Rise = {
         },
       ];
     },
-    {
-      name: "WithdrawEvent";
-      fields: [
-        {
-          name: "amount";
-          type: "u64";
-          index: false;
-        },
-        {
-          name: "withdrawer";
-          type: "publicKey";
-          index: false;
-        },
-        {
-          name: "market";
-          type: "publicKey";
-          index: false;
-        },
-      ];
-    },
   ];
   errors: [
     {
@@ -4040,7 +4141,7 @@ export type Rise = {
     {
       code: 6021;
       name: "InvalidCreatorFeePercent";
-      msg: "Creator fee percent must be between 0 and 10";
+      msg: "Creator fee percent must be between 0 and 25";
     },
   ];
 };
@@ -5339,7 +5440,10 @@ export const IDL: Rise = {
           name: "repayer",
           isMut: true,
           isSigner: true,
-          docs: ["User repaying debt - pays from their token account"],
+          docs: [
+            "User repaying debt - pays from their token account.",
+            "Note: repay is permissionless, so `repayer` need not be the debtor.",
+          ],
         },
         {
           name: "marketMeta",
@@ -6204,6 +6308,65 @@ export const IDL: Rise = {
       args: [],
     },
     {
+      name: "updateMarket",
+      docs: [
+        "Update market metadata, creator wallet, and creator fee percentage.",
+        "",
+        "Admin-only instruction for CTO (Community Takeover) scenarios.",
+        "Updates Metaplex token metadata and Rise market state.",
+        "",
+        "# Parameters",
+        "- `args.metadata`: New token metadata (name, symbol, uri).",
+        "- `args.new_creator`: New creator wallet address.",
+        "- `args.creator_fee_percent`: New creator fee percentage (0-25).",
+        "",
+        "# Accounts",
+        "- `admin`: Tenant admin (signer).",
+        "- `tenant`: Rise tenant PDA.",
+        "- `market`: Rise market to update (PDA signs as Metaplex update_authority).",
+        "- `metadata`: Metaplex metadata PDA.",
+        "- `token_metadata_program`: Metaplex program.",
+        "",
+        "# CPI Calls",
+        "- `mpl_token_metadata::update_metadata_account_v2`: Updates token metadata.",
+      ],
+      accounts: [
+        {
+          name: "admin",
+          isMut: true,
+          isSigner: true,
+        },
+        {
+          name: "tenant",
+          isMut: false,
+          isSigner: false,
+        },
+        {
+          name: "market",
+          isMut: true,
+          isSigner: false,
+        },
+        {
+          name: "metadata",
+          isMut: true,
+          isSigner: false,
+        },
+        {
+          name: "tokenMetadataProgram",
+          isMut: false,
+          isSigner: false,
+        },
+      ],
+      args: [
+        {
+          name: "args",
+          type: {
+            defined: "UpdateMarketArgs",
+          },
+        },
+      ],
+    },
+    {
       name: "leverageSell",
       docs: [
         "Leveraged sell: withdraw + sell + repay in a single atomic transaction.",
@@ -6633,7 +6796,7 @@ export const IDL: Rise = {
           {
             name: "creatorRevPercent",
             docs: [
-              "Creator's revenue share percentage (0-10).",
+              "Creator's revenue share percentage (0-25).",
               "Floor gets (25 - creator_rev_percent)%, team gets 75%.",
             ],
             type: "u8",
@@ -7161,6 +7324,30 @@ export const IDL: Rise = {
       },
     },
     {
+      name: "UpdateMarketArgs",
+      type: {
+        kind: "struct",
+        fields: [
+          {
+            name: "metadata",
+            type: {
+              option: {
+                defined: "TokenMetadata",
+              },
+            },
+          },
+          {
+            name: "newCreator",
+            type: "publicKey",
+          },
+          {
+            name: "creatorFeePercent",
+            type: "u8",
+          },
+        ],
+      },
+    },
+    {
       name: "rise::num::DecimalSerialized",
       docs: [
         "Serializable Decimal wrapper for on-chain storage.",
@@ -7441,18 +7628,28 @@ export const IDL: Rise = {
       name: "BorrowEvent",
       fields: [
         {
-          name: "amount",
+          name: "depositedTokenBalance",
           type: "u64",
           index: false,
         },
         {
-          name: "borrower",
-          type: "publicKey",
+          name: "debt",
+          type: "u64",
           index: false,
         },
         {
-          name: "market",
-          type: "publicKey",
+          name: "totalMarketDebt",
+          type: "u64",
+          index: false,
+        },
+        {
+          name: "totalMarketDepositedCollateral",
+          type: "u64",
+          index: false,
+        },
+        {
+          name: "totalMainTokenInLiquidityPool",
+          type: "u64",
           index: false,
         },
         {
@@ -7580,26 +7777,6 @@ export const IDL: Rise = {
       ],
     },
     {
-      name: "DepositEvent",
-      fields: [
-        {
-          name: "amount",
-          type: "u64",
-          index: false,
-        },
-        {
-          name: "depositor",
-          type: "publicKey",
-          index: false,
-        },
-        {
-          name: "market",
-          type: "publicKey",
-          index: false,
-        },
-      ],
-    },
-    {
       name: "InitMarketGroupEvent",
       fields: [
         {
@@ -7660,6 +7837,36 @@ export const IDL: Rise = {
         {
           name: "tallyCooldownSeconds",
           type: "u32",
+          index: false,
+        },
+      ],
+    },
+    {
+      name: "LendingEvent",
+      fields: [
+        {
+          name: "depositedTokenBalance",
+          type: "u64",
+          index: false,
+        },
+        {
+          name: "debt",
+          type: "u64",
+          index: false,
+        },
+        {
+          name: "totalMarketDebt",
+          type: "u64",
+          index: false,
+        },
+        {
+          name: "totalMarketDepositedCollateral",
+          type: "u64",
+          index: false,
+        },
+        {
+          name: "totalMainTokenInLiquidityPool",
+          type: "u64",
           index: false,
         },
       ],
@@ -7804,18 +8011,33 @@ export const IDL: Rise = {
       name: "RepayEvent",
       fields: [
         {
-          name: "amount",
+          name: "positionOwner",
+          type: "publicKey",
+          index: false,
+        },
+        {
+          name: "depositedTokenBalance",
           type: "u64",
           index: false,
         },
         {
-          name: "repayer",
-          type: "publicKey",
+          name: "debt",
+          type: "u64",
           index: false,
         },
         {
-          name: "market",
-          type: "publicKey",
+          name: "totalMarketDebt",
+          type: "u64",
+          index: false,
+        },
+        {
+          name: "totalMarketDepositedCollateral",
+          type: "u64",
+          index: false,
+        },
+        {
+          name: "totalMainTokenInLiquidityPool",
+          type: "u64",
           index: false,
         },
       ],
@@ -7957,26 +8179,6 @@ export const IDL: Rise = {
         },
       ],
     },
-    {
-      name: "WithdrawEvent",
-      fields: [
-        {
-          name: "amount",
-          type: "u64",
-          index: false,
-        },
-        {
-          name: "withdrawer",
-          type: "publicKey",
-          index: false,
-        },
-        {
-          name: "market",
-          type: "publicKey",
-          index: false,
-        },
-      ],
-    },
   ],
   errors: [
     {
@@ -8087,7 +8289,7 @@ export const IDL: Rise = {
     {
       code: 6021,
       name: "InvalidCreatorFeePercent",
-      msg: "Creator fee percent must be between 0 and 10",
+      msg: "Creator fee percent must be between 0 and 25",
     },
   ],
 };
