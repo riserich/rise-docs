@@ -1296,7 +1296,10 @@
           "name": "repayer",
           "isMut": true,
           "isSigner": true,
-          "docs": ["User repaying debt - pays from their token account"]
+          "docs": [
+            "User repaying debt - pays from their token account.",
+            "Note: repay is permissionless, so `repayer` need not be the debtor."
+          ]
         },
         {
           "name": "marketMeta",
@@ -3497,18 +3500,28 @@
       "name": "BorrowEvent",
       "fields": [
         {
-          "name": "amount",
+          "name": "depositedTokenBalance",
           "type": "u64",
           "index": false
         },
         {
-          "name": "borrower",
-          "type": "publicKey",
+          "name": "debt",
+          "type": "u64",
           "index": false
         },
         {
-          "name": "market",
-          "type": "publicKey",
+          "name": "totalMarketDebt",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "totalMarketDepositedCollateral",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "totalMainTokenInLiquidityPool",
+          "type": "u64",
           "index": false
         },
         {
@@ -3636,26 +3649,6 @@
       ]
     },
     {
-      "name": "DepositEvent",
-      "fields": [
-        {
-          "name": "amount",
-          "type": "u64",
-          "index": false
-        },
-        {
-          "name": "depositor",
-          "type": "publicKey",
-          "index": false
-        },
-        {
-          "name": "market",
-          "type": "publicKey",
-          "index": false
-        }
-      ]
-    },
-    {
       "name": "InitMarketGroupEvent",
       "fields": [
         {
@@ -3716,6 +3709,36 @@
         {
           "name": "tallyCooldownSeconds",
           "type": "u32",
+          "index": false
+        }
+      ]
+    },
+    {
+      "name": "LendingEvent",
+      "fields": [
+        {
+          "name": "depositedTokenBalance",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "debt",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "totalMarketDebt",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "totalMarketDepositedCollateral",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "totalMainTokenInLiquidityPool",
+          "type": "u64",
           "index": false
         }
       ]
@@ -3860,18 +3883,33 @@
       "name": "RepayEvent",
       "fields": [
         {
-          "name": "amount",
+          "name": "positionOwner",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "depositedTokenBalance",
           "type": "u64",
           "index": false
         },
         {
-          "name": "repayer",
-          "type": "publicKey",
+          "name": "debt",
+          "type": "u64",
           "index": false
         },
         {
-          "name": "market",
-          "type": "publicKey",
+          "name": "totalMarketDebt",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "totalMarketDepositedCollateral",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "totalMainTokenInLiquidityPool",
+          "type": "u64",
           "index": false
         }
       ]
@@ -4008,26 +4046,6 @@
         },
         {
           "name": "newAdmin",
-          "type": "publicKey",
-          "index": false
-        }
-      ]
-    },
-    {
-      "name": "WithdrawEvent",
-      "fields": [
-        {
-          "name": "amount",
-          "type": "u64",
-          "index": false
-        },
-        {
-          "name": "withdrawer",
-          "type": "publicKey",
-          "index": false
-        },
-        {
-          "name": "market",
           "type": "publicKey",
           "index": false
         }

@@ -2,6 +2,8 @@
 
 The Rise program emits events on every buy, sell, borrow, repay, deposit, and withdraw transaction. You can parse these from on-chain transaction logs to build your own indexer.
 
+Borrow, repay, deposit, and withdraw all emit **post-op snapshots** of the personal position and market aggregates rather than deltas. The actor's wallet (and the rise market) are not in the event payload — derive them from the enclosing instruction's accounts.
+
 ---
 
 ## Event Types
@@ -51,44 +53,45 @@ Emitted on every sell transaction.
 
 ### BorrowEvent
 
-Emitted on borrow transactions.
+Emitted on borrow transactions. Post-op snapshot plus the fee split from the borrow fee distribution.
 
 | Field | Type | Description |
 |-------|------|-------------|
-| `amount` | u64 | Amount borrowed (RAW) — gross, before the on-chain 3% borrow fee |
-| `borrower` | PublicKey | Borrower's wallet address |
-| `market` | PublicKey | Rise market address |
-| `revSplit` | RevenueSplits | Fee breakdown |
+| `depositedTokenBalance` | u64 | Collateral balance on the personal position after the op (RAW) |
+| `debt` | u64 | Debt balance on the personal position after the op (RAW) |
+| `totalMarketDebt` | u64 | Sum of debt across all positions on the Mayflower market |
+| `totalMarketDepositedCollateral` | u64 | Sum of collateral across all positions on the Mayflower market |
+| `totalMainTokenInLiquidityPool` | u64 | Base-currency balance in the Mayflower liquidity pool (TVL proxy) |
+| `revSplit` | RevenueSplits | Distribution of the borrow fee |
+
+The borrower's wallet and the rise market aren't in the payload — read them from the borrow instruction's accounts (`borrower` signer and `riseMarket`).
 
 ### RepayEvent
 
-Emitted on repay transactions.
+Emitted on repay transactions. Includes `positionOwner` because repay is permissionless — the tx signer may differ from the debtor.
 
 | Field | Type | Description |
 |-------|------|-------------|
-| `amount` | u64 | Amount repaid (RAW) |
-| `repayer` | PublicKey | Repayer's wallet address |
-| `market` | PublicKey | Rise market address |
+| `positionOwner` | PublicKey | Debtor whose position the repay was applied to (taken from `core_personal_position.owner`, not the signer) |
+| `depositedTokenBalance` | u64 | Collateral balance on the position after the op (RAW) |
+| `debt` | u64 | Debt balance on the position after the op (RAW) |
+| `totalMarketDebt` | u64 | Sum of debt across all positions on the Mayflower market |
+| `totalMarketDepositedCollateral` | u64 | Sum of collateral across all positions on the Mayflower market |
+| `totalMainTokenInLiquidityPool` | u64 | Base-currency balance in the Mayflower liquidity pool |
 
-### DepositEvent
+### LendingEvent
 
-Emitted when a user deposits tokens as collateral into their personal position.
-
-| Field | Type | Description |
-|-------|------|-------------|
-| `amount` | u64 | Amount deposited (RAW) |
-| `depositor` | PublicKey | Depositor's wallet address |
-| `market` | PublicKey | Rise market address |
-
-### WithdrawEvent
-
-Emitted when a user withdraws tokens from their personal position.
+Emitted by **both** `deposit` and `withdraw` instructions. The two are distinguished by the enclosing instruction discriminator on the transaction. Every field is a full post-op snapshot, so an indexer can upsert without prior state (last-write-wins).
 
 | Field | Type | Description |
 |-------|------|-------------|
-| `amount` | u64 | Amount withdrawn (RAW) |
-| `withdrawer` | PublicKey | Withdrawer's wallet address |
-| `market` | PublicKey | Rise market address |
+| `depositedTokenBalance` | u64 | Collateral balance on the position after the op (RAW) |
+| `debt` | u64 | Debt balance on the position after the op (RAW) — unchanged by deposit/withdraw, emitted for a complete snapshot |
+| `totalMarketDebt` | u64 | Sum of debt across all positions on the Mayflower market |
+| `totalMarketDepositedCollateral` | u64 | Sum of collateral across all positions on the Mayflower market |
+| `totalMainTokenInLiquidityPool` | u64 | Base-currency balance in the Mayflower liquidity pool |
+
+The depositor/withdrawer and rise market aren't in the payload — read them from the enclosing instruction's accounts.
 
 ### RevenueSplits
 
@@ -121,19 +124,40 @@ const BUY_DISC = eventDiscriminator("BuyWithExactCashInEvent");
 const SELL_DISC = eventDiscriminator("SellWithExactTokenInEvent");
 const BORROW_DISC = eventDiscriminator("BorrowEvent");
 const REPAY_DISC = eventDiscriminator("RepayEvent");
-const DEPOSIT_DISC = eventDiscriminator("DepositEvent");
-const WITHDRAW_DISC = eventDiscriminator("WithdrawEvent");
+const LENDING_DISC = eventDiscriminator("LendingEvent"); // deposit + withdraw
 ```
 
-`RepayEvent`, `DepositEvent`, and `WithdrawEvent` share the same on-the-wire layout: `amount(u64) + actor(Pubkey) + market(Pubkey)` (48 bytes after the 8-byte discriminator). Only the field name and discriminator differ:
+`LendingEvent` (40 bytes) is just five `u64` snapshot fields. `BorrowEvent` (64 bytes) appends a `RevenueSplits` (3×u64). `RepayEvent` (72 bytes) prepends a 32-byte `positionOwner` pubkey:
 
 ```typescript
-function parseSimpleAmountEvent(data: Buffer, expectedDisc: Buffer) {
-  if (!data.slice(0, 8).equals(expectedDisc)) return null;
-  const amount = data.readBigUInt64LE(8);
-  const actor = new PublicKey(data.slice(16, 48));
-  const market = new PublicKey(data.slice(48, 80));
-  return { amount, actor, market };
+function parseLendingSnapshot(data: Buffer, offset: number) {
+  return {
+    depositedTokenBalance:        data.readBigUInt64LE(offset),
+    debt:                         data.readBigUInt64LE(offset + 8),
+    totalMarketDebt:              data.readBigUInt64LE(offset + 16),
+    totalMarketDepositedCollateral: data.readBigUInt64LE(offset + 24),
+    totalMainTokenInLiquidityPool: data.readBigUInt64LE(offset + 32),
+  };
+}
+
+function parseLendingEvent(data: Buffer) {
+  if (!data.slice(0, 8).equals(LENDING_DISC)) return null;
+  return parseLendingSnapshot(data, 8);
+}
+
+function parseBorrowEvent(data: Buffer) {
+  if (!data.slice(0, 8).equals(BORROW_DISC)) return null;
+  const snapshot = parseLendingSnapshot(data, 8);
+  const revFloor   = data.readBigUInt64LE(48);
+  const revCreator = data.readBigUInt64LE(56);
+  const revTeam    = data.readBigUInt64LE(64);
+  return { ...snapshot, revSplit: { floor: revFloor, creator: revCreator, team: revTeam } };
+}
+
+function parseRepayEvent(data: Buffer) {
+  if (!data.slice(0, 8).equals(REPAY_DISC)) return null;
+  const positionOwner = new PublicKey(data.slice(8, 40));
+  return { positionOwner, ...parseLendingSnapshot(data, 40) };
 }
 ```
 
@@ -328,7 +352,7 @@ With these events you can build:
 - **Floor price history** — the floor value is included in every event
 - **Volume metrics** — sum `cashIn`/`cashOut` per time period
 - **Fee analytics** — track revenue splits per market
-- **Borrow/lending activity** — track open debt, repayments, and collateral movement via `BorrowEvent`, `RepayEvent`, `DepositEvent`, and `WithdrawEvent`
+- **Borrow/lending activity** — track open debt, repayments, and collateral movement via `BorrowEvent`, `RepayEvent`, and `LendingEvent` (deposit + withdraw share the same event)
 
 ---
 
