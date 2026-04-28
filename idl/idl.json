@@ -2163,6 +2163,65 @@
       "args": []
     },
     {
+      "name": "updateMarket",
+      "docs": [
+        "Update market metadata, creator wallet, and creator fee percentage.",
+        "",
+        "Admin-only instruction for CTO (Community Takeover) scenarios.",
+        "Updates Metaplex token metadata and Rise market state.",
+        "",
+        "# Parameters",
+        "- `args.metadata`: New token metadata (name, symbol, uri).",
+        "- `args.new_creator`: New creator wallet address.",
+        "- `args.creator_fee_percent`: New creator fee percentage (0-25).",
+        "",
+        "# Accounts",
+        "- `admin`: Tenant admin (signer).",
+        "- `tenant`: Rise tenant PDA.",
+        "- `market`: Rise market to update (PDA signs as Metaplex update_authority).",
+        "- `metadata`: Metaplex metadata PDA.",
+        "- `token_metadata_program`: Metaplex program.",
+        "",
+        "# CPI Calls",
+        "- `mpl_token_metadata::update_metadata_account_v2`: Updates token metadata."
+      ],
+      "accounts": [
+        {
+          "name": "admin",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "tenant",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "market",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "metadata",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "tokenMetadataProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "args",
+          "type": {
+            "defined": "UpdateMarketArgs"
+          }
+        }
+      ]
+    },
+    {
       "name": "leverageSell",
       "docs": [
         "Leveraged sell: withdraw + sell + repay in a single atomic transaction.",
@@ -2594,7 +2653,7 @@
           {
             "name": "creatorRevPercent",
             "docs": [
-              "Creator's revenue share percentage (0-10).",
+              "Creator's revenue share percentage (0-25).",
               "Floor gets (25 - creator_rev_percent)%, team gets 75%."
             ],
             "type": "u8"
@@ -3119,6 +3178,30 @@
             "type": {
               "defined": "may_cpi::DecimalSerialized"
             }
+          }
+        ]
+      }
+    },
+    {
+      "name": "UpdateMarketArgs",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "metadata",
+            "type": {
+              "option": {
+                "defined": "TokenMetadata"
+              }
+            }
+          },
+          {
+            "name": "newCreator",
+            "type": "publicKey"
+          },
+          {
+            "name": "creatorFeePercent",
+            "type": "u8"
           }
         ]
       }
@@ -4060,7 +4143,7 @@
     {
       "code": 6021,
       "name": "InvalidCreatorFeePercent",
-      "msg": "Creator fee percent must be between 0 and 10"
+      "msg": "Creator fee percent must be between 0 and 25"
     }
   ]
 }

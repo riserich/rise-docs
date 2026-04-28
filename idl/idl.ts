@@ -26,7 +26,7 @@ export type Rise = {
         "- `tenant`: The tenant account to initialize (PDA).",
         "",
         "# CPI Calls",
-        "None - this is a pure Rise instruction.",
+        "None - this is a pure Rise instruction."
       ];
       accounts: [
         {
@@ -35,7 +35,7 @@ export type Rise = {
           isSigner: true;
           docs: [
             "Pays for tenant account creation and becomes the tenant admin.",
-            "Only the authorized wallet can create tenants to prevent front-running attacks.",
+            "Only the authorized wallet can create tenants to prevent front-running attacks."
           ];
         },
         {
@@ -44,7 +44,7 @@ export type Rise = {
           isSigner: true;
           docs: [
             "Unique seed signer for tenant PDA derivation.",
-            "Must be a new keypair - ensures each tenant has a unique address.",
+            "Must be a new keypair - ensures each tenant has a unique address."
           ];
         },
         {
@@ -53,7 +53,7 @@ export type Rise = {
           isSigner: false;
           docs: [
             "Tenant account to initialize.",
-            'PDA derived from ["tenant", seed.key()].',
+            'PDA derived from ["tenant", seed.key()].'
           ];
         },
         {
@@ -67,9 +67,9 @@ export type Rise = {
           isMut: false;
           isSigner: false;
           docs: [
-            "Rise program ID validation - ensures this instruction is called on the correct program.",
+            "Rise program ID validation - ensures this instruction is called on the correct program."
           ];
-        },
+        }
       ];
       args: [
         {
@@ -77,7 +77,7 @@ export type Rise = {
           type: {
             defined: "InitTenantArgs";
           };
-        },
+        }
       ];
     },
     {
@@ -101,7 +101,7 @@ export type Rise = {
         "- Remaining accounts: `[market_group, may_log_account]`",
         "",
         "# CPI Calls",
-        "- `mayflower::market_group_init`: Creates the market group on Mayflower.",
+        "- `mayflower::market_group_init`: Creates the market group on Mayflower."
       ];
       accounts: [
         {
@@ -116,7 +116,7 @@ export type Rise = {
           isSigner: true;
           docs: [
             "Unique seed signer for Mayflower market group PDA derivation.",
-            "Must be a new keypair for each market group.",
+            "Must be a new keypair for each market group."
           ];
         },
         {
@@ -125,7 +125,7 @@ export type Rise = {
           isSigner: true;
           docs: [
             "Seed for Rise tenant PDA verification.",
-            "Used to derive and validate the rise_tenant account.",
+            "Used to derive and validate the rise_tenant account."
           ];
         },
         {
@@ -134,7 +134,7 @@ export type Rise = {
           isSigner: true;
           docs: [
             "Admin of the Mayflower tenant - must sign to authorize group creation.",
-            "Mayflower validates this is the correct admin for mayflower_tenant.",
+            "Mayflower validates this is the correct admin for mayflower_tenant."
           ];
         },
         {
@@ -143,7 +143,7 @@ export type Rise = {
           isSigner: false;
           docs: [
             "Mayflower tenant account - the parent entity on Mayflower side.",
-            "Validated by Mayflower during CPI.",
+            "Validated by Mayflower during CPI."
           ];
         },
         {
@@ -153,7 +153,7 @@ export type Rise = {
           docs: [
             "Rise tenant PDA - becomes the group_admin for this market group.",
             "As group_admin, Rise can manage all markets in this group via PDA signing.",
-            "This is how Rise maintains control over Mayflower markets.",
+            "This is how Rise maintains control over Mayflower markets."
           ];
         },
         {
@@ -168,9 +168,9 @@ export type Rise = {
           isSigner: false;
           docs: [
             "Mayflower program for CPI.",
-            "Validated to match the expected Mayflower program ID (devnet/mainnet/local).",
+            "Validated to match the expected Mayflower program ID (devnet/mainnet/local)."
           ];
-        },
+        }
       ];
       args: [
         {
@@ -178,7 +178,7 @@ export type Rise = {
           type: {
             defined: "InitMarketGroupArgs";
           };
-        },
+        }
       ];
     },
     {
@@ -213,7 +213,7 @@ export type Rise = {
         "# CPI Calls",
         "- `mpl_token_metadata::create_metadata_account_v3`: Creates Metaplex token metadata.",
         "- `spl_token::set_authority`: Transfers mint authority to Mayflower market_meta.",
-        "- `mayflower::market_linear_init`: Initializes the linear bonding curve.",
+        "- `mayflower::market_linear_init`: Initializes the linear bonding curve."
       ];
       accounts: [
         {
@@ -222,7 +222,7 @@ export type Rise = {
           isSigner: true;
           docs: [
             "Pays for all account creation and becomes the market creator.",
-            "Creator receives a share of trading fees via creator_escrow.",
+            "Creator receives a share of trading fees via creator_escrow."
           ];
         },
         {
@@ -231,7 +231,7 @@ export type Rise = {
           isSigner: true;
           docs: [
             "Unique seed signer for Mayflower market PDAs.",
-            "Must be a new keypair for each market.",
+            "Must be a new keypair for each market."
           ];
         },
         {
@@ -240,7 +240,7 @@ export type Rise = {
           isSigner: false;
           docs: [
             "Seed for Rise tenant PDA derivation.",
-            "Does not need to sign - just used for PDA verification.",
+            "Does not need to sign - just used for PDA verification."
           ];
         },
         {
@@ -250,7 +250,7 @@ export type Rise = {
           docs: [
             "Rise market account to initialize.",
             'PDA derived from ["market", tenant, market_meta].',
-            "Stores Rise-specific state: governance, fee tracking, level, etc.",
+            "Stores Rise-specific state: governance, fee tracking, level, etc."
           ];
         },
         {
@@ -259,7 +259,7 @@ export type Rise = {
           isSigner: false;
           docs: [
             "Base currency mint (e.g., USDC, SOL).",
-            "All trading, fees, and borrowing are denominated in this token.",
+            "All trading, fees, and borrowing are denominated in this token."
           ];
         },
         {
@@ -285,7 +285,7 @@ export type Rise = {
             "3. Mayflower then controls all minting (on buy) and burning (on sell)",
             "",
             "# Supply",
-            "Initial supply is 0. Tokens are only minted when users buy on the curve.",
+            "Initial supply is 0. Tokens are only minted when users buy on the curve."
           ];
         },
         {
@@ -293,7 +293,7 @@ export type Rise = {
           isMut: false;
           isSigner: false;
           docs: [
-            "Metaplex token metadata program for creating token metadata.",
+            "Metaplex token metadata program for creating token metadata."
           ];
         },
         {
@@ -302,7 +302,7 @@ export type Rise = {
           isSigner: false;
           docs: [
             "Token metadata account PDA (derived by Metaplex).",
-            "Stores name, symbol, URI for the market token.",
+            "Stores name, symbol, URI for the market token."
           ];
         },
         {
@@ -311,7 +311,7 @@ export type Rise = {
           isSigner: false;
           docs: [
             "Mayflower market meta PDA - stores market configuration on Mayflower side.",
-            "Becomes the mint authority after initialization.",
+            "Becomes the mint authority after initialization."
           ];
         },
         {
@@ -320,7 +320,7 @@ export type Rise = {
           isSigner: false;
           docs: [
             "Rise tenant PDA - acts as group_admin for Mayflower market group.",
-            "Signs the CPI call to authorize market creation.",
+            "Signs the CPI call to authorize market creation."
           ];
         },
         {
@@ -335,7 +335,7 @@ export type Rise = {
           isSigner: false;
           docs: [
             "Cash escrow PDA for revenue distribution to token holders.",
-            "Receives portion of fees that get distributed via tally.",
+            "Receives portion of fees that get distributed via tally."
           ];
         },
         {
@@ -344,7 +344,7 @@ export type Rise = {
           isSigner: false;
           docs: [
             "Creator escrow PDA for accumulating creator's fee share.",
-            "Creator can withdraw anytime via withdraw_creator_fees.",
+            "Creator can withdraw anytime via withdraw_creator_fees."
           ];
         },
         {
@@ -370,7 +370,7 @@ export type Rise = {
           isMut: false;
           isSigner: false;
           docs: ["Token program for base currency (supports Token-2022)."];
-        },
+        }
       ];
       args: [
         {
@@ -382,7 +382,7 @@ export type Rise = {
           type: {
             defined: "InitMarketArgs";
           };
-        },
+        }
       ];
     },
     {
@@ -403,7 +403,7 @@ export type Rise = {
         "- `mayflower_program`: Mayflower program for CPI.",
         "",
         "# CPI Calls",
-        "- `mayflower::personal_position_init`: Creates personal position on Mayflower.",
+        "- `mayflower::personal_position_init`: Creates personal position on Mayflower."
       ];
       accounts: [
         {
@@ -461,7 +461,7 @@ export type Rise = {
           name: "mayLogAccount";
           isMut: true;
           isSigner: false;
-        },
+        }
       ];
       args: [];
     },
@@ -493,7 +493,7 @@ export type Rise = {
         "# CPI Calls",
         "- `mayflower::buy_with_exact_cash_in`: Executes buy on bonding curve.",
         "- `mayflower::raise_floor_preserve_area_checked2`: Raises floor (if new_shoulder_end != 0).",
-        "- `mayflower::rev_claim_group`: Claims revenue from Mayflower escrow (internal).",
+        "- `mayflower::rev_claim_group`: Claims revenue from Mayflower escrow (internal)."
       ];
       accounts: [
         {
@@ -501,7 +501,7 @@ export type Rise = {
           isMut: true;
           isSigner: true;
           docs: [
-            "Buyer executing the purchase. Signs the transaction and pays cash_in.",
+            "Buyer executing the purchase. Signs the transaction and pays cash_in."
           ];
         },
         {
@@ -509,7 +509,7 @@ export type Rise = {
           isMut: true;
           isSigner: false;
           docs: [
-            "Rise tenant - needed for floor raise operations where tenant signs as group_admin.",
+            "Rise tenant - needed for floor raise operations where tenant signs as group_admin."
           ];
         },
         {
@@ -518,7 +518,7 @@ export type Rise = {
           isSigner: false;
           docs: [
             "Rise market being bought into.",
-            "Constraints ensure consistency with Mayflower accounts.",
+            "Constraints ensure consistency with Mayflower accounts."
           ];
         },
         {
@@ -526,7 +526,7 @@ export type Rise = {
           isMut: true;
           isSigner: false;
           docs: [
-            "Cash escrow receiving portion of fees for revenue distribution.",
+            "Cash escrow receiving portion of fees for revenue distribution."
           ];
         },
         {
@@ -546,7 +546,7 @@ export type Rise = {
           isMut: false;
           isSigner: false;
           docs: [
-            "Mayflower market meta - stores market configuration and is mint authority.",
+            "Mayflower market meta - stores market configuration and is mint authority."
           ];
         },
         {
@@ -555,7 +555,7 @@ export type Rise = {
           isSigner: false;
           docs: [
             "Mayflower market with bonding curve state (supply, prices, etc.).",
-            "Deserialized to access curve parameters for calculations.",
+            "Deserialized to access curve parameters for calculations."
           ];
         },
         {
@@ -564,7 +564,7 @@ export type Rise = {
           isSigner: false;
           docs: [
             "Seed for Rise tenant PDA derivation.",
-            "Required for tenant to sign raise_floor CPI if floor is being raised.",
+            "Required for tenant to sign raise_floor CPI if floor is being raised."
           ];
         },
         {
@@ -585,7 +585,7 @@ export type Rise = {
           isSigner: false;
           docs: [
             "Destination for purchased tokens (buyer's token account).",
-            "Receives newly minted tokens from the bonding curve.",
+            "Receives newly minted tokens from the bonding curve."
           ];
         },
         {
@@ -594,7 +594,7 @@ export type Rise = {
           isSigner: false;
           docs: [
             "Source of payment (buyer's base currency account).",
-            "Must have sufficient balance for cash_in amount.",
+            "Must have sufficient balance for cash_in amount."
           ];
         },
         {
@@ -603,7 +603,7 @@ export type Rise = {
           isSigner: false;
           docs: [
             "Mayflower liquidity vault - receives the cash payment.",
-            "This vault backs the bonding curve and provides liquidity for sells.",
+            "This vault backs the bonding curve and provides liquidity for sells."
           ];
         },
         {
@@ -612,7 +612,7 @@ export type Rise = {
           isSigner: false;
           docs: [
             "Mayflower group revenue escrow - collects trading fees.",
-            "Rise claims from here and distributes to creator/team/floor.",
+            "Rise claims from here and distributes to creator/team/floor."
           ];
         },
         {
@@ -639,7 +639,7 @@ export type Rise = {
           isSigner: false;
           docs: [
             "Mayflower program for CPI.",
-            "Validated to match expected program ID (devnet/mainnet/local).",
+            "Validated to match expected program ID (devnet/mainnet/local)."
           ];
         },
         {
@@ -660,9 +660,9 @@ export type Rise = {
           isSigner: false;
           docs: [
             "Team escrow PDA - receives protocol team's share of buy fees.",
-            "Derived per mint_main so all markets with same base currency share one escrow.",
+            "Derived per mint_main so all markets with same base currency share one escrow."
           ];
-        },
+        }
       ];
       args: [
         {
@@ -698,7 +698,7 @@ export type Rise = {
           type: {
             defined: "may_cpi::DecimalSerialized";
           };
-        },
+        }
       ];
     },
     {
@@ -722,7 +722,7 @@ export type Rise = {
         "- `mayflower_program`: Mayflower program for CPI.",
         "",
         "# CPI Calls",
-        "- `mayflower::deposit`: Deposits tokens as collateral.",
+        "- `mayflower::deposit`: Deposits tokens as collateral."
       ];
       accounts: [
         {
@@ -760,7 +760,7 @@ export type Rise = {
           isMut: true;
           isSigner: false;
           docs: [
-            "Mayflower personal position - tracks collateral on Mayflower side",
+            "Mayflower personal position - tracks collateral on Mayflower side"
           ];
         },
         {
@@ -798,13 +798,13 @@ export type Rise = {
           isMut: true;
           isSigner: false;
           docs: ["Mayflower log account for event emission"];
-        },
+        }
       ];
       args: [
         {
           name: "amount";
           type: "u64";
-        },
+        }
       ];
     },
     {
@@ -828,7 +828,7 @@ export type Rise = {
         "- `mayflower_program`: Mayflower program for CPI.",
         "",
         "# CPI Calls",
-        "- `mayflower::withdraw`: Withdraws collateral (enforces LTV if debt exists).",
+        "- `mayflower::withdraw`: Withdraws collateral (enforces LTV if debt exists)."
       ];
       accounts: [
         {
@@ -866,7 +866,7 @@ export type Rise = {
           isMut: true;
           isSigner: false;
           docs: [
-            "Mayflower personal position - tracks collateral on Mayflower side",
+            "Mayflower personal position - tracks collateral on Mayflower side"
           ];
         },
         {
@@ -904,13 +904,13 @@ export type Rise = {
           isMut: true;
           isSigner: false;
           docs: ["Mayflower log account for event emission"];
-        },
+        }
       ];
       args: [
         {
           name: "amount";
           type: "u64";
-        },
+        }
       ];
     },
     {
@@ -937,7 +937,7 @@ export type Rise = {
         "",
         "# CPI Calls",
         "- `mayflower::sell_with_exact_token_in`: Executes sell on bonding curve (burns tokens).",
-        "- `mayflower::rev_claim_group`: Claims revenue from Mayflower escrow (internal).",
+        "- `mayflower::rev_claim_group`: Claims revenue from Mayflower escrow (internal)."
       ];
       accounts: [
         {
@@ -945,7 +945,7 @@ export type Rise = {
           isMut: true;
           isSigner: true;
           docs: [
-            "Seller executing the sale. Signs the transaction and receives cash.",
+            "Seller executing the sale. Signs the transaction and receives cash."
           ];
         },
         {
@@ -960,7 +960,7 @@ export type Rise = {
           isSigner: false;
           docs: [
             "Rise market being sold into.",
-            "Constraints ensure consistency with Mayflower accounts.",
+            "Constraints ensure consistency with Mayflower accounts."
           ];
         },
         {
@@ -968,7 +968,7 @@ export type Rise = {
           isMut: true;
           isSigner: false;
           docs: [
-            "Cash escrow receiving portion of fees for revenue distribution.",
+            "Cash escrow receiving portion of fees for revenue distribution."
           ];
         },
         {
@@ -995,7 +995,7 @@ export type Rise = {
           isSigner: false;
           docs: [
             "Mayflower market with bonding curve state.",
-            "Deserialized to access curve parameters for event emission.",
+            "Deserialized to access curve parameters for event emission."
           ];
         },
         {
@@ -1009,7 +1009,7 @@ export type Rise = {
           isMut: false;
           isSigner: false;
           docs: [
-            "Base currency mint (e.g., USDC) - seller receives this token.",
+            "Base currency mint (e.g., USDC) - seller receives this token."
           ];
         },
         {
@@ -1018,7 +1018,7 @@ export type Rise = {
           isSigner: false;
           docs: [
             "Source of tokens to sell (seller's token account).",
-            "Must have sufficient balance for token_in amount.",
+            "Must have sufficient balance for token_in amount."
           ];
         },
         {
@@ -1027,7 +1027,7 @@ export type Rise = {
           isSigner: false;
           docs: [
             "Destination for cash proceeds (seller's base currency account).",
-            "Receives cash from the bonding curve.",
+            "Receives cash from the bonding curve."
           ];
         },
         {
@@ -1036,7 +1036,7 @@ export type Rise = {
           isSigner: false;
           docs: [
             "Mayflower liquidity vault - source of cash proceeds.",
-            "This vault holds all liquidity backing the bonding curve.",
+            "This vault holds all liquidity backing the bonding curve."
           ];
         },
         {
@@ -1045,7 +1045,7 @@ export type Rise = {
           isSigner: false;
           docs: [
             "Mayflower group revenue escrow - collects sell fees.",
-            "Rise claims from here and distributes to creator/team.",
+            "Rise claims from here and distributes to creator/team."
           ];
         },
         {
@@ -1072,7 +1072,7 @@ export type Rise = {
           isSigner: false;
           docs: [
             "Mayflower program for CPI.",
-            "Validated to match expected program ID.",
+            "Validated to match expected program ID."
           ];
         },
         {
@@ -1093,9 +1093,9 @@ export type Rise = {
           isSigner: false;
           docs: [
             "Team escrow PDA - receives protocol team's share of sell fees.",
-            "Derived per mint_main so all markets with same base currency share one escrow.",
+            "Derived per mint_main so all markets with same base currency share one escrow."
           ];
-        },
+        }
       ];
       args: [
         {
@@ -1105,7 +1105,7 @@ export type Rise = {
         {
           name: "minCashOut";
           type: "u64";
-        },
+        }
       ];
     },
     {
@@ -1133,7 +1133,7 @@ export type Rise = {
         "",
         "# CPI Calls",
         "- `mayflower::borrow`: Borrows against collateral (enforces LTV).",
-        "- `mayflower::rev_claim_group`: Claims revenue from Mayflower escrow (internal).",
+        "- `mayflower::rev_claim_group`: Claims revenue from Mayflower escrow (internal)."
       ];
       accounts: [
         {
@@ -1219,7 +1219,7 @@ export type Rise = {
           isMut: true;
           isSigner: false;
           docs: [
-            "Mayflower personal position - tracks collateral/debt on Mayflower side",
+            "Mayflower personal position - tracks collateral/debt on Mayflower side"
           ];
         },
         {
@@ -1257,13 +1257,13 @@ export type Rise = {
           isMut: true;
           isSigner: false;
           docs: ["Team escrow - receives team's share of borrow fees"];
-        },
+        }
       ];
       args: [
         {
           name: "amount";
           type: "u64";
-        },
+        }
       ];
     },
     {
@@ -1285,7 +1285,7 @@ export type Rise = {
         "- `mayflower_program`: Mayflower program for CPI.",
         "",
         "# CPI Calls",
-        "- `mayflower::repay`: Reduces debt on personal position.",
+        "- `mayflower::repay`: Reduces debt on personal position."
       ];
       accounts: [
         {
@@ -1347,13 +1347,13 @@ export type Rise = {
           isMut: true;
           isSigner: false;
           docs: ["Mayflower log account for event emission"];
-        },
+        }
       ];
       args: [
         {
           name: "amount";
           type: "u64";
-        },
+        }
       ];
     },
     {
@@ -1377,7 +1377,7 @@ export type Rise = {
         "- `mayflower_program`: Mayflower program for CPI.",
         "",
         "# CPI Calls",
-        "- `mayflower::raise_floor_preserve_area_checked2`: Modifies bonding curve parameters.",
+        "- `mayflower::raise_floor_preserve_area_checked2`: Modifies bonding curve parameters."
       ];
       accounts: [
         {
@@ -1427,7 +1427,7 @@ export type Rise = {
           isMut: true;
           isSigner: false;
           docs: ["Mayflower log account for event emission"];
-        },
+        }
       ];
       args: [
         {
@@ -1455,7 +1455,7 @@ export type Rise = {
           type: {
             defined: "may_cpi::DecimalSerialized";
           };
-        },
+        }
       ];
     },
     {
@@ -1472,7 +1472,7 @@ export type Rise = {
         "- `args.max_new_floor`: Maximum acceptable new floor price (safety cap).",
         "",
         "# CPI Calls",
-        "- `mayflower::raise_floor_from_excess_liquidity_checked`: Raises floor using excess liquidity.",
+        "- `mayflower::raise_floor_from_excess_liquidity_checked`: Raises floor using excess liquidity."
       ];
       accounts: [
         {
@@ -1522,7 +1522,7 @@ export type Rise = {
           isMut: true;
           isSigner: false;
           docs: ["Mayflower log account for event emission"];
-        },
+        }
       ];
       args: [
         {
@@ -1530,7 +1530,7 @@ export type Rise = {
           type: {
             defined: "RaiseFloorExcessLiquidityArgs";
           };
-        },
+        }
       ];
     },
     {
@@ -1549,7 +1549,7 @@ export type Rise = {
         "- `mint_main`: Base currency mint for transfer.",
         "",
         "# CPI Calls",
-        "- `spl_token::transfer_checked`: Transfers fees to creator's account (market PDA signs).",
+        "- `spl_token::transfer_checked`: Transfers fees to creator's account (market PDA signs)."
       ];
       accounts: [
         {
@@ -1563,7 +1563,7 @@ export type Rise = {
           isMut: true;
           isSigner: false;
           docs: [
-            "Rise market - constraint ensures caller is the original creator",
+            "Rise market - constraint ensures caller is the original creator"
           ];
         },
         {
@@ -1601,7 +1601,7 @@ export type Rise = {
           isMut: false;
           isSigner: false;
           docs: ["System program for account creation"];
-        },
+        }
       ];
       args: [];
     },
@@ -1622,7 +1622,7 @@ export type Rise = {
         "- `team_token_account`: Team wallet's destination account (init_if_needed).",
         "",
         "# CPI Calls",
-        "- `spl_token::transfer_checked`: Transfers fees to team wallet (team_escrow PDA signs).",
+        "- `spl_token::transfer_checked`: Transfers fees to team wallet (team_escrow PDA signs)."
       ];
       accounts: [
         {
@@ -1642,7 +1642,7 @@ export type Rise = {
           isMut: true;
           isSigner: false;
           docs: [
-            "Team escrow PDA holding accumulated protocol fees (per mint)",
+            "Team escrow PDA holding accumulated protocol fees (per mint)"
           ];
         },
         {
@@ -1662,7 +1662,7 @@ export type Rise = {
           isMut: true;
           isSigner: false;
           docs: [
-            "Team wallet's destination token account - initialized if needed",
+            "Team wallet's destination token account - initialized if needed"
           ];
         },
         {
@@ -1682,7 +1682,7 @@ export type Rise = {
           isMut: false;
           isSigner: false;
           docs: ["System program for account creation"];
-        },
+        }
       ];
       args: [];
     },
@@ -1702,7 +1702,7 @@ export type Rise = {
         "- `team_config`: Global config PDA storing the team wallet address.",
         "",
         "# CPI Calls",
-        "None - this is a pure Rise instruction.",
+        "None - this is a pure Rise instruction."
       ];
       accounts: [
         {
@@ -1711,7 +1711,7 @@ export type Rise = {
           isSigner: true;
           docs: [
             "Current team wallet - must sign to authorize the rotation.",
-            "Only the current team_wallet can change to a new one.",
+            "Only the current team_wallet can change to a new one."
           ];
         },
         {
@@ -1719,13 +1719,13 @@ export type Rise = {
           isMut: true;
           isSigner: false;
           docs: ["Global TeamConfig PDA storing the team wallet address"];
-        },
+        }
       ];
       args: [
         {
           name: "newTeamWallet";
           type: "publicKey";
-        },
+        }
       ];
     },
     {
@@ -1744,7 +1744,7 @@ export type Rise = {
         "- `tenant`: Tenant PDA storing the admin address.",
         "",
         "# CPI Calls",
-        "None - this is a pure Rise instruction.",
+        "None - this is a pure Rise instruction."
       ];
       accounts: [
         {
@@ -1753,7 +1753,7 @@ export type Rise = {
           isSigner: true;
           docs: [
             "Current tenant admin - must sign to authorize the rotation.",
-            "Only the current admin can change to a new one.",
+            "Only the current admin can change to a new one."
           ];
         },
         {
@@ -1761,13 +1761,13 @@ export type Rise = {
           isMut: true;
           isSigner: false;
           docs: ["Tenant PDA storing the admin address"];
-        },
+        }
       ];
       args: [
         {
           name: "newAdmin";
           type: "publicKey";
-        },
+        }
       ];
     },
     {
@@ -1791,7 +1791,7 @@ export type Rise = {
         "- `team_config`: Global config PDA (init_if_needed).",
         "",
         "# CPI Calls",
-        "- `spl_token::initialize_account3`: Creates the team escrow token account.",
+        "- `spl_token::initialize_account3`: Creates the team escrow token account."
       ];
       accounts: [
         {
@@ -1840,15 +1840,15 @@ export type Rise = {
           isMut: true;
           isSigner: false;
           docs: [
-            "Global TeamConfig PDA - initialized once, stores team wallet address that will be able to withdraw the team fees",
+            "Global TeamConfig PDA - initialized once, stores team wallet address that will be able to withdraw the team fees"
           ];
-        },
+        }
       ];
       args: [
         {
           name: "teamWallet";
           type: "publicKey";
-        },
+        }
       ];
     },
     {
@@ -1879,7 +1879,7 @@ export type Rise = {
         "",
         "# CPI Calls",
         "- `mayflower::buy_with_exact_cash_in_and_deposit_with_debt`: Atomic borrow + buy + deposit.",
-        "- `mayflower::rev_claim_group`: Claims revenue from Mayflower escrow (internal).",
+        "- `mayflower::rev_claim_group`: Claims revenue from Mayflower escrow (internal)."
       ];
       accounts: [
         {
@@ -2019,7 +2019,7 @@ export type Rise = {
           isMut: true;
           isSigner: false;
           docs: ["Team escrow - receives team's share of fees"];
-        },
+        }
       ];
       args: [
         {
@@ -2033,7 +2033,7 @@ export type Rise = {
         {
           name: "minIncreaseCollateralBy";
           type: "u64";
-        },
+        }
       ];
     },
     {
@@ -2063,7 +2063,7 @@ export type Rise = {
         "",
         "# CPI Calls",
         "- `mayflower::market_group_collect_rev`: Collects fees from Mayflower escrow.",
-        "- `mayflower::donate_liquidity`: Donates floor portion to liquidity vault.",
+        "- `mayflower::donate_liquidity`: Donates floor portion to liquidity vault."
       ];
       accounts: [
         {
@@ -2152,9 +2152,68 @@ export type Rise = {
           isMut: true;
           isSigner: false;
           docs: ["Team escrow"];
-        },
+        }
       ];
       args: [];
+    },
+    {
+      name: "updateMarket";
+      docs: [
+        "Update market metadata, creator wallet, and creator fee percentage.",
+        "",
+        "Admin-only instruction for CTO (Community Takeover) scenarios.",
+        "Updates Metaplex token metadata and Rise market state.",
+        "",
+        "# Parameters",
+        "- `args.metadata`: New token metadata (name, symbol, uri).",
+        "- `args.new_creator`: New creator wallet address.",
+        "- `args.creator_fee_percent`: New creator fee percentage (0-25).",
+        "",
+        "# Accounts",
+        "- `admin`: Tenant admin (signer).",
+        "- `tenant`: Rise tenant PDA.",
+        "- `market`: Rise market to update (PDA signs as Metaplex update_authority).",
+        "- `metadata`: Metaplex metadata PDA.",
+        "- `token_metadata_program`: Metaplex program.",
+        "",
+        "# CPI Calls",
+        "- `mpl_token_metadata::update_metadata_account_v2`: Updates token metadata."
+      ];
+      accounts: [
+        {
+          name: "admin";
+          isMut: true;
+          isSigner: true;
+        },
+        {
+          name: "tenant";
+          isMut: false;
+          isSigner: false;
+        },
+        {
+          name: "market";
+          isMut: true;
+          isSigner: false;
+        },
+        {
+          name: "metadata";
+          isMut: true;
+          isSigner: false;
+        },
+        {
+          name: "tokenMetadataProgram";
+          isMut: false;
+          isSigner: false;
+        }
+      ];
+      args: [
+        {
+          name: "args";
+          type: {
+            defined: "UpdateMarketArgs";
+          };
+        }
+      ];
     },
     {
       name: "leverageSell";
@@ -2183,7 +2242,7 @@ export type Rise = {
         "",
         "# CPI Calls",
         "- `mayflower::withdraw_sell_and_repay`: Atomic withdraw + sell + repay.",
-        "- `mayflower::rev_claim_group`: Claims revenue from Mayflower escrow (internal).",
+        "- `mayflower::rev_claim_group`: Claims revenue from Mayflower escrow (internal)."
       ];
       accounts: [
         {
@@ -2323,7 +2382,7 @@ export type Rise = {
           isMut: true;
           isSigner: false;
           docs: ["Team escrow - receives team's share of fees"];
-        },
+        }
       ];
       args: [
         {
@@ -2337,9 +2396,9 @@ export type Rise = {
         {
           name: "minCashToUser";
           type: "u64";
-        },
+        }
       ];
-    },
+    }
   ];
   accounts: [
     {
@@ -2366,7 +2425,7 @@ export type Rise = {
         "# Relationship to MarketMeta",
         "Each MarketLinear is paired with exactly one MarketMeta account that contains",
         "the market's configuration, token mints, vaults, and permissions.",
-        "The `token_unit_scale` for x-axis scaling is stored in MarketMeta.",
+        "The `token_unit_scale` for x-axis scaling is stored in MarketMeta."
       ];
       type: {
         kind: "struct";
@@ -2375,7 +2434,7 @@ export type Rise = {
             name: "marketMeta";
             docs: [
               "Reference to the MarketMeta account containing shared market configuration.",
-              "Links this market implementation to its metadata and token mints.",
+              "Links this market implementation to its metadata and token mints."
             ];
             type: "publicKey";
           },
@@ -2383,7 +2442,7 @@ export type Rise = {
             name: "state";
             docs: [
               "Current state of the market including liquidity, debt, supply, and collateral.",
-              "Tracks all dynamic values that change during market operations.",
+              "Tracks all dynamic values that change during market operations."
             ];
             type: {
               defined: "MarketState";
@@ -2393,12 +2452,12 @@ export type Rise = {
             name: "priceCurve";
             docs: [
               "Serialized linear price curve parameters defining market pricing.",
-              "Contains slopes, floor price, and shoulder configuration for the bonding curve.",
+              "Contains slopes, floor price, and shoulder configuration for the bonding curve."
             ];
             type: {
               defined: "LinearPriceCurveSerialized";
             };
-          },
+          }
         ];
       };
     },
@@ -2426,7 +2485,7 @@ export type Rise = {
         "# Security",
         "- Only the owner can perform operations on their position",
         "- Collateral is held in a separate escrow account for security",
-        "- Position is tied to a specific market and cannot be transferred",
+        "- Position is tied to a specific market and cannot be transferred"
       ];
       type: {
         kind: "struct";
@@ -2435,7 +2494,7 @@ export type Rise = {
             name: "marketMeta";
             docs: [
               "The market metadata account this position belongs to.",
-              "Determines which market's tokens can be deposited and borrowed against.",
+              "Determines which market's tokens can be deposited and borrowed against."
             ];
             type: "publicKey";
           },
@@ -2443,7 +2502,7 @@ export type Rise = {
             name: "owner";
             docs: [
               "The owner's public key who controls this position.",
-              "Only the owner can deposit, withdraw, borrow, or repay.",
+              "Only the owner can deposit, withdraw, borrow, or repay."
             ];
             type: "publicKey";
           },
@@ -2451,7 +2510,7 @@ export type Rise = {
             name: "escrow";
             docs: [
               "The escrow token account holding deposited collateral tokens.",
-              "Tokens are locked here while being used as collateral for borrowing.",
+              "Tokens are locked here while being used as collateral for borrowing."
             ];
             type: "publicKey";
           },
@@ -2459,7 +2518,7 @@ export type Rise = {
             name: "depositedTokenBalance";
             docs: [
               "Amount of market tokens deposited as collateral.",
-              "Can be withdrawn if debt is zero, or used to secure borrows.",
+              "Can be withdrawn if debt is zero, or used to secure borrows."
             ];
             type: "u64";
           },
@@ -2467,7 +2526,7 @@ export type Rise = {
             name: "debt";
             docs: [
               "Amount of main tokens (e.g., USDC) currently borrowed against collateral.",
-              "Must be repaid before collateral can be withdrawn.",
+              "Must be repaid before collateral can be withdrawn."
             ];
             type: "u64";
           },
@@ -2475,12 +2534,12 @@ export type Rise = {
             name: "bump";
             docs: [
               "The PDA bump seed used to derive this account's address.",
-              "Stored to avoid recalculation during operations.",
+              "Stored to avoid recalculation during operations."
             ];
             type: {
               array: ["u8", 1];
             };
-          },
+          }
         ];
       };
     },
@@ -2540,7 +2599,7 @@ export type Rise = {
             name: "level";
             docs: [
               "Level of the market",
-              "how many times the floor has been raised",
+              "how many times the floor has been raised"
             ];
             type: "u32";
           },
@@ -2548,7 +2607,7 @@ export type Rise = {
             name: "levelRevCalculator";
             docs: [
               "Level revenue calculator",
-              "Calculates the share of revenue that goes to platform (ALMS)",
+              "Calculates the share of revenue that goes to platform (ALMS)"
             ];
             type: {
               defined: "LevelRevCalculator";
@@ -2586,8 +2645,8 @@ export type Rise = {
           {
             name: "creatorRevPercent";
             docs: [
-              "Creator's revenue share percentage (0-10).",
-              "Floor gets (25 - creator_rev_percent)%, team gets 75%.",
+              "Creator's revenue share percentage (0-25).",
+              "Floor gets (25 - creator_rev_percent)%, team gets 75%."
             ];
             type: "u8";
           },
@@ -2595,12 +2654,12 @@ export type Rise = {
             name: "startingPrice";
             docs: [
               "Starting price (floor at market creation), used for dynamic cooldown.",
-              "Serialized rust_decimal::Decimal (16 bytes).",
+              "Serialized rust_decimal::Decimal (16 bytes)."
             ];
             type: {
               array: ["u8", 16];
             };
-          },
+          }
         ];
       };
     },
@@ -2611,7 +2670,7 @@ export type Rise = {
         "",
         'This PDA is derived from [b"personal_account", market, owner] and acts as',
         "the authority for the user's Mayflower personal position. It signs CPI calls",
-        "for deposit, withdraw, and borrow operations.",
+        "for deposit, withdraw, and borrow operations."
       ];
       type: {
         kind: "struct";
@@ -2620,7 +2679,7 @@ export type Rise = {
             name: "owner";
             docs: [
               "The wallet address that owns this personal account.",
-              "Only this address can deposit, withdraw, borrow, or claim revenue.",
+              "Only this address can deposit, withdraw, borrow, or claim revenue."
             ];
             type: "publicKey";
           },
@@ -2628,7 +2687,7 @@ export type Rise = {
             name: "market";
             docs: [
               "The Rise market this account belongs to.",
-              "Each user has one PersonalAccount per market they interact with.",
+              "Each user has one PersonalAccount per market they interact with."
             ];
             type: "publicKey";
           },
@@ -2637,7 +2696,7 @@ export type Rise = {
             docs: [
               "Link to the Mayflower personal position PDA.",
               "The Mayflower position tracks collateral amounts and debt for this user.",
-              "Rise delegates collateral management to Mayflower via CPI.",
+              "Rise delegates collateral management to Mayflower via CPI."
             ];
             type: "publicKey";
           },
@@ -2646,7 +2705,7 @@ export type Rise = {
             docs: [
               "Last seen revenue index for proportional revenue distribution.",
               "Stored as serialized Decimal (16 bytes). Used to calculate how much",
-              "revenue has accrued since the user last claimed or updated.",
+              "revenue has accrued since the user last claimed or updated."
             ];
             type: {
               array: ["u8", 16];
@@ -2657,7 +2716,7 @@ export type Rise = {
             docs: [
               "Accumulated revenue waiting to be claimed.",
               "Stored as serialized Decimal (16 bytes). Updated when user interacts",
-              "with the market; claimed via collect_rev().",
+              "with the market; claimed via collect_rev()."
             ];
             type: {
               array: ["u8", 16];
@@ -2674,7 +2733,7 @@ export type Rise = {
             name: "version";
             docs: ["Account version for future upgrades."];
             type: "u8";
-          },
+          }
         ];
       };
     },
@@ -2683,7 +2742,7 @@ export type Rise = {
       docs: [
         "Global configuration account for team fee distribution.",
         "Stores the team wallet address that receives protocol fees.",
-        "Single PDA for the entire program.",
+        "Single PDA for the entire program."
       ];
       type: {
         kind: "struct";
@@ -2699,7 +2758,7 @@ export type Rise = {
             type: {
               array: ["u8", 1];
             };
-          },
+          }
         ];
       };
     },
@@ -2709,7 +2768,7 @@ export type Rise = {
         "Tenant account - the root authority for a collection of market groups.",
         "",
         "The tenant acts as the group_admin for Mayflower market groups, enabling",
-        "Rise to perform privileged operations via PDA signing.",
+        "Rise to perform privileged operations via PDA signing."
       ];
       type: {
         kind: "struct";
@@ -2718,7 +2777,7 @@ export type Rise = {
             name: "admin";
             docs: [
               "The admin pubkey - only this address can perform tenant-level operations",
-              "such as creating market groups or withdrawing team fees",
+              "such as creating market groups or withdrawing team fees"
             ];
             type: "publicKey";
           },
@@ -2726,7 +2785,7 @@ export type Rise = {
             name: "tallyCooldownSeconds";
             docs: [
               "Cooldown period in seconds between governance tally operations.",
-              "Prevents spamming of governance actions. Maximum value: 300 seconds (5 minutes).",
+              "Prevents spamming of governance actions. Maximum value: 300 seconds (5 minutes)."
             ];
             type: "u32";
           },
@@ -2734,7 +2793,7 @@ export type Rise = {
             name: "lastTallyTimestamp";
             docs: [
               "Unix timestamp of the last tally operation.",
-              "Used with tally_cooldown_seconds to enforce rate limiting.",
+              "Used with tally_cooldown_seconds to enforce rate limiting."
             ];
             type: "u64";
           },
@@ -2742,7 +2801,7 @@ export type Rise = {
             name: "seed";
             docs: [
               "Unique seed pubkey used for PDA derivation.",
-              "Allows multiple tenants to exist by using different seeds.",
+              "Allows multiple tenants to exist by using different seeds."
             ];
             type: "publicKey";
           },
@@ -2750,15 +2809,15 @@ export type Rise = {
             name: "bump";
             docs: [
               "PDA bump seed for efficient signer_seeds reconstruction.",
-              "Stored as [u8; 1] for easy slicing in signer_seeds().",
+              "Stored as [u8; 1] for easy slicing in signer_seeds()."
             ];
             type: {
               array: ["u8", 1];
             };
-          },
+          }
         ];
       };
-    },
+    }
   ];
   types: [
     {
@@ -2778,7 +2837,7 @@ export type Rise = {
         "# Why This Matters",
         "Financial calculations require high precision to avoid rounding errors that could",
         "accumulate over thousands of transactions. The 16-byte representation maintains",
-        "the full 128-bit precision of the Decimal type.",
+        "the full 128-bit precision of the Decimal type."
       ];
       type: {
         kind: "struct";
@@ -2787,12 +2846,12 @@ export type Rise = {
             name: "val";
             docs: [
               "Serialized Decimal value as a 16-byte array.",
-              "Used for storing fixed-point decimal numbers in Solana accounts.",
+              "Used for storing fixed-point decimal numbers in Solana accounts."
             ];
             type: {
               array: ["u8", 16];
             };
-          },
+          }
         ];
       };
     },
@@ -2819,7 +2878,7 @@ export type Rise = {
         "- `m1`: Shoulder slope (typically steeper)",
         "- `m2`: Tail slope (typically gentler)",
         "- `x2`: Transition point from shoulder to tail",
-        "- `b2`: Y-intercept adjustment for tail segment continuity",
+        "- `b2`: Y-intercept adjustment for tail segment continuity"
       ];
       type: {
         kind: "struct";
@@ -2829,7 +2888,7 @@ export type Rise = {
             docs: [
               "Minimum price floor for the token (serialized Decimal).",
               "Price cannot fall below this value regardless of supply.",
-              "DIMENSIONLESS - no scaling",
+              "DIMENSIONLESS - no scaling"
             ];
             type: {
               array: ["u8", 16];
@@ -2840,7 +2899,7 @@ export type Rise = {
             docs: [
               "Slope of the shoulder segment (m1, serialized Decimal).",
               "Steeper initial slope providing higher prices at low supply.",
-              "SCALED by market meta 2^token_unit_scale",
+              "SCALED by market meta 2^token_unit_scale"
             ];
             type: {
               array: ["u8", 16];
@@ -2851,7 +2910,7 @@ export type Rise = {
             docs: [
               "Slope of the main segment (m2, serialized Decimal).",
               "Gentler slope for bulk of the curve after shoulder point.",
-              "SCALED by market meta 2^token_unit_scale",
+              "SCALED by market meta 2^token_unit_scale"
             ];
             type: {
               array: ["u8", 16];
@@ -2862,7 +2921,7 @@ export type Rise = {
             docs: [
               "X-coordinate where shoulder transitions to main slope (supply units).",
               "Defines the breakpoint between steep and gentle price curves.",
-              "NOT SCALED - stored in raw token units",
+              "NOT SCALED - stored in raw token units"
             ];
             type: "u64";
           },
@@ -2871,12 +2930,12 @@ export type Rise = {
             docs: [
               "Y-intercept of the main segment (b2, serialized Decimal).",
               "Determines vertical offset of the main price curve.",
-              "DIMENSIONLESS - no scaling",
+              "DIMENSIONLESS - no scaling"
             ];
             type: {
               array: ["u8", 16];
             };
-          },
+          }
         ];
       };
     },
@@ -2906,7 +2965,7 @@ export type Rise = {
         "# Revenue Distribution",
         "Fees collected from market operations are tracked separately for:",
         "- Market group admin (receives majority of fees)",
-        "- Tenant platform (receives platform fee percentage)",
+        "- Tenant platform (receives platform fee percentage)"
       ];
       type: {
         kind: "struct";
@@ -2915,7 +2974,7 @@ export type Rise = {
             name: "tokenSupply";
             docs: [
               "Total supply of tokens minted by this market.",
-              "Increases when users buy tokens, decreases when tokens are sold back.",
+              "Increases when users buy tokens, decreases when tokens are sold back."
             ];
             type: "u64";
           },
@@ -2923,7 +2982,7 @@ export type Rise = {
             name: "totalCashLiquidity";
             docs: [
               "Total amount of main token (cash) held in the market's liquidity vault.",
-              "Represents available liquidity for sells and borrows.",
+              "Represents available liquidity for sells and borrows."
             ];
             type: "u64";
           },
@@ -2931,7 +2990,7 @@ export type Rise = {
             name: "totalDebt";
             docs: [
               "Total outstanding debt across all borrowers in this market.",
-              "Sum of all individual borrow positions.",
+              "Sum of all individual borrow positions."
             ];
             type: "u64";
           },
@@ -2939,7 +2998,7 @@ export type Rise = {
             name: "totalCollateral";
             docs: [
               "Total token collateral deposited across all positions in this market.",
-              "Sum of all individual collateral deposits.",
+              "Sum of all individual collateral deposits."
             ];
             type: "u64";
           },
@@ -2947,7 +3006,7 @@ export type Rise = {
             name: "cumulativeRevenueMarket";
             docs: [
               "Cumulative revenue earned by the market group (in main token units).",
-              "Tracks total fees collected for the market group admin.",
+              "Tracks total fees collected for the market group admin."
             ];
             type: "u128";
           },
@@ -2955,10 +3014,10 @@ export type Rise = {
             name: "cumulativeRevenueTenant";
             docs: [
               "Cumulative revenue earned by the tenant (in main token units).",
-              "Tracks platform fees collected for the tenant.",
+              "Tracks platform fees collected for the tenant."
             ];
             type: "u128";
-          },
+          }
         ];
       };
     },
@@ -3035,10 +3094,10 @@ export type Rise = {
           {
             name: "creatorFeePercent";
             docs: [
-              "Creator fee percentage (0-10). Floor gets (25 - creator_fee_percent)%.",
+              "Creator fee percentage (0-10). Floor gets (25 - creator_fee_percent)%."
             ];
             type: "u8";
-          },
+          }
         ];
       };
     },
@@ -3058,7 +3117,7 @@ export type Rise = {
           {
             name: "uri";
             type: "string";
-          },
+          }
         ];
       };
     },
@@ -3072,7 +3131,7 @@ export type Rise = {
             type: {
               defined: "GovInitArgs";
             };
-          },
+          }
         ];
       };
     },
@@ -3084,7 +3143,7 @@ export type Rise = {
           {
             name: "tallyCooldownSeconds";
             type: "u32";
-          },
+          }
         ];
       };
     },
@@ -3097,19 +3156,43 @@ export type Rise = {
             name: "increaseRatioMicroBasisPoints";
             docs: [
               "Amount to increase the floor by (in micro basis points)",
-              "e.g. 10_000 = 0.1% increase, 100_000 = 1% increase",
+              "e.g. 10_000 = 0.1% increase, 100_000 = 1% increase"
             ];
             type: "u32";
           },
           {
             name: "maxNewFloor";
             docs: [
-              "Maximum new floor price allowed (safety cap to prevent overshoots)",
+              "Maximum new floor price allowed (safety cap to prevent overshoots)"
             ];
             type: {
               defined: "may_cpi::DecimalSerialized";
             };
+          }
+        ];
+      };
+    },
+    {
+      name: "UpdateMarketArgs";
+      type: {
+        kind: "struct";
+        fields: [
+          {
+            name: "metadata";
+            type: {
+              option: {
+                defined: "TokenMetadata";
+              };
+            };
           },
+          {
+            name: "newCreator";
+            type: "publicKey";
+          },
+          {
+            name: "creatorFeePercent";
+            type: "u8";
+          }
         ];
       };
     },
@@ -3120,7 +3203,7 @@ export type Rise = {
         "",
         "rust_decimal::Decimal is 16 bytes and can be directly serialized.",
         "This wrapper makes it compatible with Anchor's serialization traits.",
-        "Used for storing precise decimal values like revenue indices and fee ratios.",
+        "Used for storing precise decimal values like revenue indices and fee ratios."
       ];
       type: {
         kind: "struct";
@@ -3130,7 +3213,7 @@ export type Rise = {
             type: {
               array: ["u8", 16];
             };
-          },
+          }
         ];
       };
     },
@@ -3140,7 +3223,7 @@ export type Rise = {
         "A governance parameter with value and bounds.",
         "",
         "Stores the current value and min/max bounds for a governance parameter.",
-        "The voting fields (total_votes_up/down, step) are reserved for future use.",
+        "The voting fields (total_votes_up/down, step) are reserved for future use."
       ];
       type: {
         kind: "struct";
@@ -3174,7 +3257,7 @@ export type Rise = {
             name: "totalVotesDown";
             docs: ["Total votes for decreasing (reserved for voting)"];
             type: "u64";
-          },
+          }
         ];
       };
     },
@@ -3199,7 +3282,7 @@ export type Rise = {
           {
             name: "stepMicroBasisPoints";
             type: "u32";
-          },
+          }
         ];
       };
     },
@@ -3209,7 +3292,7 @@ export type Rise = {
         "Governance parameters for a Rise market.",
         "",
         "These parameters control market behavior like fee rates and floor raise cooldowns.",
-        "Set at market creation via `init_market`.",
+        "Set at market creation via `init_market`."
       ];
       type: {
         kind: "struct";
@@ -3267,7 +3350,7 @@ export type Rise = {
             name: "priceCurveSensitivityChangeRateMicroBasisPoints";
             docs: ["Price curve sensitivity change rate (not currently used)"];
             type: "u32";
-          },
+          }
         ];
       };
     },
@@ -3316,14 +3399,14 @@ export type Rise = {
           {
             name: "priceCurveSensitivityChangeRateMicroBasisPoints";
             type: "u32";
-          },
+          }
         ];
       };
     },
     {
       name: "SimpleGlobalBallotItem";
       docs: [
-        "Simple ballot item for price curve sensitivity (voting not implemented).",
+        "Simple ballot item for price curve sensitivity (voting not implemented)."
       ];
       type: {
         kind: "struct";
@@ -3335,14 +3418,14 @@ export type Rise = {
           {
             name: "totalVotesDown";
             type: "u64";
-          },
+          }
         ];
       };
     },
     {
       name: "LevelRevCalculator";
       docs: [
-        "A sigmoid curve that starts at the y-intercept and asymptotes to the max_asymptote",
+        "A sigmoid curve that starts at the y-intercept and asymptotes to the max_asymptote"
       ];
       type: {
         kind: "struct";
@@ -3361,7 +3444,7 @@ export type Rise = {
             name: "k";
             docs: ["sensitivity of the curve"];
             type: "f64";
-          },
+          }
         ];
       };
     },
@@ -3384,10 +3467,10 @@ export type Rise = {
             name: "team";
             docs: ["Revenue amount for team (75%)"];
             type: "u64";
-          },
+          }
         ];
       };
-    },
+    }
   ];
   events: [
     {
@@ -3414,7 +3497,7 @@ export type Rise = {
             defined: "RevenueSplits";
           };
           index: false;
-        },
+        }
       ];
     },
     {
@@ -3504,7 +3587,7 @@ export type Rise = {
           name: "tokenDecimals";
           type: "u8";
           index: false;
-        },
+        }
       ];
     },
     {
@@ -3529,7 +3612,7 @@ export type Rise = {
           name: "totalWithdrawn";
           type: "u64";
           index: false;
-        },
+        }
       ];
     },
     {
@@ -3549,7 +3632,7 @@ export type Rise = {
           name: "market";
           type: "publicKey";
           index: false;
-        },
+        }
       ];
     },
     {
@@ -3579,7 +3662,7 @@ export type Rise = {
           name: "borrowFeeMicroBasisPoints";
           type: "u32";
           index: false;
-        },
+        }
       ];
     },
     {
@@ -3594,7 +3677,7 @@ export type Rise = {
           name: "market";
           type: "publicKey";
           index: false;
-        },
+        }
       ];
     },
     {
@@ -3614,7 +3697,7 @@ export type Rise = {
           name: "tallyCooldownSeconds";
           type: "u32";
           index: false;
-        },
+        }
       ];
     },
     {
@@ -3651,7 +3734,7 @@ export type Rise = {
             defined: "RevenueSplits";
           };
           index: false;
-        },
+        }
       ];
     },
     {
@@ -3693,7 +3776,7 @@ export type Rise = {
             defined: "RevenueSplits";
           };
           index: false;
-        },
+        }
       ];
     },
     {
@@ -3725,7 +3808,7 @@ export type Rise = {
           name: "timestamp";
           type: "u64";
           index: false;
-        },
+        }
       ];
     },
     {
@@ -3750,7 +3833,7 @@ export type Rise = {
           name: "timestamp";
           type: "u64";
           index: false;
-        },
+        }
       ];
     },
     {
@@ -3770,7 +3853,7 @@ export type Rise = {
           name: "market";
           type: "publicKey";
           index: false;
-        },
+        }
       ];
     },
     {
@@ -3787,7 +3870,7 @@ export type Rise = {
             defined: "RevenueSplits";
           };
           index: false;
-        },
+        }
       ];
     },
     {
@@ -3872,7 +3955,7 @@ export type Rise = {
           name: "tokenDecimals";
           type: "u8";
           index: false;
-        },
+        }
       ];
     },
     {
@@ -3887,7 +3970,7 @@ export type Rise = {
           name: "newTeamWallet";
           type: "publicKey";
           index: false;
-        },
+        }
       ];
     },
     {
@@ -3907,7 +3990,7 @@ export type Rise = {
           name: "newAdmin";
           type: "publicKey";
           index: false;
-        },
+        }
       ];
     },
     {
@@ -3927,9 +4010,9 @@ export type Rise = {
           name: "market";
           type: "publicKey";
           index: false;
-        },
+        }
       ];
-    },
+    }
   ];
   errors: [
     {
@@ -4040,8 +4123,8 @@ export type Rise = {
     {
       code: 6021;
       name: "InvalidCreatorFeePercent";
-      msg: "Creator fee percent must be between 0 and 10";
-    },
+      msg: "Creator fee percent must be between 0 and 25";
+    }
   ];
 };
 
@@ -6204,6 +6287,65 @@ export const IDL: Rise = {
       args: [],
     },
     {
+      name: "updateMarket",
+      docs: [
+        "Update market metadata, creator wallet, and creator fee percentage.",
+        "",
+        "Admin-only instruction for CTO (Community Takeover) scenarios.",
+        "Updates Metaplex token metadata and Rise market state.",
+        "",
+        "# Parameters",
+        "- `args.metadata`: New token metadata (name, symbol, uri).",
+        "- `args.new_creator`: New creator wallet address.",
+        "- `args.creator_fee_percent`: New creator fee percentage (0-25).",
+        "",
+        "# Accounts",
+        "- `admin`: Tenant admin (signer).",
+        "- `tenant`: Rise tenant PDA.",
+        "- `market`: Rise market to update (PDA signs as Metaplex update_authority).",
+        "- `metadata`: Metaplex metadata PDA.",
+        "- `token_metadata_program`: Metaplex program.",
+        "",
+        "# CPI Calls",
+        "- `mpl_token_metadata::update_metadata_account_v2`: Updates token metadata.",
+      ],
+      accounts: [
+        {
+          name: "admin",
+          isMut: true,
+          isSigner: true,
+        },
+        {
+          name: "tenant",
+          isMut: false,
+          isSigner: false,
+        },
+        {
+          name: "market",
+          isMut: true,
+          isSigner: false,
+        },
+        {
+          name: "metadata",
+          isMut: true,
+          isSigner: false,
+        },
+        {
+          name: "tokenMetadataProgram",
+          isMut: false,
+          isSigner: false,
+        },
+      ],
+      args: [
+        {
+          name: "args",
+          type: {
+            defined: "UpdateMarketArgs",
+          },
+        },
+      ],
+    },
+    {
       name: "leverageSell",
       docs: [
         "Leveraged sell: withdraw + sell + repay in a single atomic transaction.",
@@ -6633,7 +6775,7 @@ export const IDL: Rise = {
           {
             name: "creatorRevPercent",
             docs: [
-              "Creator's revenue share percentage (0-10).",
+              "Creator's revenue share percentage (0-25).",
               "Floor gets (25 - creator_rev_percent)%, team gets 75%.",
             ],
             type: "u8",
@@ -7156,6 +7298,30 @@ export const IDL: Rise = {
             type: {
               defined: "may_cpi::DecimalSerialized",
             },
+          },
+        ],
+      },
+    },
+    {
+      name: "UpdateMarketArgs",
+      type: {
+        kind: "struct",
+        fields: [
+          {
+            name: "metadata",
+            type: {
+              option: {
+                defined: "TokenMetadata",
+              },
+            },
+          },
+          {
+            name: "newCreator",
+            type: "publicKey",
+          },
+          {
+            name: "creatorFeePercent",
+            type: "u8",
           },
         ],
       },
@@ -8087,7 +8253,7 @@ export const IDL: Rise = {
     {
       code: 6021,
       name: "InvalidCreatorFeePercent",
-      msg: "Creator fee percent must be between 0 and 10",
+      msg: "Creator fee percent must be between 0 and 25",
     },
   ],
 };

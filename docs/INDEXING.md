@@ -1,6 +1,6 @@
 # Indexing & Events
 
-The Rise program emits events on every buy, sell, and borrow transaction. You can parse these from on-chain transaction logs to build your own indexer.
+The Rise program emits events on every buy, sell, borrow, repay, deposit, and withdraw transaction. You can parse these from on-chain transaction logs to build your own indexer.
 
 ---
 
@@ -55,10 +55,40 @@ Emitted on borrow transactions.
 
 | Field | Type | Description |
 |-------|------|-------------|
-| `amount` | u64 | Amount borrowed (RAW) |
+| `amount` | u64 | Amount borrowed (RAW) — gross, before the on-chain 3% borrow fee |
 | `borrower` | PublicKey | Borrower's wallet address |
 | `market` | PublicKey | Rise market address |
 | `revSplit` | RevenueSplits | Fee breakdown |
+
+### RepayEvent
+
+Emitted on repay transactions.
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `amount` | u64 | Amount repaid (RAW) |
+| `repayer` | PublicKey | Repayer's wallet address |
+| `market` | PublicKey | Rise market address |
+
+### DepositEvent
+
+Emitted when a user deposits tokens as collateral into their personal position.
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `amount` | u64 | Amount deposited (RAW) |
+| `depositor` | PublicKey | Depositor's wallet address |
+| `market` | PublicKey | Rise market address |
+
+### WithdrawEvent
+
+Emitted when a user withdraws tokens from their personal position.
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `amount` | u64 | Amount withdrawn (RAW) |
+| `withdrawer` | PublicKey | Withdrawer's wallet address |
+| `market` | PublicKey | Rise market address |
 
 ### RevenueSplits
 
@@ -90,6 +120,21 @@ function eventDiscriminator(eventName: string): Buffer {
 const BUY_DISC = eventDiscriminator("BuyWithExactCashInEvent");
 const SELL_DISC = eventDiscriminator("SellWithExactTokenInEvent");
 const BORROW_DISC = eventDiscriminator("BorrowEvent");
+const REPAY_DISC = eventDiscriminator("RepayEvent");
+const DEPOSIT_DISC = eventDiscriminator("DepositEvent");
+const WITHDRAW_DISC = eventDiscriminator("WithdrawEvent");
+```
+
+`RepayEvent`, `DepositEvent`, and `WithdrawEvent` share the same on-the-wire layout: `amount(u64) + actor(Pubkey) + market(Pubkey)` (48 bytes after the 8-byte discriminator). Only the field name and discriminator differ:
+
+```typescript
+function parseSimpleAmountEvent(data: Buffer, expectedDisc: Buffer) {
+  if (!data.slice(0, 8).equals(expectedDisc)) return null;
+  const amount = data.readBigUInt64LE(8);
+  const actor = new PublicKey(data.slice(16, 48));
+  const market = new PublicKey(data.slice(48, 80));
+  return { amount, actor, market };
+}
 ```
 
 ### Extracting Events
@@ -283,6 +328,7 @@ With these events you can build:
 - **Floor price history** — the floor value is included in every event
 - **Volume metrics** — sum `cashIn`/`cashOut` per time period
 - **Fee analytics** — track revenue splits per market
+- **Borrow/lending activity** — track open debt, repayments, and collateral movement via `BorrowEvent`, `RepayEvent`, `DepositEvent`, and `WithdrawEvent`
 
 ---
 
