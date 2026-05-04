@@ -1,6 +1,8 @@
 # Indexing & Events
 
-The Rise program emits events on every buy, sell, borrow, repay, deposit, and withdraw transaction. You can parse these from on-chain transaction logs to build your own indexer.
+The Rise program emits events on every buy, sell, borrow, repay, deposit, and withdraw transaction. You can parse these from on-chain transactions to build your own indexer.
+
+> **Note — events are emitted via Anchor `emit_cpi!`.** They are no longer in `Program data:` log lines. Instead each event payload is the data of an **inner self-CPI instruction** to the Rise program (one per emitted event), and is prefixed with the 8-byte tag `0xe4 0x45 0xa5 0x2e 0x51 0xcb 0x9a 0x1d` (`sha256("anchor:event")[..8]`) followed by the usual 8-byte event discriminator. To extract events, walk the transaction's `innerInstructions`, keep instructions whose `programIdIndex` points at the Rise program, strip the leading 8-byte CPI tag, and parse the remainder with the discriminators below.
 
 Borrow, repay, deposit, and withdraw all emit **post-op snapshots** of the personal position and market aggregates rather than deltas. The actor's wallet (and the rise market) are not in the event payload — derive them from the enclosing instruction's accounts.
 
@@ -29,6 +31,8 @@ Emitted on every buy transaction.
 | `mintToken` | PublicKey | Token mint address |
 | `mintMain` | PublicKey | Collateral mint address (SOL or USDC) |
 | `tokenDecimals` | u8 | Token decimal places |
+| `totalMainTokenInLiquidityPool` | u64 | Base-currency balance in the Mayflower liquidity pool after the trade (TVL proxy) |
+| `totalMarketDebt` | u64 | Sum of debt across all positions on the Mayflower market after the trade |
 
 ### SellWithExactTokenInEvent
 
@@ -50,6 +54,8 @@ Emitted on every sell transaction.
 | `mintToken` | PublicKey | Token mint address |
 | `mintMain` | PublicKey | Collateral mint address |
 | `tokenDecimals` | u8 | Token decimal places |
+| `totalMainTokenInLiquidityPool` | u64 | Base-currency balance in the Mayflower liquidity pool after the trade (TVL proxy) |
+| `totalMarketDebt` | u64 | Sum of debt across all positions on the Mayflower market after the trade |
 
 ### BorrowEvent
 

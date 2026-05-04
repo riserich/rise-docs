@@ -663,6 +663,16 @@ export type Rise = {
             "Derived per mint_main so all markets with same base currency share one escrow.",
           ];
         },
+        {
+          name: "eventAuthority";
+          isMut: false;
+          isSigner: false;
+        },
+        {
+          name: "program";
+          isMut: false;
+          isSigner: false;
+        },
       ];
       args: [
         {
@@ -799,6 +809,16 @@ export type Rise = {
           isSigner: false;
           docs: ["Mayflower log account for event emission"];
         },
+        {
+          name: "eventAuthority";
+          isMut: false;
+          isSigner: false;
+        },
+        {
+          name: "program";
+          isMut: false;
+          isSigner: false;
+        },
       ];
       args: [
         {
@@ -904,6 +924,16 @@ export type Rise = {
           isMut: true;
           isSigner: false;
           docs: ["Mayflower log account for event emission"];
+        },
+        {
+          name: "eventAuthority";
+          isMut: false;
+          isSigner: false;
+        },
+        {
+          name: "program";
+          isMut: false;
+          isSigner: false;
         },
       ];
       args: [
@@ -1096,6 +1126,16 @@ export type Rise = {
             "Derived per mint_main so all markets with same base currency share one escrow.",
           ];
         },
+        {
+          name: "eventAuthority";
+          isMut: false;
+          isSigner: false;
+        },
+        {
+          name: "program";
+          isMut: false;
+          isSigner: false;
+        },
       ];
       args: [
         {
@@ -1258,6 +1298,16 @@ export type Rise = {
           isSigner: false;
           docs: ["Team escrow - receives team's share of borrow fees"];
         },
+        {
+          name: "eventAuthority";
+          isMut: false;
+          isSigner: false;
+        },
+        {
+          name: "program";
+          isMut: false;
+          isSigner: false;
+        },
       ];
       args: [
         {
@@ -1350,6 +1400,16 @@ export type Rise = {
           isMut: true;
           isSigner: false;
           docs: ["Mayflower log account for event emission"];
+        },
+        {
+          name: "eventAuthority";
+          isMut: false;
+          isSigner: false;
+        },
+        {
+          name: "program";
+          isMut: false;
+          isSigner: false;
         },
       ];
       args: [
@@ -3601,6 +3661,16 @@ export type Rise = {
           type: "u8";
           index: false;
         },
+        {
+          name: "totalMainTokenInLiquidityPool";
+          type: "u64";
+          index: false;
+        },
+        {
+          name: "totalMarketDebt";
+          type: "u64";
+          index: false;
+        },
       ];
     },
     {
@@ -3992,6 +4062,16 @@ export type Rise = {
         {
           name: "tokenDecimals";
           type: "u8";
+          index: false;
+        },
+        {
+          name: "totalMainTokenInLiquidityPool";
+          type: "u64";
+          index: false;
+        },
+        {
+          name: "totalMarketDebt";
+          type: "u64";
           index: false;
         },
       ];
@@ -4811,6 +4891,16 @@ export const IDL: Rise = {
             "Derived per mint_main so all markets with same base currency share one escrow.",
           ],
         },
+        {
+          name: "eventAuthority",
+          isMut: false,
+          isSigner: false,
+        },
+        {
+          name: "program",
+          isMut: false,
+          isSigner: false,
+        },
       ],
       args: [
         {
@@ -4947,6 +5037,16 @@ export const IDL: Rise = {
           isSigner: false,
           docs: ["Mayflower log account for event emission"],
         },
+        {
+          name: "eventAuthority",
+          isMut: false,
+          isSigner: false,
+        },
+        {
+          name: "program",
+          isMut: false,
+          isSigner: false,
+        },
       ],
       args: [
         {
@@ -5052,6 +5152,16 @@ export const IDL: Rise = {
           isMut: true,
           isSigner: false,
           docs: ["Mayflower log account for event emission"],
+        },
+        {
+          name: "eventAuthority",
+          isMut: false,
+          isSigner: false,
+        },
+        {
+          name: "program",
+          isMut: false,
+          isSigner: false,
         },
       ],
       args: [
@@ -5244,6 +5354,16 @@ export const IDL: Rise = {
             "Derived per mint_main so all markets with same base currency share one escrow.",
           ],
         },
+        {
+          name: "eventAuthority",
+          isMut: false,
+          isSigner: false,
+        },
+        {
+          name: "program",
+          isMut: false,
+          isSigner: false,
+        },
       ],
       args: [
         {
@@ -5406,6 +5526,16 @@ export const IDL: Rise = {
           isSigner: false,
           docs: ["Team escrow - receives team's share of borrow fees"],
         },
+        {
+          name: "eventAuthority",
+          isMut: false,
+          isSigner: false,
+        },
+        {
+          name: "program",
+          isMut: false,
+          isSigner: false,
+        },
       ],
       args: [
         {
@@ -5498,6 +5628,16 @@ export const IDL: Rise = {
           isMut: true,
           isSigner: false,
           docs: ["Mayflower log account for event emission"],
+        },
+        {
+          name: "eventAuthority",
+          isMut: false,
+          isSigner: false,
+        },
+        {
+          name: "program",
+          isMut: false,
+          isSigner: false,
         },
       ],
       args: [
@@ -7749,6 +7889,16 @@ export const IDL: Rise = {
           type: "u8",
           index: false,
         },
+        {
+          name: "totalMainTokenInLiquidityPool",
+          type: "u64",
+          index: false,
+        },
+        {
+          name: "totalMarketDebt",
+          type: "u64",
+          index: false,
+        },
       ],
     },
     {
@@ -8140,6 +8290,16 @@ export const IDL: Rise = {
         {
           name: "tokenDecimals",
           type: "u8",
+          index: false,
+        },
+        {
+          name: "totalMainTokenInLiquidityPool",
+          type: "u64",
+          index: false,
+        },
+        {
+          name: "totalMarketDebt",
+          type: "u64",
           index: false,
         },
       ],
