@@ -664,6 +664,16 @@
             "Team escrow PDA - receives protocol team's share of buy fees.",
             "Derived per mint_main so all markets with same base currency share one escrow."
           ]
+        },
+        {
+          "name": "eventAuthority",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "program",
+          "isMut": false,
+          "isSigner": false
         }
       ],
       "args": [
@@ -800,6 +810,16 @@
           "isMut": true,
           "isSigner": false,
           "docs": ["Mayflower log account for event emission"]
+        },
+        {
+          "name": "eventAuthority",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "program",
+          "isMut": false,
+          "isSigner": false
         }
       ],
       "args": [
@@ -906,6 +926,16 @@
           "isMut": true,
           "isSigner": false,
           "docs": ["Mayflower log account for event emission"]
+        },
+        {
+          "name": "eventAuthority",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "program",
+          "isMut": false,
+          "isSigner": false
         }
       ],
       "args": [
@@ -1099,6 +1129,16 @@
             "Team escrow PDA - receives protocol team's share of sell fees.",
             "Derived per mint_main so all markets with same base currency share one escrow."
           ]
+        },
+        {
+          "name": "eventAuthority",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "program",
+          "isMut": false,
+          "isSigner": false
         }
       ],
       "args": [
@@ -1261,6 +1301,16 @@
           "isMut": true,
           "isSigner": false,
           "docs": ["Team escrow - receives team's share of borrow fees"]
+        },
+        {
+          "name": "eventAuthority",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "program",
+          "isMut": false,
+          "isSigner": false
         }
       ],
       "args": [
@@ -1354,6 +1404,16 @@
           "isMut": true,
           "isSigner": false,
           "docs": ["Mayflower log account for event emission"]
+        },
+        {
+          "name": "eventAuthority",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "program",
+          "isMut": false,
+          "isSigner": false
         }
       ],
       "args": [
@@ -3620,6 +3680,16 @@
           "name": "tokenDecimals",
           "type": "u8",
           "index": false
+        },
+        {
+          "name": "totalMainTokenInLiquidityPool",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "totalMarketDebt",
+          "type": "u64",
+          "index": false
         }
       ]
     },
@@ -4012,6 +4082,16 @@
         {
           "name": "tokenDecimals",
           "type": "u8",
+          "index": false
+        },
+        {
+          "name": "totalMainTokenInLiquidityPool",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "totalMarketDebt",
+          "type": "u64",
           "index": false
         }
       ]
