@@ -4,7 +4,9 @@
   "instructions": [
     {
       "name": "version",
-      "docs": ["Returns the program version."],
+      "docs": [
+        "Returns the program version."
+      ],
       "accounts": [],
       "args": [],
       "returns": "u32"
@@ -60,7 +62,9 @@
           "name": "systemProgram",
           "isMut": false,
           "isSigner": false,
-          "docs": ["Required for account creation."]
+          "docs": [
+            "Required for account creation."
+          ]
         },
         {
           "name": "root",
@@ -108,7 +112,9 @@
           "name": "payer",
           "isMut": true,
           "isSigner": true,
-          "docs": ["Pays for Mayflower market group account creation."]
+          "docs": [
+            "Pays for Mayflower market group account creation."
+          ]
         },
         {
           "name": "seed",
@@ -160,7 +166,9 @@
           "name": "systemProgram",
           "isMut": false,
           "isSigner": false,
-          "docs": ["Required for Mayflower account creation."]
+          "docs": [
+            "Required for Mayflower account creation."
+          ]
         },
         {
           "name": "mayflowerProgram",
@@ -327,7 +335,9 @@
           "name": "mayflowerTenant",
           "isMut": false,
           "isSigner": false,
-          "docs": ["Mayflower tenant - parent entity on Mayflower side."]
+          "docs": [
+            "Mayflower tenant - parent entity on Mayflower side."
+          ]
         },
         {
           "name": "cashEscrow",
@@ -351,25 +361,33 @@
           "name": "systemProgram",
           "isMut": false,
           "isSigner": false,
-          "docs": ["Required for account creation."]
+          "docs": [
+            "Required for account creation."
+          ]
         },
         {
           "name": "mayflowerProgram",
           "isMut": false,
           "isSigner": false,
-          "docs": ["Mayflower program for CPI (validated in handler)."]
+          "docs": [
+            "Mayflower program for CPI (validated in handler)."
+          ]
         },
         {
           "name": "tokenProgram",
           "isMut": false,
           "isSigner": false,
-          "docs": ["Token program for market token operations."]
+          "docs": [
+            "Token program for market token operations."
+          ]
         },
         {
           "name": "tokenProgramMain",
           "isMut": false,
           "isSigner": false,
-          "docs": ["Token program for base currency (supports Token-2022)."]
+          "docs": [
+            "Token program for base currency (supports Token-2022)."
+          ]
         }
       ],
       "args": [
@@ -410,7 +428,9 @@
           "name": "owner",
           "isMut": true,
           "isSigner": true,
-          "docs": ["Owner of the personal position - pays for account creation"]
+          "docs": [
+            "Owner of the personal position - pays for account creation"
+          ]
         },
         {
           "name": "market",
@@ -533,13 +553,17 @@
           "name": "mayTenant",
           "isMut": false,
           "isSigner": false,
-          "docs": ["Mayflower tenant - parent entity on Mayflower side."]
+          "docs": [
+            "Mayflower tenant - parent entity on Mayflower side."
+          ]
         },
         {
           "name": "mayMarketGroup",
           "isMut": false,
           "isSigner": false,
-          "docs": ["Mayflower market group - stores fee configuration."]
+          "docs": [
+            "Mayflower market group - stores fee configuration."
+          ]
         },
         {
           "name": "marketMeta",
@@ -571,7 +595,9 @@
           "name": "mintToken",
           "isMut": true,
           "isSigner": false,
-          "docs": ["Market token mint - tokens will be minted to buyer."]
+          "docs": [
+            "Market token mint - tokens will be minted to buyer."
+          ]
         },
         {
           "name": "mintMain",
@@ -621,19 +647,25 @@
           "name": "revEscrowTenant",
           "isMut": true,
           "isSigner": false,
-          "docs": ["Mayflower tenant revenue escrow."]
+          "docs": [
+            "Mayflower tenant revenue escrow."
+          ]
         },
         {
           "name": "tokenProgramMain",
           "isMut": false,
           "isSigner": false,
-          "docs": ["Token program for base currency transfers."]
+          "docs": [
+            "Token program for base currency transfers."
+          ]
         },
         {
           "name": "tokenProgram",
           "isMut": false,
           "isSigner": false,
-          "docs": ["Token program for market token minting."]
+          "docs": [
+            "Token program for market token minting."
+          ]
         },
         {
           "name": "mayflowerProgram",
@@ -648,13 +680,17 @@
           "name": "mayLogAccount",
           "isMut": true,
           "isSigner": false,
-          "docs": ["Mayflower log account for event emission."]
+          "docs": [
+            "Mayflower log account for event emission."
+          ]
         },
         {
           "name": "creatorEscrow",
           "isMut": true,
           "isSigner": false,
-          "docs": ["Creator escrow PDA - receives creator's share of buy fees."]
+          "docs": [
+            "Creator escrow PDA - receives creator's share of buy fees."
+          ]
         },
         {
           "name": "teamEscrow",
@@ -741,31 +777,41 @@
           "name": "owner",
           "isMut": true,
           "isSigner": true,
-          "docs": ["Depositor - must own the personal account"]
+          "docs": [
+            "Depositor - must own the personal account"
+          ]
         },
         {
           "name": "personalAccount",
           "isMut": true,
           "isSigner": false,
-          "docs": ["Personal account tracking user's collateral position"]
+          "docs": [
+            "Personal account tracking user's collateral position"
+          ]
         },
         {
           "name": "market",
           "isMut": true,
           "isSigner": false,
-          "docs": ["Rise market for this deposit"]
+          "docs": [
+            "Rise market for this deposit"
+          ]
         },
         {
           "name": "marketMeta",
           "isMut": false,
           "isSigner": false,
-          "docs": ["Mayflower market meta - stores market configuration"]
+          "docs": [
+            "Mayflower market meta - stores market configuration"
+          ]
         },
         {
           "name": "mayMarket",
           "isMut": true,
           "isSigner": false,
-          "docs": ["Mayflower market account"]
+          "docs": [
+            "Mayflower market account"
+          ]
         },
         {
           "name": "corePersonalPosition",
@@ -779,37 +825,49 @@
           "name": "mayEscrow",
           "isMut": true,
           "isSigner": false,
-          "docs": ["Mayflower escrow - receives deposited tokens"]
+          "docs": [
+            "Mayflower escrow - receives deposited tokens"
+          ]
         },
         {
           "name": "mintToken",
           "isMut": true,
           "isSigner": false,
-          "docs": ["Market token mint (collateral token)"]
+          "docs": [
+            "Market token mint (collateral token)"
+          ]
         },
         {
           "name": "tokenSrc",
           "isMut": true,
           "isSigner": false,
-          "docs": ["Source of tokens to deposit (user's token account)"]
+          "docs": [
+            "Source of tokens to deposit (user's token account)"
+          ]
         },
         {
           "name": "tokenProgram",
           "isMut": false,
           "isSigner": false,
-          "docs": ["Token program for market token transfers"]
+          "docs": [
+            "Token program for market token transfers"
+          ]
         },
         {
           "name": "mayflowerProgram",
           "isMut": false,
           "isSigner": false,
-          "docs": ["Mayflower program for CPI"]
+          "docs": [
+            "Mayflower program for CPI"
+          ]
         },
         {
           "name": "mayLogAccount",
           "isMut": true,
           "isSigner": false,
-          "docs": ["Mayflower log account for event emission"]
+          "docs": [
+            "Mayflower log account for event emission"
+          ]
         },
         {
           "name": "eventAuthority",
@@ -857,31 +915,41 @@
           "name": "owner",
           "isMut": true,
           "isSigner": true,
-          "docs": ["Withdrawer - must own the personal account"]
+          "docs": [
+            "Withdrawer - must own the personal account"
+          ]
         },
         {
           "name": "personalAccount",
           "isMut": true,
           "isSigner": false,
-          "docs": ["Personal account tracking user's collateral position"]
+          "docs": [
+            "Personal account tracking user's collateral position"
+          ]
         },
         {
           "name": "market",
           "isMut": true,
           "isSigner": false,
-          "docs": ["Rise market for this withdrawal"]
+          "docs": [
+            "Rise market for this withdrawal"
+          ]
         },
         {
           "name": "marketMeta",
           "isMut": false,
           "isSigner": false,
-          "docs": ["Mayflower market meta - stores market configuration"]
+          "docs": [
+            "Mayflower market meta - stores market configuration"
+          ]
         },
         {
           "name": "mayMarket",
           "isMut": true,
           "isSigner": false,
-          "docs": ["Mayflower market account"]
+          "docs": [
+            "Mayflower market account"
+          ]
         },
         {
           "name": "corePersonalPosition",
@@ -895,37 +963,49 @@
           "name": "mayEscrow",
           "isMut": true,
           "isSigner": false,
-          "docs": ["Mayflower escrow - source of withdrawn tokens"]
+          "docs": [
+            "Mayflower escrow - source of withdrawn tokens"
+          ]
         },
         {
           "name": "mintToken",
           "isMut": true,
           "isSigner": false,
-          "docs": ["Market token mint (collateral token)"]
+          "docs": [
+            "Market token mint (collateral token)"
+          ]
         },
         {
           "name": "tokenDst",
           "isMut": true,
           "isSigner": false,
-          "docs": ["Destination for withdrawn tokens (user's token account)"]
+          "docs": [
+            "Destination for withdrawn tokens (user's token account)"
+          ]
         },
         {
           "name": "tokenProgram",
           "isMut": false,
           "isSigner": false,
-          "docs": ["Token program for market token transfers"]
+          "docs": [
+            "Token program for market token transfers"
+          ]
         },
         {
           "name": "mayflowerProgram",
           "isMut": false,
           "isSigner": false,
-          "docs": ["Mayflower program for CPI"]
+          "docs": [
+            "Mayflower program for CPI"
+          ]
         },
         {
           "name": "mayLogAccount",
           "isMut": true,
           "isSigner": false,
-          "docs": ["Mayflower log account for event emission"]
+          "docs": [
+            "Mayflower log account for event emission"
+          ]
         },
         {
           "name": "eventAuthority",
@@ -984,7 +1064,9 @@
           "name": "tenant",
           "isMut": true,
           "isSigner": false,
-          "docs": ["Rise tenant - needed for fee distribution calculations."]
+          "docs": [
+            "Rise tenant - needed for fee distribution calculations."
+          ]
         },
         {
           "name": "market",
@@ -1007,19 +1089,25 @@
           "name": "mayTenant",
           "isMut": false,
           "isSigner": false,
-          "docs": ["Mayflower tenant - parent entity on Mayflower side."]
+          "docs": [
+            "Mayflower tenant - parent entity on Mayflower side."
+          ]
         },
         {
           "name": "mayMarketGroup",
           "isMut": false,
           "isSigner": false,
-          "docs": ["Mayflower market group - stores fee configuration."]
+          "docs": [
+            "Mayflower market group - stores fee configuration."
+          ]
         },
         {
           "name": "marketMeta",
           "isMut": false,
           "isSigner": false,
-          "docs": ["Mayflower market meta - stores market configuration."]
+          "docs": [
+            "Mayflower market meta - stores market configuration."
+          ]
         },
         {
           "name": "mayMarket",
@@ -1034,7 +1122,9 @@
           "name": "mintToken",
           "isMut": true,
           "isSigner": false,
-          "docs": ["Market token mint - tokens will be burned by Mayflower."]
+          "docs": [
+            "Market token mint - tokens will be burned by Mayflower."
+          ]
         },
         {
           "name": "mintMain",
@@ -1084,19 +1174,25 @@
           "name": "revEscrowTenant",
           "isMut": true,
           "isSigner": false,
-          "docs": ["Mayflower tenant revenue escrow."]
+          "docs": [
+            "Mayflower tenant revenue escrow."
+          ]
         },
         {
           "name": "tokenProgramMain",
           "isMut": false,
           "isSigner": false,
-          "docs": ["Token program for base currency transfers."]
+          "docs": [
+            "Token program for base currency transfers."
+          ]
         },
         {
           "name": "tokenProgram",
           "isMut": false,
           "isSigner": false,
-          "docs": ["Token program for market token burning."]
+          "docs": [
+            "Token program for market token burning."
+          ]
         },
         {
           "name": "mayflowerProgram",
@@ -1111,7 +1207,9 @@
           "name": "mayLogAccount",
           "isMut": true,
           "isSigner": false,
-          "docs": ["Mayflower log account for event emission."]
+          "docs": [
+            "Mayflower log account for event emission."
+          ]
         },
         {
           "name": "creatorEscrow",
@@ -1184,79 +1282,105 @@
           "name": "owner",
           "isMut": true,
           "isSigner": true,
-          "docs": ["Borrower - must own the personal account"]
+          "docs": [
+            "Borrower - must own the personal account"
+          ]
         },
         {
           "name": "tenant",
           "isMut": true,
           "isSigner": false,
-          "docs": ["Rise tenant for fee distribution"]
+          "docs": [
+            "Rise tenant for fee distribution"
+          ]
         },
         {
           "name": "market",
           "isMut": true,
           "isSigner": false,
-          "docs": ["Rise market being borrowed from"]
+          "docs": [
+            "Rise market being borrowed from"
+          ]
         },
         {
           "name": "cashEscrow",
           "isMut": true,
           "isSigner": false,
-          "docs": ["Market's cash escrow for revenue distribution"]
+          "docs": [
+            "Market's cash escrow for revenue distribution"
+          ]
         },
         {
           "name": "personalAccount",
           "isMut": true,
           "isSigner": false,
-          "docs": ["Personal account tracking user's collateral and debt"]
+          "docs": [
+            "Personal account tracking user's collateral and debt"
+          ]
         },
         {
           "name": "mayTenant",
           "isMut": false,
           "isSigner": false,
-          "docs": ["Mayflower tenant account"]
+          "docs": [
+            "Mayflower tenant account"
+          ]
         },
         {
           "name": "mayMarketGroup",
           "isMut": false,
           "isSigner": false,
-          "docs": ["Mayflower market group"]
+          "docs": [
+            "Mayflower market group"
+          ]
         },
         {
           "name": "marketMeta",
           "isMut": false,
           "isSigner": false,
-          "docs": ["Mayflower market meta - stores market configuration"]
+          "docs": [
+            "Mayflower market meta - stores market configuration"
+          ]
         },
         {
           "name": "liqVaultMain",
           "isMut": true,
           "isSigner": false,
-          "docs": ["Mayflower liquidity vault - source of borrowed funds"]
+          "docs": [
+            "Mayflower liquidity vault - source of borrowed funds"
+          ]
         },
         {
           "name": "revEscrowGroup",
           "isMut": true,
           "isSigner": false,
-          "docs": ["Mayflower group revenue escrow"]
+          "docs": [
+            "Mayflower group revenue escrow"
+          ]
         },
         {
           "name": "revEscrowTenant",
           "isMut": true,
           "isSigner": false,
-          "docs": ["Mayflower tenant revenue escrow"]
+          "docs": [
+            "Mayflower tenant revenue escrow"
+          ]
         },
         {
           "name": "mayMarket",
           "isMut": true,
           "isSigner": false,
-          "docs": ["Mayflower market account"]
+          "docs": [
+            "Mayflower market account"
+          ]
         },
         {
           "name": "mintMain",
           "isMut": false,
           "isSigner": false,
-          "docs": ["Base currency mint (e.g., USDC)"]
+          "docs": [
+            "Base currency mint (e.g., USDC)"
+          ]
         },
         {
           "name": "corePersonalPosition",
@@ -1270,37 +1394,49 @@
           "name": "mainDst",
           "isMut": true,
           "isSigner": false,
-          "docs": ["Destination for borrowed funds (user's token account)"]
+          "docs": [
+            "Destination for borrowed funds (user's token account)"
+          ]
         },
         {
           "name": "tokenProgramMain",
           "isMut": false,
           "isSigner": false,
-          "docs": ["Token program for base currency"]
+          "docs": [
+            "Token program for base currency"
+          ]
         },
         {
           "name": "mayLogAccount",
           "isMut": true,
           "isSigner": false,
-          "docs": ["Mayflower log account for event emission"]
+          "docs": [
+            "Mayflower log account for event emission"
+          ]
         },
         {
           "name": "mayflowerProgram",
           "isMut": false,
           "isSigner": false,
-          "docs": ["Mayflower program for CPI"]
+          "docs": [
+            "Mayflower program for CPI"
+          ]
         },
         {
           "name": "creatorEscrow",
           "isMut": true,
           "isSigner": false,
-          "docs": ["Creator escrow - receives creator's share of borrow fees"]
+          "docs": [
+            "Creator escrow - receives creator's share of borrow fees"
+          ]
         },
         {
           "name": "teamEscrow",
           "isMut": true,
           "isSigner": false,
-          "docs": ["Team escrow - receives team's share of borrow fees"]
+          "docs": [
+            "Team escrow - receives team's share of borrow fees"
+          ]
         },
         {
           "name": "eventAuthority",
@@ -1355,55 +1491,73 @@
           "name": "marketMeta",
           "isMut": false,
           "isSigner": false,
-          "docs": ["Mayflower market meta - stores market configuration"]
+          "docs": [
+            "Mayflower market meta - stores market configuration"
+          ]
         },
         {
           "name": "mayMarket",
           "isMut": true,
           "isSigner": false,
-          "docs": ["Mayflower market account"]
+          "docs": [
+            "Mayflower market account"
+          ]
         },
         {
           "name": "corePersonalPosition",
           "isMut": true,
           "isSigner": false,
-          "docs": ["Mayflower personal position - tracks debt to be reduced"]
+          "docs": [
+            "Mayflower personal position - tracks debt to be reduced"
+          ]
         },
         {
           "name": "mintMain",
           "isMut": false,
           "isSigner": false,
-          "docs": ["Base currency mint (e.g., USDC)"]
+          "docs": [
+            "Base currency mint (e.g., USDC)"
+          ]
         },
         {
           "name": "mainSrc",
           "isMut": true,
           "isSigner": false,
-          "docs": ["Source of repayment funds (repayer's token account)"]
+          "docs": [
+            "Source of repayment funds (repayer's token account)"
+          ]
         },
         {
           "name": "liqVaultMain",
           "isMut": true,
           "isSigner": false,
-          "docs": ["Mayflower liquidity vault - receives repaid funds"]
+          "docs": [
+            "Mayflower liquidity vault - receives repaid funds"
+          ]
         },
         {
           "name": "tokenProgramMain",
           "isMut": false,
           "isSigner": false,
-          "docs": ["Token program for base currency transfers"]
+          "docs": [
+            "Token program for base currency transfers"
+          ]
         },
         {
           "name": "mayflowerProgram",
           "isMut": false,
           "isSigner": false,
-          "docs": ["Mayflower program for CPI"]
+          "docs": [
+            "Mayflower program for CPI"
+          ]
         },
         {
           "name": "mayLogAccount",
           "isMut": true,
           "isSigner": false,
-          "docs": ["Mayflower log account for event emission"]
+          "docs": [
+            "Mayflower log account for event emission"
+          ]
         },
         {
           "name": "eventAuthority",
@@ -1451,49 +1605,65 @@
           "name": "market",
           "isMut": true,
           "isSigner": false,
-          "docs": ["Rise market to raise floor for"]
+          "docs": [
+            "Rise market to raise floor for"
+          ]
         },
         {
           "name": "tenant",
           "isMut": true,
           "isSigner": false,
-          "docs": ["Rise tenant - acts as market group admin for Mayflower"]
+          "docs": [
+            "Rise tenant - acts as market group admin for Mayflower"
+          ]
         },
         {
           "name": "tenantSeed",
           "isMut": false,
           "isSigner": false,
-          "docs": ["Seed for tenant PDA derivation"]
+          "docs": [
+            "Seed for tenant PDA derivation"
+          ]
         },
         {
           "name": "marketGroup",
           "isMut": false,
           "isSigner": false,
-          "docs": ["Mayflower market group"]
+          "docs": [
+            "Mayflower market group"
+          ]
         },
         {
           "name": "marketMeta",
           "isMut": false,
           "isSigner": false,
-          "docs": ["Mayflower market meta - stores market configuration"]
+          "docs": [
+            "Mayflower market meta - stores market configuration"
+          ]
         },
         {
           "name": "mayflowerMarket",
           "isMut": true,
           "isSigner": false,
-          "docs": ["Mayflower market with bonding curve to modify"]
+          "docs": [
+            "Mayflower market with bonding curve to modify"
+          ]
         },
         {
           "name": "mayflowerProgram",
           "isMut": false,
           "isSigner": false,
-          "docs": ["Mayflower program for CPI"]
+          "docs": [
+            "Mayflower program for CPI"
+          ]
         },
         {
           "name": "mayLogAccount",
           "isMut": true,
           "isSigner": false,
-          "docs": ["Mayflower log account for event emission"]
+          "docs": [
+            "Mayflower log account for event emission"
+          ]
         }
       ],
       "args": [
@@ -1546,49 +1716,65 @@
           "name": "market",
           "isMut": true,
           "isSigner": false,
-          "docs": ["Rise market to raise floor for"]
+          "docs": [
+            "Rise market to raise floor for"
+          ]
         },
         {
           "name": "tenant",
           "isMut": true,
           "isSigner": false,
-          "docs": ["Rise tenant - acts as market group admin for Mayflower"]
+          "docs": [
+            "Rise tenant - acts as market group admin for Mayflower"
+          ]
         },
         {
           "name": "tenantSeed",
           "isMut": false,
           "isSigner": false,
-          "docs": ["Seed for tenant PDA derivation"]
+          "docs": [
+            "Seed for tenant PDA derivation"
+          ]
         },
         {
           "name": "marketGroup",
           "isMut": false,
           "isSigner": false,
-          "docs": ["Mayflower market group"]
+          "docs": [
+            "Mayflower market group"
+          ]
         },
         {
           "name": "marketMeta",
           "isMut": false,
           "isSigner": false,
-          "docs": ["Mayflower market meta - stores market configuration"]
+          "docs": [
+            "Mayflower market meta - stores market configuration"
+          ]
         },
         {
           "name": "mayflowerMarket",
           "isMut": true,
           "isSigner": false,
-          "docs": ["Mayflower market with bonding curve to modify"]
+          "docs": [
+            "Mayflower market with bonding curve to modify"
+          ]
         },
         {
           "name": "mayflowerProgram",
           "isMut": false,
           "isSigner": false,
-          "docs": ["Mayflower program for CPI"]
+          "docs": [
+            "Mayflower program for CPI"
+          ]
         },
         {
           "name": "mayLogAccount",
           "isMut": true,
           "isSigner": false,
-          "docs": ["Mayflower log account for event emission"]
+          "docs": [
+            "Mayflower log account for event emission"
+          ]
         }
       ],
       "args": [
@@ -1623,7 +1809,9 @@
           "name": "creator",
           "isMut": true,
           "isSigner": true,
-          "docs": ["Market creator - only they can withdraw creator fees"]
+          "docs": [
+            "Market creator - only they can withdraw creator fees"
+          ]
         },
         {
           "name": "market",
@@ -1637,7 +1825,9 @@
           "name": "creatorEscrow",
           "isMut": true,
           "isSigner": false,
-          "docs": ["Creator escrow PDA holding accumulated fees from trading"]
+          "docs": [
+            "Creator escrow PDA holding accumulated fees from trading"
+          ]
         },
         {
           "name": "creatorTokenAccount",
@@ -1651,25 +1841,33 @@
           "name": "mintMain",
           "isMut": false,
           "isSigner": false,
-          "docs": ["Base currency mint for transfer_checked decimals"]
+          "docs": [
+            "Base currency mint for transfer_checked decimals"
+          ]
         },
         {
           "name": "tokenProgramMain",
           "isMut": false,
           "isSigner": false,
-          "docs": ["Token program for transfers"]
+          "docs": [
+            "Token program for transfers"
+          ]
         },
         {
           "name": "associatedTokenProgram",
           "isMut": false,
           "isSigner": false,
-          "docs": ["Associated token program for init_if_needed"]
+          "docs": [
+            "Associated token program for init_if_needed"
+          ]
         },
         {
           "name": "systemProgram",
           "isMut": false,
           "isSigner": false,
-          "docs": ["System program for account creation"]
+          "docs": [
+            "System program for account creation"
+          ]
         }
       ],
       "args": []
@@ -1698,13 +1896,17 @@
           "name": "payer",
           "isMut": true,
           "isSigner": true,
-          "docs": ["Payer for ATA creation - anyone can trigger withdrawal"]
+          "docs": [
+            "Payer for ATA creation - anyone can trigger withdrawal"
+          ]
         },
         {
           "name": "mintMain",
           "isMut": false,
           "isSigner": false,
-          "docs": ["Base currency mint that team escrow holds"]
+          "docs": [
+            "Base currency mint that team escrow holds"
+          ]
         },
         {
           "name": "teamEscrow",
@@ -1718,13 +1920,17 @@
           "name": "teamConfig",
           "isMut": false,
           "isSigner": false,
-          "docs": ["Global team config storing the team wallet address"]
+          "docs": [
+            "Global team config storing the team wallet address"
+          ]
         },
         {
           "name": "teamWallet",
           "isMut": false,
           "isSigner": false,
-          "docs": ["Team wallet - validated to match team_config.team_wallet"]
+          "docs": [
+            "Team wallet - validated to match team_config.team_wallet"
+          ]
         },
         {
           "name": "teamTokenAccount",
@@ -1738,19 +1944,25 @@
           "name": "tokenProgramMain",
           "isMut": false,
           "isSigner": false,
-          "docs": ["Token program for transfers"]
+          "docs": [
+            "Token program for transfers"
+          ]
         },
         {
           "name": "associatedTokenProgram",
           "isMut": false,
           "isSigner": false,
-          "docs": ["Associated token program for init_if_needed"]
+          "docs": [
+            "Associated token program for init_if_needed"
+          ]
         },
         {
           "name": "systemProgram",
           "isMut": false,
           "isSigner": false,
-          "docs": ["System program for account creation"]
+          "docs": [
+            "System program for account creation"
+          ]
         }
       ],
       "args": []
@@ -1787,7 +1999,9 @@
           "name": "teamConfig",
           "isMut": true,
           "isSigner": false,
-          "docs": ["Global TeamConfig PDA storing the team wallet address"]
+          "docs": [
+            "Global TeamConfig PDA storing the team wallet address"
+          ]
         }
       ],
       "args": [
@@ -1829,7 +2043,9 @@
           "name": "tenant",
           "isMut": true,
           "isSigner": false,
-          "docs": ["Tenant PDA storing the admin address"]
+          "docs": [
+            "Tenant PDA storing the admin address"
+          ]
         }
       ],
       "args": [
@@ -1872,37 +2088,49 @@
           "name": "admin",
           "isMut": false,
           "isSigner": true,
-          "docs": ["Admin of the tenant - must match tenant.admin"]
+          "docs": [
+            "Admin of the tenant - must match tenant.admin"
+          ]
         },
         {
           "name": "tenant",
           "isMut": false,
           "isSigner": false,
-          "docs": ["Tenant account - verifies admin authority"]
+          "docs": [
+            "Tenant account - verifies admin authority"
+          ]
         },
         {
           "name": "mintMain",
           "isMut": false,
           "isSigner": false,
-          "docs": ["Mint of the main token to create team escrow for"]
+          "docs": [
+            "Mint of the main token to create team escrow for"
+          ]
         },
         {
           "name": "teamEscrow",
           "isMut": true,
           "isSigner": false,
-          "docs": ["Team escrow PDA (per mint_main) - will be initialized"]
+          "docs": [
+            "Team escrow PDA (per mint_main) - will be initialized"
+          ]
         },
         {
           "name": "tokenProgramMain",
           "isMut": false,
           "isSigner": false,
-          "docs": ["Token program"]
+          "docs": [
+            "Token program"
+          ]
         },
         {
           "name": "systemProgram",
           "isMut": false,
           "isSigner": false,
-          "docs": ["System program"]
+          "docs": [
+            "System program"
+          ]
         },
         {
           "name": "teamConfig",
@@ -1955,139 +2183,195 @@
           "name": "owner",
           "isMut": true,
           "isSigner": true,
-          "docs": ["Buyer taking leveraged position"]
+          "docs": [
+            "Buyer taking leveraged position"
+          ]
         },
         {
           "name": "tenant",
           "isMut": true,
           "isSigner": false,
-          "docs": ["Rise tenant for fee distribution"]
+          "docs": [
+            "Rise tenant for fee distribution"
+          ]
         },
         {
           "name": "market",
           "isMut": true,
           "isSigner": false,
-          "docs": ["Rise market being bought into"]
+          "docs": [
+            "Rise market being bought into"
+          ]
         },
         {
           "name": "cashEscrow",
           "isMut": true,
           "isSigner": false,
-          "docs": ["Market's cash escrow for revenue distribution"]
+          "docs": [
+            "Market's cash escrow for revenue distribution"
+          ]
         },
         {
           "name": "personalAccount",
           "isMut": true,
           "isSigner": false,
-          "docs": ["Personal account tracking user's leveraged position"]
+          "docs": [
+            "Personal account tracking user's leveraged position"
+          ]
         },
         {
           "name": "mayTenant",
           "isMut": false,
           "isSigner": false,
-          "docs": ["Mayflower tenant account"]
+          "docs": [
+            "Mayflower tenant account"
+          ]
         },
         {
           "name": "mayMarketGroup",
           "isMut": false,
           "isSigner": false,
-          "docs": ["Mayflower market group"]
+          "docs": [
+            "Mayflower market group"
+          ]
         },
         {
           "name": "marketMeta",
           "isMut": false,
           "isSigner": false,
-          "docs": ["Mayflower market meta - stores market configuration"]
+          "docs": [
+            "Mayflower market meta - stores market configuration"
+          ]
         },
         {
           "name": "mayMarket",
           "isMut": true,
           "isSigner": false,
-          "docs": ["Mayflower market account with bonding curve"]
+          "docs": [
+            "Mayflower market account with bonding curve"
+          ]
         },
         {
           "name": "mintToken",
           "isMut": true,
           "isSigner": false,
-          "docs": ["Market token mint - tokens will be minted"]
+          "docs": [
+            "Market token mint - tokens will be minted"
+          ]
         },
         {
           "name": "mintMain",
           "isMut": false,
           "isSigner": false,
-          "docs": ["Base currency mint (e.g., USDC)"]
+          "docs": [
+            "Base currency mint (e.g., USDC)"
+          ]
         },
         {
           "name": "mainSrc",
           "isMut": true,
           "isSigner": false,
-          "docs": ["Source of user's own cash contribution"]
+          "docs": [
+            "Source of user's own cash contribution"
+          ]
         },
         {
           "name": "liqVaultMain",
           "isMut": true,
           "isSigner": false,
-          "docs": ["Mayflower liquidity vault - source of borrowed funds"]
+          "docs": [
+            "Mayflower liquidity vault - source of borrowed funds"
+          ]
         },
         {
           "name": "revEscrowGroup",
           "isMut": true,
           "isSigner": false,
-          "docs": ["Mayflower group revenue escrow"]
+          "docs": [
+            "Mayflower group revenue escrow"
+          ]
         },
         {
           "name": "revEscrowTenant",
           "isMut": true,
           "isSigner": false,
-          "docs": ["Mayflower tenant revenue escrow"]
+          "docs": [
+            "Mayflower tenant revenue escrow"
+          ]
         },
         {
           "name": "tokenProgramMain",
           "isMut": false,
           "isSigner": false,
-          "docs": ["Token program for base currency"]
+          "docs": [
+            "Token program for base currency"
+          ]
         },
         {
           "name": "tokenProgram",
           "isMut": false,
           "isSigner": false,
-          "docs": ["Token program for market token"]
+          "docs": [
+            "Token program for market token"
+          ]
         },
         {
           "name": "mayflowerProgram",
           "isMut": false,
           "isSigner": false,
-          "docs": ["Mayflower program for CPI"]
+          "docs": [
+            "Mayflower program for CPI"
+          ]
         },
         {
           "name": "mayLogAccount",
           "isMut": true,
           "isSigner": false,
-          "docs": ["Mayflower log account for event emission"]
+          "docs": [
+            "Mayflower log account for event emission"
+          ]
         },
         {
           "name": "corePersonalPosition",
           "isMut": true,
           "isSigner": false,
-          "docs": ["Mayflower personal position - tracks collateral/debt"]
+          "docs": [
+            "Mayflower personal position - tracks collateral/debt"
+          ]
         },
         {
           "name": "mayEscrow",
           "isMut": true,
           "isSigner": false,
-          "docs": ["Mayflower escrow - receives purchased tokens as collateral"]
+          "docs": [
+            "Mayflower escrow - receives purchased tokens as collateral"
+          ]
         },
         {
           "name": "creatorEscrow",
           "isMut": true,
           "isSigner": false,
-          "docs": ["Creator escrow - receives creator's share of fees"]
+          "docs": [
+            "Creator escrow - receives creator's share of fees"
+          ]
         },
         {
           "name": "teamEscrow",
           "isMut": true,
           "isSigner": false,
-          "docs": ["Team escrow - receives team's share of fees"]
+          "docs": [
+            "Team escrow - receives team's share of fees"
+          ]
+        },
+        {
+          "name": "eventAuthority",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "program",
+          "isMut": false,
+          "isSigner": false
         }
       ],
       "args": [
@@ -2154,73 +2438,97 @@
           "name": "cashEscrow",
           "isMut": true,
           "isSigner": false,
-          "docs": ["Market's cash escrow for revenue distribution"]
+          "docs": [
+            "Market's cash escrow for revenue distribution"
+          ]
         },
         {
           "name": "mayMarketGroup",
           "isMut": false,
           "isSigner": false,
-          "docs": ["Mayflower market group"]
+          "docs": [
+            "Mayflower market group"
+          ]
         },
         {
           "name": "marketMeta",
           "isMut": false,
           "isSigner": false,
-          "docs": ["Mayflower market meta"]
+          "docs": [
+            "Mayflower market meta"
+          ]
         },
         {
           "name": "mayMarket",
           "isMut": true,
           "isSigner": false,
-          "docs": ["Mayflower market"]
+          "docs": [
+            "Mayflower market"
+          ]
         },
         {
           "name": "liqVaultMain",
           "isMut": true,
           "isSigner": false,
-          "docs": ["Mayflower liquidity vault"]
+          "docs": [
+            "Mayflower liquidity vault"
+          ]
         },
         {
           "name": "mintMain",
           "isMut": false,
           "isSigner": false,
-          "docs": ["Base currency mint"]
+          "docs": [
+            "Base currency mint"
+          ]
         },
         {
           "name": "revEscrowGroup",
           "isMut": true,
           "isSigner": false,
-          "docs": ["Mayflower revenue escrow"]
+          "docs": [
+            "Mayflower revenue escrow"
+          ]
         },
         {
           "name": "tokenProgramMain",
           "isMut": false,
           "isSigner": false,
-          "docs": ["Token program for base currency"]
+          "docs": [
+            "Token program for base currency"
+          ]
         },
         {
           "name": "mayflowerProgram",
           "isMut": false,
           "isSigner": false,
-          "docs": ["Mayflower program for CPI"]
+          "docs": [
+            "Mayflower program for CPI"
+          ]
         },
         {
           "name": "mayLogAccount",
           "isMut": true,
           "isSigner": false,
-          "docs": ["Mayflower log account"]
+          "docs": [
+            "Mayflower log account"
+          ]
         },
         {
           "name": "creatorEscrow",
           "isMut": true,
           "isSigner": false,
-          "docs": ["Creator escrow"]
+          "docs": [
+            "Creator escrow"
+          ]
         },
         {
           "name": "teamEscrow",
           "isMut": true,
           "isSigner": false,
-          "docs": ["Team escrow"]
+          "docs": [
+            "Team escrow"
+          ]
         }
       ],
       "args": []
@@ -2318,139 +2626,195 @@
           "name": "owner",
           "isMut": true,
           "isSigner": true,
-          "docs": ["Seller unwinding leveraged position"]
+          "docs": [
+            "Seller unwinding leveraged position"
+          ]
         },
         {
           "name": "tenant",
           "isMut": true,
           "isSigner": false,
-          "docs": ["Rise tenant for fee distribution"]
+          "docs": [
+            "Rise tenant for fee distribution"
+          ]
         },
         {
           "name": "market",
           "isMut": true,
           "isSigner": false,
-          "docs": ["Rise market being sold from"]
+          "docs": [
+            "Rise market being sold from"
+          ]
         },
         {
           "name": "cashEscrow",
           "isMut": true,
           "isSigner": false,
-          "docs": ["Market's cash escrow for revenue distribution"]
+          "docs": [
+            "Market's cash escrow for revenue distribution"
+          ]
         },
         {
           "name": "personalAccount",
           "isMut": true,
           "isSigner": false,
-          "docs": ["Personal account with leveraged position to unwind"]
+          "docs": [
+            "Personal account with leveraged position to unwind"
+          ]
         },
         {
           "name": "mayTenant",
           "isMut": false,
           "isSigner": false,
-          "docs": ["Mayflower tenant account"]
+          "docs": [
+            "Mayflower tenant account"
+          ]
         },
         {
           "name": "mayMarketGroup",
           "isMut": false,
           "isSigner": false,
-          "docs": ["Mayflower market group"]
+          "docs": [
+            "Mayflower market group"
+          ]
         },
         {
           "name": "marketMeta",
           "isMut": false,
           "isSigner": false,
-          "docs": ["Mayflower market meta - stores market configuration"]
+          "docs": [
+            "Mayflower market meta - stores market configuration"
+          ]
         },
         {
           "name": "mayMarket",
           "isMut": true,
           "isSigner": false,
-          "docs": ["Mayflower market account"]
+          "docs": [
+            "Mayflower market account"
+          ]
         },
         {
           "name": "mintToken",
           "isMut": true,
           "isSigner": false,
-          "docs": ["Market token mint - tokens will be burned"]
+          "docs": [
+            "Market token mint - tokens will be burned"
+          ]
         },
         {
           "name": "mintMain",
           "isMut": false,
           "isSigner": false,
-          "docs": ["Base currency mint (e.g., USDC)"]
+          "docs": [
+            "Base currency mint (e.g., USDC)"
+          ]
         },
         {
           "name": "mainDst",
           "isMut": true,
           "isSigner": false,
-          "docs": ["Destination for remaining cash after debt repayment"]
+          "docs": [
+            "Destination for remaining cash after debt repayment"
+          ]
         },
         {
           "name": "liqVaultMain",
           "isMut": true,
           "isSigner": false,
-          "docs": ["Mayflower liquidity vault - receives debt repayment"]
+          "docs": [
+            "Mayflower liquidity vault - receives debt repayment"
+          ]
         },
         {
           "name": "revEscrowGroup",
           "isMut": true,
           "isSigner": false,
-          "docs": ["Mayflower group revenue escrow"]
+          "docs": [
+            "Mayflower group revenue escrow"
+          ]
         },
         {
           "name": "revEscrowTenant",
           "isMut": true,
           "isSigner": false,
-          "docs": ["Mayflower tenant revenue escrow"]
+          "docs": [
+            "Mayflower tenant revenue escrow"
+          ]
         },
         {
           "name": "tokenProgramMain",
           "isMut": false,
           "isSigner": false,
-          "docs": ["Token program for base currency"]
+          "docs": [
+            "Token program for base currency"
+          ]
         },
         {
           "name": "tokenProgram",
           "isMut": false,
           "isSigner": false,
-          "docs": ["Token program for market token"]
+          "docs": [
+            "Token program for market token"
+          ]
         },
         {
           "name": "mayflowerProgram",
           "isMut": false,
           "isSigner": false,
-          "docs": ["Mayflower program for CPI"]
+          "docs": [
+            "Mayflower program for CPI"
+          ]
         },
         {
           "name": "mayLogAccount",
           "isMut": true,
           "isSigner": false,
-          "docs": ["Mayflower log account for event emission"]
+          "docs": [
+            "Mayflower log account for event emission"
+          ]
         },
         {
           "name": "corePersonalPosition",
           "isMut": true,
           "isSigner": false,
-          "docs": ["Mayflower personal position - tracks collateral/debt"]
+          "docs": [
+            "Mayflower personal position - tracks collateral/debt"
+          ]
         },
         {
           "name": "mayEscrow",
           "isMut": true,
           "isSigner": false,
-          "docs": ["Mayflower escrow - source of collateral to withdraw"]
+          "docs": [
+            "Mayflower escrow - source of collateral to withdraw"
+          ]
         },
         {
           "name": "creatorEscrow",
           "isMut": true,
           "isSigner": false,
-          "docs": ["Creator escrow - receives creator's share of fees"]
+          "docs": [
+            "Creator escrow - receives creator's share of fees"
+          ]
         },
         {
           "name": "teamEscrow",
           "isMut": true,
           "isSigner": false,
-          "docs": ["Team escrow - receives team's share of fees"]
+          "docs": [
+            "Team escrow - receives team's share of fees"
+          ]
+        },
+        {
+          "name": "eventAuthority",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "program",
+          "isMut": false,
+          "isSigner": false
         }
       ],
       "args": [
@@ -2606,7 +2970,10 @@
               "Stored to avoid recalculation during operations."
             ],
             "type": {
-              "array": ["u8", 1]
+              "array": [
+                "u8",
+                1
+              ]
             }
           }
         ]
@@ -2619,32 +2986,45 @@
         "fields": [
           {
             "name": "tenant",
-            "docs": ["Tenant of rise"],
+            "docs": [
+              "Tenant of rise"
+            ],
             "type": "publicKey"
           },
           {
             "name": "marketMeta",
-            "docs": ["Link to market meta", "Used as seed for PDA"],
+            "docs": [
+              "Link to market meta",
+              "Used as seed for PDA"
+            ],
             "type": "publicKey"
           },
           {
             "name": "mintToken",
-            "docs": ["Mint of token"],
+            "docs": [
+              "Mint of token"
+            ],
             "type": "publicKey"
           },
           {
             "name": "mintMain",
-            "docs": ["Mint of main token"],
+            "docs": [
+              "Mint of main token"
+            ],
             "type": "publicKey"
           },
           {
             "name": "tokenDecimals",
-            "docs": ["Decimals of the main token (mint_main)"],
+            "docs": [
+              "Decimals of the main token (mint_main)"
+            ],
             "type": "u8"
           },
           {
             "name": "cashEscrow",
-            "docs": ["Market-owned cash token escrow account"],
+            "docs": [
+              "Market-owned cash token escrow account"
+            ],
             "type": "publicKey"
           },
           {
@@ -2656,12 +3036,17 @@
           {
             "name": "bump",
             "type": {
-              "array": ["u8", 1]
+              "array": [
+                "u8",
+                1
+              ]
             }
           },
           {
             "name": "lastFloorRaiseTimestamp",
-            "docs": ["Last time the floor was raised"],
+            "docs": [
+              "Last time the floor was raised"
+            ],
             "type": "u64"
           },
           {
@@ -2684,7 +3069,9 @@
           },
           {
             "name": "flags",
-            "docs": ["Flags for market features (will be used in the future)"],
+            "docs": [
+              "Flags for market features (will be used in the future)"
+            ],
             "type": "u16"
           },
           {
@@ -2693,12 +3080,16 @@
           },
           {
             "name": "totalFeesFloor",
-            "docs": ["Total fees sent to floor (cumulative)"],
+            "docs": [
+              "Total fees sent to floor (cumulative)"
+            ],
             "type": "u64"
           },
           {
             "name": "totalFeesCreator",
-            "docs": ["Total fees sent to creator escrow (cumulative)"],
+            "docs": [
+              "Total fees sent to creator escrow (cumulative)"
+            ],
             "type": "u64"
           },
           {
@@ -2710,7 +3101,9 @@
           },
           {
             "name": "totalFeesTeam",
-            "docs": ["Total fees sent to team escrow (cumulative)"],
+            "docs": [
+              "Total fees sent to team escrow (cumulative)"
+            ],
             "type": "u64"
           },
           {
@@ -2728,7 +3121,10 @@
               "Serialized rust_decimal::Decimal (16 bytes)."
             ],
             "type": {
-              "array": ["u8", 16]
+              "array": [
+                "u8",
+                16
+              ]
             }
           }
         ]
@@ -2779,7 +3175,10 @@
               "revenue has accrued since the user last claimed or updated."
             ],
             "type": {
-              "array": ["u8", 16]
+              "array": [
+                "u8",
+                16
+              ]
             }
           },
           {
@@ -2790,7 +3189,10 @@
               "with the market; claimed via collect_rev()."
             ],
             "type": {
-              "array": ["u8", 16]
+              "array": [
+                "u8",
+                16
+              ]
             }
           },
           {
@@ -2799,12 +3201,17 @@
               "PDA bump seed for efficient signer_seeds reconstruction."
             ],
             "type": {
-              "array": ["u8", 1]
+              "array": [
+                "u8",
+                1
+              ]
             }
           },
           {
             "name": "version",
-            "docs": ["Account version for future upgrades."],
+            "docs": [
+              "Account version for future upgrades."
+            ],
             "type": "u8"
           }
         ]
@@ -2822,14 +3229,21 @@
         "fields": [
           {
             "name": "teamWallet",
-            "docs": ["The wallet address that receives team fees"],
+            "docs": [
+              "The wallet address that receives team fees"
+            ],
             "type": "publicKey"
           },
           {
             "name": "bump",
-            "docs": ["Bump seed for PDA derivation"],
+            "docs": [
+              "Bump seed for PDA derivation"
+            ],
             "type": {
-              "array": ["u8", 1]
+              "array": [
+                "u8",
+                1
+              ]
             }
           }
         ]
@@ -2885,7 +3299,10 @@
               "Stored as [u8; 1] for easy slicing in signer_seeds()."
             ],
             "type": {
-              "array": ["u8", 1]
+              "array": [
+                "u8",
+                1
+              ]
             }
           }
         ]
@@ -2922,7 +3339,10 @@
               "Used for storing fixed-point decimal numbers in Solana accounts."
             ],
             "type": {
-              "array": ["u8", 16]
+              "array": [
+                "u8",
+                16
+              ]
             }
           }
         ]
@@ -2964,7 +3384,10 @@
               "DIMENSIONLESS - no scaling"
             ],
             "type": {
-              "array": ["u8", 16]
+              "array": [
+                "u8",
+                16
+              ]
             }
           },
           {
@@ -2975,7 +3398,10 @@
               "SCALED by market meta 2^token_unit_scale"
             ],
             "type": {
-              "array": ["u8", 16]
+              "array": [
+                "u8",
+                16
+              ]
             }
           },
           {
@@ -2986,7 +3412,10 @@
               "SCALED by market meta 2^token_unit_scale"
             ],
             "type": {
-              "array": ["u8", 16]
+              "array": [
+                "u8",
+                16
+              ]
             }
           },
           {
@@ -3006,7 +3435,10 @@
               "DIMENSIONLESS - no scaling"
             ],
             "type": {
-              "array": ["u8", 16]
+              "array": [
+                "u8",
+                16
+              ]
             }
           }
         ]
@@ -3107,33 +3539,43 @@
           },
           {
             "name": "x2",
-            "docs": ["Shoulder end position on curve"],
+            "docs": [
+              "Shoulder end position on curve"
+            ],
             "type": "u64"
           },
           {
             "name": "m2",
-            "docs": ["Slope after shoulder"],
+            "docs": [
+              "Slope after shoulder"
+            ],
             "type": {
               "defined": "rise::num::DecimalSerialized"
             }
           },
           {
             "name": "m1",
-            "docs": ["Slope before shoulder"],
+            "docs": [
+              "Slope before shoulder"
+            ],
             "type": {
               "defined": "rise::num::DecimalSerialized"
             }
           },
           {
             "name": "f",
-            "docs": ["Floor price"],
+            "docs": [
+              "Floor price"
+            ],
             "type": {
               "defined": "rise::num::DecimalSerialized"
             }
           },
           {
             "name": "b2",
-            "docs": ["Y-intercept after shoulder"],
+            "docs": [
+              "Y-intercept after shoulder"
+            ],
             "type": {
               "defined": "rise::num::DecimalSerialized"
             }
@@ -3284,7 +3726,10 @@
           {
             "name": "x",
             "type": {
-              "array": ["u8", 16]
+              "array": [
+                "u8",
+                16
+              ]
             }
           }
         ]
@@ -3303,17 +3748,23 @@
         "fields": [
           {
             "name": "value",
-            "docs": ["Current value of the parameter"],
+            "docs": [
+              "Current value of the parameter"
+            ],
             "type": "u32"
           },
           {
             "name": "min",
-            "docs": ["Minimum allowed value"],
+            "docs": [
+              "Minimum allowed value"
+            ],
             "type": "u32"
           },
           {
             "name": "max",
-            "docs": ["Maximum allowed value"],
+            "docs": [
+              "Maximum allowed value"
+            ],
             "type": "u32"
           },
           {
@@ -3325,12 +3776,16 @@
           },
           {
             "name": "totalVotesUp",
-            "docs": ["Total votes for increasing (reserved for voting)"],
+            "docs": [
+              "Total votes for increasing (reserved for voting)"
+            ],
             "type": "u64"
           },
           {
             "name": "totalVotesDown",
-            "docs": ["Total votes for decreasing (reserved for voting)"],
+            "docs": [
+              "Total votes for decreasing (reserved for voting)"
+            ],
             "type": "u64"
           }
         ]
@@ -3338,7 +3793,9 @@
     },
     {
       "name": "GlobalBallotItemInitArgs",
-      "docs": ["Initialization arguments for a governance ballot item."],
+      "docs": [
+        "Initialization arguments for a governance ballot item."
+      ],
       "type": {
         "kind": "struct",
         "fields": [
@@ -3374,28 +3831,36 @@
         "fields": [
           {
             "name": "buyFeeMicroBasisPoints",
-            "docs": ["Fee for buying (in micro basis points)"],
+            "docs": [
+              "Fee for buying (in micro basis points)"
+            ],
             "type": {
               "defined": "GlobalBallotItem"
             }
           },
           {
             "name": "sellFeeMicroBasisPoints",
-            "docs": ["Fee for selling (in micro basis points)"],
+            "docs": [
+              "Fee for selling (in micro basis points)"
+            ],
             "type": {
               "defined": "GlobalBallotItem"
             }
           },
           {
             "name": "borrowFeeMicroBasisPoints",
-            "docs": ["Fee for borrowing (in micro basis points)"],
+            "docs": [
+              "Fee for borrowing (in micro basis points)"
+            ],
             "type": {
               "defined": "GlobalBallotItem"
             }
           },
           {
             "name": "floorRaiseCooldownSeconds",
-            "docs": ["Cooldown between floor raises (in seconds)"],
+            "docs": [
+              "Cooldown between floor raises (in seconds)"
+            ],
             "type": {
               "defined": "GlobalBallotItem"
             }
@@ -3439,7 +3904,9 @@
     },
     {
       "name": "GovInitArgs",
-      "docs": ["Initialization arguments for governance parameters."],
+      "docs": [
+        "Initialization arguments for governance parameters."
+      ],
       "type": {
         "kind": "struct",
         "fields": [
@@ -3515,17 +3982,23 @@
         "fields": [
           {
             "name": "yIntercept",
-            "docs": ["y-intercept of the curve"],
+            "docs": [
+              "y-intercept of the curve"
+            ],
             "type": "f64"
           },
           {
             "name": "maxAsymptote",
-            "docs": ["high asymptote of the curve"],
+            "docs": [
+              "high asymptote of the curve"
+            ],
             "type": "f64"
           },
           {
             "name": "k",
-            "docs": ["sensitivity of the curve"],
+            "docs": [
+              "sensitivity of the curve"
+            ],
             "type": "f64"
           }
         ]
@@ -3538,17 +4011,23 @@
         "fields": [
           {
             "name": "floor",
-            "docs": ["Revenue amount for floor (15%)"],
+            "docs": [
+              "Revenue amount for floor (15%)"
+            ],
             "type": "u64"
           },
           {
             "name": "creator",
-            "docs": ["Revenue amount for creator (10%)"],
+            "docs": [
+              "Revenue amount for creator (10%)"
+            ],
             "type": "u64"
           },
           {
             "name": "team",
-            "docs": ["Revenue amount for team (75%)"],
+            "docs": [
+              "Revenue amount for team (75%)"
+            ],
             "type": "u64"
           }
         ]
@@ -3626,7 +4105,10 @@
         {
           "name": "floor",
           "type": {
-            "array": ["u8", 16]
+            "array": [
+              "u8",
+              16
+            ]
           },
           "index": false
         },
@@ -3638,14 +4120,20 @@
         {
           "name": "m1",
           "type": {
-            "array": ["u8", 16]
+            "array": [
+              "u8",
+              16
+            ]
           },
           "index": false
         },
         {
           "name": "m2",
           "type": {
-            "array": ["u8", 16]
+            "array": [
+              "u8",
+              16
+            ]
           },
           "index": false
         },
@@ -3657,7 +4145,10 @@
         {
           "name": "b2",
           "type": {
-            "array": ["u8", 16]
+            "array": [
+              "u8",
+              16
+            ]
           },
           "index": false
         },
@@ -3838,6 +4329,11 @@
         },
         {
           "name": "minIncreaseCollateralBy",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "actualIncreaseCollateralBy",
           "type": "u64",
           "index": false
         },
@@ -4034,7 +4530,10 @@
         {
           "name": "floor",
           "type": {
-            "array": ["u8", 16]
+            "array": [
+              "u8",
+              16
+            ]
           },
           "index": false
         },
@@ -4046,14 +4545,20 @@
         {
           "name": "m1",
           "type": {
-            "array": ["u8", 16]
+            "array": [
+              "u8",
+              16
+            ]
           },
           "index": false
         },
         {
           "name": "m2",
           "type": {
-            "array": ["u8", 16]
+            "array": [
+              "u8",
+              16
+            ]
           },
           "index": false
         },
@@ -4065,7 +4570,10 @@
         {
           "name": "b2",
           "type": {
-            "array": ["u8", 16]
+            "array": [
+              "u8",
+              16
+            ]
           },
           "index": false
         },

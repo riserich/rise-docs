@@ -99,6 +99,38 @@ Emitted by **both** `deposit` and `withdraw` instructions. The two are distingui
 
 The depositor/withdrawer and rise market aren't in the payload — read them from the enclosing instruction's accounts.
 
+### LeverageBuyEvent
+
+Emitted on every `leverageBuy` transaction. The instruction internally borrows, buys, and deposits as collateral in one atomic step — the event lets indexers record the full operation without re-deriving from inner CPIs.
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `buyer` | PublicKey | Buyer's wallet address |
+| `market` | PublicKey | Rise market address |
+| `exactCashIn` | u64 | User's own cash put into the buy (RAW) |
+| `increaseDebtBy` | u64 | Cash borrowed from the lending pool for this trade (RAW) |
+| `minIncreaseCollateralBy` | u64 | Slippage floor — minimum tokens that must arrive into the position |
+| `actualIncreaseCollateralBy` | u64 | Tokens actually minted by the inner buy and added to the position (RAW). Use this as the user's "tokens received" for trade history / PnL — no need to derive from supply deltas |
+| `revSplit` | RevenueSplits | Fee split applied during the leverage buy |
+
+Total cash that flowed into the curve = `exactCashIn + increaseDebtBy` (less the buy fee and borrow fee). Multiplier = `(exactCashIn + increaseDebtBy) / exactCashIn`; when `exactCashIn = 0` the trade is fully leveraged.
+
+### LeverageSellEvent
+
+Emitted on every `leverageSell` transaction. The instruction withdraws collateral, sells it, repays debt, and routes the remaining cash to the seller — all atomically.
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `seller` | PublicKey | Seller's wallet address |
+| `market` | PublicKey | Rise market address |
+| `decreaseCollateralBy` | u64 | Tokens removed from the position and sold (RAW) |
+| `decreaseDebtBy` | u64 | Debt repaid out of the sale proceeds (RAW) |
+| `minCashToUser` | u64 | Slippage floor — minimum cash that must land in the seller's wallet |
+| `actualCashToUser` | u64 | Cash that actually landed in the seller's wallet after sell fee + debt repayment (RAW). Use this as the "amount received" for trade history / PnL |
+| `revSplit` | RevenueSplits | Fee split applied during the leverage sell |
+
+Deleverage percentage = `decreaseDebtBy / pre_tx_debt × 100` (read `pre_tx_debt` from your own state — it's not on the event).
+
 ### RevenueSplits
 
 Fee distribution included in all events.
@@ -131,6 +163,8 @@ const SELL_DISC = eventDiscriminator("SellWithExactTokenInEvent");
 const BORROW_DISC = eventDiscriminator("BorrowEvent");
 const REPAY_DISC = eventDiscriminator("RepayEvent");
 const LENDING_DISC = eventDiscriminator("LendingEvent"); // deposit + withdraw
+const LEVERAGE_BUY_DISC = eventDiscriminator("LeverageBuyEvent");   // 120-byte content
+const LEVERAGE_SELL_DISC = eventDiscriminator("LeverageSellEvent"); // 120-byte content
 ```
 
 `LendingEvent` (40 bytes) is just five `u64` snapshot fields. `BorrowEvent` (64 bytes) appends a `RevenueSplits` (3×u64). `RepayEvent` (72 bytes) prepends a 32-byte `positionOwner` pubkey:
@@ -164,6 +198,46 @@ function parseRepayEvent(data: Buffer) {
   if (!data.slice(0, 8).equals(REPAY_DISC)) return null;
   const positionOwner = new PublicKey(data.slice(8, 40));
   return { positionOwner, ...parseLendingSnapshot(data, 40) };
+}
+
+// LeverageBuyEvent / LeverageSellEvent share the same 120-byte layout:
+//   pubkey(32) + pubkey(32) + u64(8) + u64(8) + u64(8) + u64(8) + revSplit(24)
+function parseLeverageBuyEvent(data: Buffer) {
+  if (!data.slice(0, 8).equals(LEVERAGE_BUY_DISC)) return null;
+  const buyer = new PublicKey(data.slice(8, 40));
+  const market = new PublicKey(data.slice(40, 72));
+  return {
+    buyer,
+    market,
+    exactCashIn:               data.readBigUInt64LE(72),
+    increaseDebtBy:            data.readBigUInt64LE(80),
+    minIncreaseCollateralBy:   data.readBigUInt64LE(88),
+    actualIncreaseCollateralBy: data.readBigUInt64LE(96),
+    revSplit: {
+      floor:   data.readBigUInt64LE(104),
+      creator: data.readBigUInt64LE(112),
+      team:    data.readBigUInt64LE(120),
+    },
+  };
+}
+
+function parseLeverageSellEvent(data: Buffer) {
+  if (!data.slice(0, 8).equals(LEVERAGE_SELL_DISC)) return null;
+  const seller = new PublicKey(data.slice(8, 40));
+  const market = new PublicKey(data.slice(40, 72));
+  return {
+    seller,
+    market,
+    decreaseCollateralBy: data.readBigUInt64LE(72),
+    decreaseDebtBy:       data.readBigUInt64LE(80),
+    minCashToUser:        data.readBigUInt64LE(88),
+    actualCashToUser:     data.readBigUInt64LE(96),
+    revSplit: {
+      floor:   data.readBigUInt64LE(104),
+      creator: data.readBigUInt64LE(112),
+      team:    data.readBigUInt64LE(120),
+    },
+  };
 }
 ```
 
@@ -359,6 +433,7 @@ With these events you can build:
 - **Volume metrics** — sum `cashIn`/`cashOut` per time period
 - **Fee analytics** — track revenue splits per market
 - **Borrow/lending activity** — track open debt, repayments, and collateral movement via `BorrowEvent`, `RepayEvent`, and `LendingEvent` (deposit + withdraw share the same event)
+- **Leverage trading** — `LeverageBuyEvent` and `LeverageSellEvent` give you the exact own-cash, debt, and tokens/cash actually transacted on a single atomic leverage step. Combine with a wallet's pre-tx debt to derive leverage multiplier or deleverage percentage.
 
 ---
 
