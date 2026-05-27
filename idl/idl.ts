@@ -2691,7 +2691,8 @@ export type Rise = {
           "isMut": true,
           "isSigner": false,
           "docs": [
-            "Mayflower market account"
+            "Mayflower market account with bonding curve state.",
+            "Typed so the handler can read curve params for the event snapshot."
           ]
         },
         {
@@ -2835,7 +2836,7 @@ export type Rise = {
   ],
   "accounts": [
     {
-      "name": "marketLinear",
+      "name": "MarketLinear",
       "docs": [
         "Market implementation using a linear bonding curve with shoulder configuration.",
         "",
@@ -2895,7 +2896,7 @@ export type Rise = {
       }
     },
     {
-      "name": "personalPosition",
+      "name": "PersonalPosition",
       "docs": [
         "Personal position account tracking an individual user's collateral and debt in a market.",
         "",
@@ -2980,7 +2981,7 @@ export type Rise = {
       }
     },
     {
-      "name": "market",
+      "name": "Market",
       "type": {
         "kind": "struct",
         "fields": [
@@ -3131,7 +3132,7 @@ export type Rise = {
       }
     },
     {
-      "name": "personalAccount",
+      "name": "PersonalAccount",
       "docs": [
         "PersonalAccount - a user's per-market account for collateral, debt, and revenue.",
         "",
@@ -3218,7 +3219,7 @@ export type Rise = {
       }
     },
     {
-      "name": "teamConfig",
+      "name": "TeamConfig",
       "docs": [
         "Global configuration account for team fee distribution.",
         "Stores the team wallet address that receives protocol fees.",
@@ -3250,7 +3251,7 @@ export type Rise = {
       }
     },
     {
-      "name": "tenant",
+      "name": "Tenant",
       "docs": [
         "Tenant account - the root authority for a collection of market groups.",
         "",
@@ -4181,6 +4182,11 @@ export type Rise = {
           "name": "totalMarketDebt",
           "type": "u64",
           "index": false
+        },
+        {
+          "name": "tokenOut",
+          "type": "u64",
+          "index": false
         }
       ]
     },
@@ -4343,6 +4349,111 @@ export type Rise = {
             "defined": "RevenueSplits"
           },
           "index": false
+        },
+        {
+          "name": "floor",
+          "type": {
+            "array": [
+              "u8",
+              16
+            ]
+          },
+          "index": false
+        },
+        {
+          "name": "tokenSupply",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "m1",
+          "type": {
+            "array": [
+              "u8",
+              16
+            ]
+          },
+          "index": false
+        },
+        {
+          "name": "m2",
+          "type": {
+            "array": [
+              "u8",
+              16
+            ]
+          },
+          "index": false
+        },
+        {
+          "name": "x2",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "b2",
+          "type": {
+            "array": [
+              "u8",
+              16
+            ]
+          },
+          "index": false
+        },
+        {
+          "name": "totalMainTokenInLiquidityPool",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "totalMarketDebt",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "totalCollateral",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "mintToken",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "mintMain",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "tokenDecimals",
+          "type": "u8",
+          "index": false
+        },
+        {
+          "name": "owner",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "marketMeta",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "depositedTokenBalance",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "debt",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "escrow",
+          "type": "publicKey",
+          "index": false
         }
       ]
     },
@@ -4384,6 +4495,111 @@ export type Rise = {
           "type": {
             "defined": "RevenueSplits"
           },
+          "index": false
+        },
+        {
+          "name": "floor",
+          "type": {
+            "array": [
+              "u8",
+              16
+            ]
+          },
+          "index": false
+        },
+        {
+          "name": "tokenSupply",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "m1",
+          "type": {
+            "array": [
+              "u8",
+              16
+            ]
+          },
+          "index": false
+        },
+        {
+          "name": "m2",
+          "type": {
+            "array": [
+              "u8",
+              16
+            ]
+          },
+          "index": false
+        },
+        {
+          "name": "x2",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "b2",
+          "type": {
+            "array": [
+              "u8",
+              16
+            ]
+          },
+          "index": false
+        },
+        {
+          "name": "totalMainTokenInLiquidityPool",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "totalMarketDebt",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "totalCollateral",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "mintToken",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "mintMain",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "tokenDecimals",
+          "type": "u8",
+          "index": false
+        },
+        {
+          "name": "owner",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "marketMeta",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "depositedTokenBalance",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "debt",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "escrow",
+          "type": "publicKey",
           "index": false
         }
       ]
@@ -7447,7 +7663,8 @@ export const IDL: Rise = {
           "isMut": true,
           "isSigner": false,
           "docs": [
-            "Mayflower market account"
+            "Mayflower market account with bonding curve state.",
+            "Typed so the handler can read curve params for the event snapshot."
           ]
         },
         {
@@ -7591,7 +7808,7 @@ export const IDL: Rise = {
   ],
   "accounts": [
     {
-      "name": "marketLinear",
+      "name": "MarketLinear",
       "docs": [
         "Market implementation using a linear bonding curve with shoulder configuration.",
         "",
@@ -7651,7 +7868,7 @@ export const IDL: Rise = {
       }
     },
     {
-      "name": "personalPosition",
+      "name": "PersonalPosition",
       "docs": [
         "Personal position account tracking an individual user's collateral and debt in a market.",
         "",
@@ -7736,7 +7953,7 @@ export const IDL: Rise = {
       }
     },
     {
-      "name": "market",
+      "name": "Market",
       "type": {
         "kind": "struct",
         "fields": [
@@ -7887,7 +8104,7 @@ export const IDL: Rise = {
       }
     },
     {
-      "name": "personalAccount",
+      "name": "PersonalAccount",
       "docs": [
         "PersonalAccount - a user's per-market account for collateral, debt, and revenue.",
         "",
@@ -7974,7 +8191,7 @@ export const IDL: Rise = {
       }
     },
     {
-      "name": "teamConfig",
+      "name": "TeamConfig",
       "docs": [
         "Global configuration account for team fee distribution.",
         "Stores the team wallet address that receives protocol fees.",
@@ -8006,7 +8223,7 @@ export const IDL: Rise = {
       }
     },
     {
-      "name": "tenant",
+      "name": "Tenant",
       "docs": [
         "Tenant account - the root authority for a collection of market groups.",
         "",
@@ -8937,6 +9154,11 @@ export const IDL: Rise = {
           "name": "totalMarketDebt",
           "type": "u64",
           "index": false
+        },
+        {
+          "name": "tokenOut",
+          "type": "u64",
+          "index": false
         }
       ]
     },
@@ -9099,6 +9321,111 @@ export const IDL: Rise = {
             "defined": "RevenueSplits"
           },
           "index": false
+        },
+        {
+          "name": "floor",
+          "type": {
+            "array": [
+              "u8",
+              16
+            ]
+          },
+          "index": false
+        },
+        {
+          "name": "tokenSupply",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "m1",
+          "type": {
+            "array": [
+              "u8",
+              16
+            ]
+          },
+          "index": false
+        },
+        {
+          "name": "m2",
+          "type": {
+            "array": [
+              "u8",
+              16
+            ]
+          },
+          "index": false
+        },
+        {
+          "name": "x2",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "b2",
+          "type": {
+            "array": [
+              "u8",
+              16
+            ]
+          },
+          "index": false
+        },
+        {
+          "name": "totalMainTokenInLiquidityPool",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "totalMarketDebt",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "totalCollateral",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "mintToken",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "mintMain",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "tokenDecimals",
+          "type": "u8",
+          "index": false
+        },
+        {
+          "name": "owner",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "marketMeta",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "depositedTokenBalance",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "debt",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "escrow",
+          "type": "publicKey",
+          "index": false
         }
       ]
     },
@@ -9140,6 +9467,111 @@ export const IDL: Rise = {
           "type": {
             "defined": "RevenueSplits"
           },
+          "index": false
+        },
+        {
+          "name": "floor",
+          "type": {
+            "array": [
+              "u8",
+              16
+            ]
+          },
+          "index": false
+        },
+        {
+          "name": "tokenSupply",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "m1",
+          "type": {
+            "array": [
+              "u8",
+              16
+            ]
+          },
+          "index": false
+        },
+        {
+          "name": "m2",
+          "type": {
+            "array": [
+              "u8",
+              16
+            ]
+          },
+          "index": false
+        },
+        {
+          "name": "x2",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "b2",
+          "type": {
+            "array": [
+              "u8",
+              16
+            ]
+          },
+          "index": false
+        },
+        {
+          "name": "totalMainTokenInLiquidityPool",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "totalMarketDebt",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "totalCollateral",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "mintToken",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "mintMain",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "tokenDecimals",
+          "type": "u8",
+          "index": false
+        },
+        {
+          "name": "owner",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "marketMeta",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "depositedTokenBalance",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "debt",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "escrow",
+          "type": "publicKey",
           "index": false
         }
       ]

@@ -2691,7 +2691,8 @@
           "isMut": true,
           "isSigner": false,
           "docs": [
-            "Mayflower market account"
+            "Mayflower market account with bonding curve state.",
+            "Typed so the handler can read curve params for the event snapshot."
           ]
         },
         {
@@ -4181,6 +4182,11 @@
           "name": "totalMarketDebt",
           "type": "u64",
           "index": false
+        },
+        {
+          "name": "tokenOut",
+          "type": "u64",
+          "index": false
         }
       ]
     },
@@ -4343,6 +4349,111 @@
             "defined": "RevenueSplits"
           },
           "index": false
+        },
+        {
+          "name": "floor",
+          "type": {
+            "array": [
+              "u8",
+              16
+            ]
+          },
+          "index": false
+        },
+        {
+          "name": "tokenSupply",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "m1",
+          "type": {
+            "array": [
+              "u8",
+              16
+            ]
+          },
+          "index": false
+        },
+        {
+          "name": "m2",
+          "type": {
+            "array": [
+              "u8",
+              16
+            ]
+          },
+          "index": false
+        },
+        {
+          "name": "x2",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "b2",
+          "type": {
+            "array": [
+              "u8",
+              16
+            ]
+          },
+          "index": false
+        },
+        {
+          "name": "totalMainTokenInLiquidityPool",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "totalMarketDebt",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "totalCollateral",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "mintToken",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "mintMain",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "tokenDecimals",
+          "type": "u8",
+          "index": false
+        },
+        {
+          "name": "owner",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "marketMeta",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "depositedTokenBalance",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "debt",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "escrow",
+          "type": "publicKey",
+          "index": false
         }
       ]
     },
@@ -4384,6 +4495,111 @@
           "type": {
             "defined": "RevenueSplits"
           },
+          "index": false
+        },
+        {
+          "name": "floor",
+          "type": {
+            "array": [
+              "u8",
+              16
+            ]
+          },
+          "index": false
+        },
+        {
+          "name": "tokenSupply",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "m1",
+          "type": {
+            "array": [
+              "u8",
+              16
+            ]
+          },
+          "index": false
+        },
+        {
+          "name": "m2",
+          "type": {
+            "array": [
+              "u8",
+              16
+            ]
+          },
+          "index": false
+        },
+        {
+          "name": "x2",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "b2",
+          "type": {
+            "array": [
+              "u8",
+              16
+            ]
+          },
+          "index": false
+        },
+        {
+          "name": "totalMainTokenInLiquidityPool",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "totalMarketDebt",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "totalCollateral",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "mintToken",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "mintMain",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "tokenDecimals",
+          "type": "u8",
+          "index": false
+        },
+        {
+          "name": "owner",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "marketMeta",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "depositedTokenBalance",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "debt",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "escrow",
+          "type": "publicKey",
           "index": false
         }
       ]
