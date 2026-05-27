@@ -33,6 +33,7 @@ Emitted on every buy transaction.
 | `tokenDecimals` | u8 | Token decimal places |
 | `totalMainTokenInLiquidityPool` | u64 | Base-currency balance in the Mayflower liquidity pool after the trade (TVL proxy) |
 | `totalMarketDebt` | u64 | Sum of debt across all positions on the Mayflower market after the trade |
+| `tokenOut` | u64 | Exact tokens minted to the buyer (RAW). Use this directly as "tokens received" — no need to derive it from pre/post token balances |
 
 ### SellWithExactTokenInEvent
 
@@ -112,6 +113,25 @@ Emitted on every `leverageBuy` transaction. The instruction internally borrows, 
 | `minIncreaseCollateralBy` | u64 | Slippage floor — minimum tokens that must arrive into the position |
 | `actualIncreaseCollateralBy` | u64 | Tokens actually minted by the inner buy and added to the position (RAW). Use this as the user's "tokens received" for trade history / PnL — no need to derive from supply deltas |
 | `revSplit` | RevenueSplits | Fee split applied during the leverage buy |
+| `floor` | Decimal (u128) | Floor price after transaction |
+| `tokenSupply` | u64 | Token supply after transaction |
+| `m1` | Decimal (u128) | Bonding curve slope (shoulder segment) |
+| `m2` | Decimal (u128) | Bonding curve slope (main segment) |
+| `x2` | u64 | Supply transition point (shoulder → main) |
+| `b2` | Decimal (u128) | Y-intercept for main segment |
+| `totalMainTokenInLiquidityPool` | u64 | Base-currency balance in the Mayflower liquidity pool after the trade (TVL proxy) |
+| `totalMarketDebt` | u64 | Sum of debt across all positions on the Mayflower market after the trade |
+| `totalCollateral` | u64 | Sum of collateral across all positions on the Mayflower market after the trade |
+| `mintToken` | PublicKey | Token mint address |
+| `mintMain` | PublicKey | Collateral mint address (SOL or USDC) |
+| `tokenDecimals` | u8 | Token decimal places |
+| `owner` | PublicKey | Position owner (same pubkey as `buyer`) |
+| `marketMeta` | PublicKey | Mayflower market metadata address for the position |
+| `depositedTokenBalance` | u64 | Collateral balance on the buyer's position after the op (RAW) |
+| `debt` | u64 | Debt balance on the buyer's position after the op (RAW) |
+| `escrow` | PublicKey | Escrow token account holding the position's collateral |
+
+Fields from `floor` onward are a **post-transaction snapshot** of the market curve and the buyer's position, appended so an indexer can record the full market + position state from the event alone — no RPC fetch of the Mayflower market / position accounts needed.
 
 Total cash that flowed into the curve = `exactCashIn + increaseDebtBy` (less the buy fee and borrow fee). Multiplier = `(exactCashIn + increaseDebtBy) / exactCashIn`; when `exactCashIn = 0` the trade is fully leveraged.
 
@@ -128,6 +148,25 @@ Emitted on every `leverageSell` transaction. The instruction withdraws collatera
 | `minCashToUser` | u64 | Slippage floor — minimum cash that must land in the seller's wallet |
 | `actualCashToUser` | u64 | Cash that actually landed in the seller's wallet after sell fee + debt repayment (RAW). Use this as the "amount received" for trade history / PnL |
 | `revSplit` | RevenueSplits | Fee split applied during the leverage sell |
+| `floor` | Decimal (u128) | Floor price after transaction |
+| `tokenSupply` | u64 | Token supply after transaction |
+| `m1` | Decimal (u128) | Bonding curve slope (shoulder segment) |
+| `m2` | Decimal (u128) | Bonding curve slope (main segment) |
+| `x2` | u64 | Supply transition point (shoulder → main) |
+| `b2` | Decimal (u128) | Y-intercept for main segment |
+| `totalMainTokenInLiquidityPool` | u64 | Base-currency balance in the Mayflower liquidity pool after the trade (TVL proxy) |
+| `totalMarketDebt` | u64 | Sum of debt across all positions on the Mayflower market after the trade |
+| `totalCollateral` | u64 | Sum of collateral across all positions on the Mayflower market after the trade |
+| `mintToken` | PublicKey | Token mint address |
+| `mintMain` | PublicKey | Collateral mint address (SOL or USDC) |
+| `tokenDecimals` | u8 | Token decimal places |
+| `owner` | PublicKey | Position owner (same pubkey as `seller`) |
+| `marketMeta` | PublicKey | Mayflower market metadata address for the position |
+| `depositedTokenBalance` | u64 | Collateral balance on the seller's position after the op (RAW) |
+| `debt` | u64 | Debt balance on the seller's position after the op (RAW) |
+| `escrow` | PublicKey | Escrow token account holding the position's collateral |
+
+Fields from `floor` onward are a **post-transaction snapshot** of the market curve and the seller's position, appended so an indexer can record the full market + position state from the event alone — no RPC fetch needed. On a full close (`depositedTokenBalance` and `debt` both `0`) the position may be closed on-chain; the snapshot still carries the final zeroed state.
 
 Deleverage percentage = `decreaseDebtBy / pre_tx_debt × 100` (read `pre_tx_debt` from your own state — it's not on the event).
 
@@ -163,8 +202,8 @@ const SELL_DISC = eventDiscriminator("SellWithExactTokenInEvent");
 const BORROW_DISC = eventDiscriminator("BorrowEvent");
 const REPAY_DISC = eventDiscriminator("RepayEvent");
 const LENDING_DISC = eventDiscriminator("LendingEvent"); // deposit + withdraw
-const LEVERAGE_BUY_DISC = eventDiscriminator("LeverageBuyEvent");   // 120-byte content
-const LEVERAGE_SELL_DISC = eventDiscriminator("LeverageSellEvent"); // 120-byte content
+const LEVERAGE_BUY_DISC = eventDiscriminator("LeverageBuyEvent");   // 401-byte content (120 base + 281 snapshot)
+const LEVERAGE_SELL_DISC = eventDiscriminator("LeverageSellEvent"); // 401-byte content (120 base + 281 snapshot)
 ```
 
 `LendingEvent` (40 bytes) is just five `u64` snapshot fields. `BorrowEvent` (64 bytes) appends a `RevenueSplits` (3×u64). `RepayEvent` (72 bytes) prepends a 32-byte `positionOwner` pubkey:
@@ -200,12 +239,48 @@ function parseRepayEvent(data: Buffer) {
   return { positionOwner, ...parseLendingSnapshot(data, 40) };
 }
 
-// LeverageBuyEvent / LeverageSellEvent share the same 120-byte layout:
-//   pubkey(32) + pubkey(32) + u64(8) + u64(8) + u64(8) + u64(8) + revSplit(24)
+// LeverageBuyEvent / LeverageSellEvent share the same layout: a 120-byte base
+// (discriminator already consumed) followed by a 281-byte post-tx snapshot.
+//   base:     pubkey(32) + pubkey(32) + u64(8)×4 + revSplit(24)            = 120
+//   snapshot: floor(16) + tokenSupply(8) + m1(16) + m2(16) + x2(8) + b2(16)
+//           + totalMainTokenInLiquidityPool(8) + totalMarketDebt(8) + totalCollateral(8)
+//           + mintToken(32) + mintMain(32) + tokenDecimals(1)
+//           + owner(32) + marketMeta(32) + depositedTokenBalance(8) + debt(8) + escrow(32) = 281
+// The snapshot is parsed only when the payload is long enough (401 content
+// bytes after the discriminator); shorter pre-upgrade events return snapshot:null.
+function parseLeverageSnapshot(data: Buffer, offset: number) {
+  let o = offset;
+  const floor = data.slice(o, o + 16);                                  o += 16;
+  const tokenSupply = data.readBigUInt64LE(o);                          o += 8;
+  const m1 = data.slice(o, o + 16);                                     o += 16;
+  const m2 = data.slice(o, o + 16);                                     o += 16;
+  const x2 = data.readBigUInt64LE(o);                                   o += 8;
+  const b2 = data.slice(o, o + 16);                                     o += 16;
+  const totalMainTokenInLiquidityPool = data.readBigUInt64LE(o);        o += 8;
+  const totalMarketDebt = data.readBigUInt64LE(o);                      o += 8;
+  const totalCollateral = data.readBigUInt64LE(o);                      o += 8;
+  const mintToken = new PublicKey(data.slice(o, o + 32));               o += 32;
+  const mintMain = new PublicKey(data.slice(o, o + 32));                o += 32;
+  const tokenDecimals = data.readUInt8(o);                              o += 1;
+  const owner = new PublicKey(data.slice(o, o + 32));                   o += 32;
+  const marketMeta = new PublicKey(data.slice(o, o + 32));              o += 32;
+  const depositedTokenBalance = data.readBigUInt64LE(o);               o += 8;
+  const debt = data.readBigUInt64LE(o);                                 o += 8;
+  const escrow = new PublicKey(data.slice(o, o + 32));
+  return {
+    floor, tokenSupply, m1, m2, x2, b2,
+    totalMainTokenInLiquidityPool, totalMarketDebt, totalCollateral,
+    mintToken, mintMain, tokenDecimals,
+    owner, marketMeta, depositedTokenBalance, debt, escrow,
+  };
+}
+
 function parseLeverageBuyEvent(data: Buffer) {
   if (!data.slice(0, 8).equals(LEVERAGE_BUY_DISC)) return null;
   const buyer = new PublicKey(data.slice(8, 40));
   const market = new PublicKey(data.slice(40, 72));
+  // base is 120 bytes of content (after the 8-byte disc → ends at offset 128)
+  const snapshot = data.length >= 8 + 401 ? parseLeverageSnapshot(data, 128) : null;
   return {
     buyer,
     market,
@@ -218,6 +293,7 @@ function parseLeverageBuyEvent(data: Buffer) {
       creator: data.readBigUInt64LE(112),
       team:    data.readBigUInt64LE(120),
     },
+    snapshot,
   };
 }
 
@@ -225,6 +301,7 @@ function parseLeverageSellEvent(data: Buffer) {
   if (!data.slice(0, 8).equals(LEVERAGE_SELL_DISC)) return null;
   const seller = new PublicKey(data.slice(8, 40));
   const market = new PublicKey(data.slice(40, 72));
+  const snapshot = data.length >= 8 + 401 ? parseLeverageSnapshot(data, 128) : null;
   return {
     seller,
     market,
@@ -237,6 +314,7 @@ function parseLeverageSellEvent(data: Buffer) {
       creator: data.readBigUInt64LE(112),
       team:    data.readBigUInt64LE(120),
     },
+    snapshot,
   };
 }
 ```
@@ -283,12 +361,18 @@ function parseBuyEvent(data: Buffer) {
   const mintToken = new PublicKey(data.slice(offset, offset + 32));    offset += 32;
   const mintMain = new PublicKey(data.slice(offset, offset + 32));     offset += 32;
   const tokenDecimals = data.readUInt8(offset);                        offset += 1;
+  const totalMainTokenInLiquidityPool = data.readBigUInt64LE(offset);  offset += 8;
+  const totalMarketDebt = data.readBigUInt64LE(offset);               offset += 8;
+  // tokenOut is a trailing field — present only when the payload is long
+  // enough (older events stop at totalMarketDebt).
+  const tokenOut = data.length >= offset + 8 ? data.readBigUInt64LE(offset) : null;
 
   return {
     buyer, market, cashIn, minTokenOut,
     revSplit: { floor: revFloor, creator: revCreator, team: revTeam },
     floor, tokenSupply, m1, m2, x2, b2,
     lastFloorRaiseTimestamp, mintToken, mintMain, tokenDecimals,
+    totalMainTokenInLiquidityPool, totalMarketDebt, tokenOut,
   };
 }
 ```
