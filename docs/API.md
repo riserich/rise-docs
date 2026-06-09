@@ -37,6 +37,7 @@ Trade Rise tokens in 3 steps: **quote → trade → sign & send**.
 | 10 | [`POST /program/deposit-and-borrow`](#post-programdeposit-and-borrow) | Deposit collateral + borrow in one tx |
 | 11 | [`POST /program/repay-and-withdraw`](#post-programrepay-and-withdraw) | Repay debt + withdraw in one tx |
 | 12 | [`GET /markets`](#get-markets) | List all markets (filter, sort, paginate) |
+| 13 | [`GET /markets/{address}/holders`](#get-marketsaddressholders) | List token holders (paginated) |
 
 > **Minimum integration:** just endpoints 4 + 5 (quote + buy). Endpoint 1 is useful to get all market data (price, floor, volume, holders, etc.).
 
@@ -51,6 +52,7 @@ Limits are per API key, measured over a rolling 60-second window.
 | `GET /markets` | 40 |
 | `GET /markets/{address}` | 55 |
 | `GET /markets/{address}/transactions` | 60 |
+| `GET /markets/{address}/holders` | 60 |
 | `GET /markets/{address}/ohlc/{timeframe}` | 20 |
 | `POST /markets/{address}/quote` | 40 |
 | `POST /markets/{address}/borrow/quote` | 40 |
@@ -200,6 +202,60 @@ GET /markets/{tokenMintOrRiseMarketAddress}/transactions?page=1&limit=50
 ```
 
 **Transaction types:** `create`, `buy`, `sell`, `borrow`, `repay`, `deposit`, `withdraw`, `withdraw_creator_fees`
+
+</details>
+
+---
+
+<details>
+<summary><strong>GET /markets/{address}/holders</strong> — List token holders</summary>
+
+```
+GET /markets/{tokenMintOrRiseMarketAddress}/holders?page=1&limit=100
+```
+
+| Param | Type | |
+|-------|------|-|
+| `page` | number | Page number (default: 1) |
+| `limit` | number | Holders per page (default: 100, max: 10000) |
+
+Holders are sorted by total amount descending. Each row aggregates the wallet balance and the leverage-deposit balance, so a user who holds tokens both freely and as collateral appears once with the combined total.
+
+**Response:**
+```json
+{
+  "ok": true,
+  "rise_market_address": "Dmryq83qiuGuRjd36QkY5Y2cEFZajqrhuXW8kYVG1z2E",
+  "mint_token": "7MsJCvDi5t5U3Ya2UAs5bR75VJyVMr2FKdzGmeg2rise",
+  "token_symbol": "NEVERZERO",
+  "token_decimals": 9,
+  "token_supply": "50312155495897412",
+  "last_updated": "2025-01-15T12:30:00.000Z",
+  "total": 5066,
+  "page": 1,
+  "limit": 100,
+  "totalPages": 51,
+  "holders": [
+    {
+      "owner": "9B5X1CK5m2Q6S9V1W4Y7Z3A5B8C1D2E5F9G2H5J",
+      "wallet_amount": "1500000000000",
+      "deposited_amount": "500000000000",
+      "total_amount": "2000000000000",
+      "percentage": "3.97"
+    }
+  ]
+}
+```
+
+| Field | Description |
+|---|---|
+| `wallet_amount` | Raw token amount in the user's wallet (regular ATA) |
+| `deposited_amount` | Raw token amount deposited as leverage collateral |
+| `total_amount` | `wallet_amount + deposited_amount` (raw) |
+| `percentage` | `total_amount / token_supply × 100`, 4 decimals |
+| `last_updated` | Snapshot timestamp. Refreshed every 3 min for active markets, every hour for the rest |
+
+Raw amounts use `token_decimals` (typically 9 for SOL-quoted markets, 6 for USDC-quoted). Divide by `10^token_decimals` for the human-readable amount.
 
 </details>
 
