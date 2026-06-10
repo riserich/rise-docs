@@ -381,6 +381,8 @@ function parseBuyEvent(data: Buffer) {
 
 After parsing an event, you can compute the current token price using the bonding curve parameters:
 
+The bonding curve has three regions: a flat floor, a shoulder, and the main line.
+
 ```typescript
 function calculatePrice(
   tokenSupply: number,  // human-readable (RAW / 10^decimals)
@@ -390,13 +392,16 @@ function calculatePrice(
   x2: number,           // human-readable
   b2: number,
 ): number {
-  if (tokenSupply <= x2) {
-    return floor + m1 * tokenSupply;
-  } else {
-    return floor + m2 * tokenSupply + b2;
-  }
+  const b1 = (m2 - m1) * x2 + b2;
+  const x1 = Math.abs(m1) < 1e-30 ? Infinity : (floor - b1) / m1;
+
+  if (tokenSupply <= x1) return floor;          // floor region
+  if (tokenSupply <= x2) return m1 * tokenSupply + b1; // shoulder region
+  return m2 * tokenSupply + b2;                 // main region
 }
 ```
+
+This matches the `calculatePrice` function in the Rise SDK (`quote.ts`) and the backend exactly — the backend is the source of truth for all prices served by the API.
 
 ### Rust Decimal Deserialization
 
