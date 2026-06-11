@@ -80,12 +80,10 @@ if (ENV.INTEGRATION) {
 
 Rate limits are unchanged — same config as `INTEGRATION=false`.
 
-**Public endpoints (no API key):** a few read-only endpoints for external aggregators are mounted before `apiKeyAuth`, so they stay reachable without a key:
+**Public endpoints (no API key):**
 - `GET /markets/:id/supply` — circulating supply (Jupiter)
 - `GET /verified-tokens` — list of verified token mints (DexScreener)
 - `GET /public/defillama/*` — volume & fees adapters (DefiLlama)
-
-Note: In integration mode, all program routes are still technically mounted, but integrators only need `buyToken` and `sellToken`. The other program endpoints are restricted to the whitelist above.
 
 ---
 
