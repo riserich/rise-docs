@@ -271,15 +271,15 @@ GET /markets/{tokenMintOrRiseMarketAddress}/ohlc/{timeframe}?limit=1000
 | Param | Type | |
 |-------|------|-|
 | `timeframe` | string | `1m`, `5m`, `1h`, or `1d` |
-| `limit` | number | Max candles to return (default varies by timeframe, max: 10000) |
+| `limit` | number | Max candles to return (default varies by timeframe, max: 2000) |
 
 **Default limits by timeframe:**
 
 | Timeframe | Default limit | Covers approximately |
 |-----------|--------------|---------------------|
-| `1m` | 10,000 | ~7 days |
-| `5m` | 5,000 | ~17 days |
-| `1h` | 3,000 | ~4 months |
+| `1m` | 2,000 | ~1.4 days |
+| `5m` | 2,000 | ~7 days |
+| `1h` | 2,000 | ~2.8 months |
 | `1d` | 1,000 | ~2.7 years |
 
 **Response:**
@@ -728,7 +728,7 @@ GET /markets?page=1&limit=20&sort=created&order=desc
 | Param | Type | |
 |-------|------|-|
 | `page` | number | Page number (default: `1`) |
-| `limit` | number | Results per page (default: `20`, max: `1000`) |
+| `limit` | number | Results per page (default: `20`, max: `50`) |
 
 **Sorting**
 
