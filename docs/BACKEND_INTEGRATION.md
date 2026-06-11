@@ -2,7 +2,7 @@
 
 Code changes needed in `uponly-backend` to support the public integration API.
 
-When `INTEGRATION=true`, only the 8 documented endpoints are accessible. All requests require a valid API key via the `x-api-key` header. Rate limits stay the same as the classic backend.
+When `INTEGRATION=true`, only the whitelisted endpoints below are accessible, and all require a valid API key via the `x-api-key` header. A small set of public endpoints (for external aggregators like DefiLlama, DexScreener and Jupiter) need no API key. Rate limits stay the same as the classic backend.
 
 ---
 
@@ -40,7 +40,7 @@ export function apiKeyAuth(req: Request, res: Response, next: NextFunction) {
 
 ## 3. Update `src/routes/index.ts` — Integration mode routing
 
-When `INTEGRATION` is true, apply `apiKeyAuth` and only mount the 3 routers needed for the 8 public endpoints:
+When `INTEGRATION` is true, apply `apiKeyAuth` and mount the routers for the whitelisted endpoints:
 
 ```ts
 import { ENV, SERVICE_MODE } from "../env.js";
@@ -49,13 +49,20 @@ import { apiKeyAuth } from "../middleware/apiKeyAuth.js";
 // ... existing imports ...
 
 if (ENV.INTEGRATION) {
-  // Integration mode: API key required, only expose documented endpoints
+  // Integration mode: API key required. Whitelisted endpoints:
+  // - GET  /markets
   // - GET  /markets/:id
   // - GET  /markets/:id/transactions
+  // - GET  /markets/:id/holders
   // - GET  /markets/:id/ohlc/:timeframe
+  // - GET  /markets/stream/new
   // - POST /markets/:id/quote
+  // - POST /markets/:id/borrow/quote
+  // - POST /program/create
   // - POST /program/buyToken
   // - POST /program/sellToken
+  // - POST /program/deposit-and-borrow
+  // - POST /program/repay-and-withdraw
   // - GET  /users/:addr/portfolio/summary
   // - GET  /users/:addr/portfolio/positions
   router.use(apiKeyAuth);
@@ -75,7 +82,12 @@ if (ENV.INTEGRATION) {
 
 Rate limits are unchanged — same config as `INTEGRATION=false`.
 
-Note: In integration mode, all program routes are still technically mounted, but integrators only need `buyToken` and `sellToken`. The other program endpoints (create, deposit, borrow, etc.) won't be documented.
+**Public endpoints (no API key):** a few read-only endpoints for external aggregators are mounted before `apiKeyAuth`, so they stay reachable without a key:
+- `GET /markets/:id/supply` — circulating supply (Jupiter)
+- `GET /verified-tokens` — list of verified token mints (DexScreener)
+- `GET /public/defillama/*` — volume & fees adapters (DefiLlama)
+
+Note: In integration mode, all program routes are still technically mounted, but integrators only need `buyToken` and `sellToken`. The other program endpoints are restricted to the whitelist above.
 
 ---
 

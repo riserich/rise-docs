@@ -139,6 +139,8 @@ Token metadata structure containing:
   - `dutchConfigDuration: u32`
   - `dutchConfigCurvature: f64`
   - `metadata: TokenMetadata`
+  - `disableSell: bool` - If `true`, selling is disabled for this market
+  - `creatorFeePercent: u8` - Creator's share of trading fees, 0–25 (stored as `creator_rev_percent`)
 
 **PDA Seeds:**
 - **Market**: `["market", rise_tenant, market_meta, bump]`
@@ -182,6 +184,9 @@ Purchases tokens by spending exact amount of cash. Optionally raises the floor p
 - `minTokenOut: u64` - Minimum tokens to receive (slippage protection)
 - `newShoulderEnd: u64` - New shoulder position for floor raise (0 to skip)
 - `floorIncreaseRatio: DecimalSerialized` - Ratio to increase floor price by
+- `maxNewFloor: DecimalSerialized` - Upper bound on the resulting floor after a same-tx raise
+- `maxAreaShrinkageToleranceUnits: u64` - Max allowed area-under-curve shrinkage for the raise
+- `minLiqRatio: DecimalSerialized` - Minimum liquidity ratio required to perform the raise
 
 ---
 
@@ -385,6 +390,8 @@ pub struct Market {
     pub total_fees_creator: u64,
     pub total_fees_creator_withdrawn: u64,
     pub total_fees_team: u64,
+    pub creator_rev_percent: u8,    // creator's share of trading fees (0–25)
+    pub starting_price: [u8; 16],   // initial price (rust_decimal), set at market creation
 }
 ```
 
