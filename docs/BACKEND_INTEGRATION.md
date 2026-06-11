@@ -55,10 +55,8 @@ if (ENV.INTEGRATION) {
   // - GET  /markets/:id/transactions
   // - GET  /markets/:id/holders
   // - GET  /markets/:id/ohlc/:timeframe
-  // - GET  /markets/stream/new
   // - POST /markets/:id/quote
   // - POST /markets/:id/borrow/quote
-  // - POST /program/create
   // - POST /program/buyToken
   // - POST /program/sellToken
   // - POST /program/deposit-and-borrow
