@@ -434,7 +434,7 @@ function deserializeRustDecimal(buf: Buffer): number {
 
 ## Floor Raise Events
 
-The Rise program has two floor raise methods. Both emit events but **neither includes the resulting floor price** — only the increase ratio.
+The Rise program has two floor raise methods (`raiseFloorPreserveArea` and `raiseFloorExcessLiquidity`). Each emits its own event below (which only carries the increase ratio, not the resulting floor). In addition, **both now also emit a `RaiseFloorCurveEvent`** that carries the full post-raise curve — so you can read the new floor (and the rest of the curve) straight from the event, with no on-chain fetch.
 
 ### RaiseFloorEvent (PreserveArea)
 
@@ -459,11 +459,38 @@ Emitted when the floor is raised using surplus collateral in the vault.
 | `increaseRatioMicroBasisPoints` | u32 | Floor increase ratio in micro basis points |
 | `timestamp` | u64 | Unix timestamp |
 
+### RaiseFloorCurveEvent
+
+Emitted via `emit_cpi` by **both** raise-floor instructions, in addition to the event above. Carries the full post-raise curve snapshot, so indexers can read the new floor and curve **directly from the event** — no need to RPC-fetch the Mayflower market account after a floor raise.
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `market` | PublicKey | Rise market address |
+| `floor` | Decimal (16 bytes) | New floor price (post-raise) |
+| `tokenSupply` | u64 | Token supply |
+| `m1` | Decimal (16 bytes) | Shoulder slope (× decimalsFactor) |
+| `m2` | Decimal (16 bytes) | Main slope (× decimalsFactor) |
+| `x2` | u64 | Shoulder → main transition (raw token units) |
+| `b2` | Decimal (16 bytes) | Main-segment y-intercept |
+| `totalMainTokenInLiquidityPool` | u64 | Cash in the liquidity pool (raw) |
+| `totalMarketDebt` | u64 | Total market debt (raw) |
+| `totalCollateral` | u64 | Total deposited collateral (raw) |
+| `mintToken` | PublicKey | Market token mint |
+| `mintMain` | PublicKey | Collateral mint (SOL / USDC) |
+| `tokenDecimals` | u8 | Token decimals |
+
+All values are **post-raise** snapshots. Feed `floor`, `m1`, `m2`, `x2`, `b2`, `tokenSupply` into [`calculatePrice`](#computing-price-from-event-data) to get the new price.
+
+> The existing `RaiseFloorEvent` / `RaiseFloorExcessLiquidityEvent` are unchanged, so any current log-based indexing keeps working — `RaiseFloorCurveEvent` is additive.
+>
+> Both raise-floor instructions now also take 2 extra accounts (`event_authority`, `program`) required by `emit_cpi`. Only the protocol keeper calls these instructions.
+
 ### Event Discriminators
 
 ```typescript
 const RAISE_FLOOR_DISC = eventDiscriminator("RaiseFloorEvent");
 const RAISE_FLOOR_EXCESS_DISC = eventDiscriminator("RaiseFloorExcessLiquidityEvent");
+const RAISE_FLOOR_CURVE_DISC = eventDiscriminator("RaiseFloorCurveEvent");
 ```
 
 ---
@@ -476,9 +503,11 @@ The floor price can be tracked in two ways:
 
 Every `BuyWithExactCashInEvent` and `SellWithExactTokenInEvent` includes the current `floor` field. This is the easiest way — just read it from every trade event.
 
-### 2. After Floor Raise Instructions (fetch on-chain)
+### 2. After Floor Raise Instructions
 
-Floor raise events don't contain the resulting floor value. After detecting a `raiseFloorPreserveArea` or `raiseFloorExcessLiquidity` instruction, fetch the Mayflower market account (account index 5) to read the updated floor:
+The easiest way is to read `RaiseFloorCurveEvent` (emitted by both raise-floor instructions) — its `floor` field is the new post-raise floor, no fetch required.
+
+If you'd rather not parse that event, you can fetch the Mayflower market account (account index 5) after detecting a `raiseFloorPreserveArea` or `raiseFloorExcessLiquidity` instruction to read the updated floor:
 
 ```typescript
 // After detecting a floor raise instruction:

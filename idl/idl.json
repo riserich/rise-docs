@@ -1664,6 +1664,16 @@
           "docs": [
             "Mayflower log account for event emission"
           ]
+        },
+        {
+          "name": "eventAuthority",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "program",
+          "isMut": false,
+          "isSigner": false
         }
       ],
       "args": [
@@ -1775,6 +1785,16 @@
           "docs": [
             "Mayflower log account for event emission"
           ]
+        },
+        {
+          "name": "eventAuthority",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "program",
+          "isMut": false,
+          "isSigner": false
         }
       ],
       "args": [
@@ -4600,6 +4620,96 @@
         {
           "name": "escrow",
           "type": "publicKey",
+          "index": false
+        }
+      ]
+    },
+    {
+      "name": "RaiseFloorCurveEvent",
+      "fields": [
+        {
+          "name": "market",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "floor",
+          "type": {
+            "array": [
+              "u8",
+              16
+            ]
+          },
+          "index": false
+        },
+        {
+          "name": "tokenSupply",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "m1",
+          "type": {
+            "array": [
+              "u8",
+              16
+            ]
+          },
+          "index": false
+        },
+        {
+          "name": "m2",
+          "type": {
+            "array": [
+              "u8",
+              16
+            ]
+          },
+          "index": false
+        },
+        {
+          "name": "x2",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "b2",
+          "type": {
+            "array": [
+              "u8",
+              16
+            ]
+          },
+          "index": false
+        },
+        {
+          "name": "totalMainTokenInLiquidityPool",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "totalMarketDebt",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "totalCollateral",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "mintToken",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "mintMain",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "tokenDecimals",
+          "type": "u8",
           "index": false
         }
       ]
