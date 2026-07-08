@@ -4207,6 +4207,16 @@
           "name": "tokenOut",
           "type": "u64",
           "index": false
+        },
+        {
+          "name": "netCurveIn",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "fees",
+          "type": "u64",
+          "index": false
         }
       ]
     },
@@ -4474,6 +4484,16 @@
           "name": "escrow",
           "type": "publicKey",
           "index": false
+        },
+        {
+          "name": "netCurveIn",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "fees",
+          "type": "u64",
+          "index": false
         }
       ]
     },
@@ -4620,6 +4640,16 @@
         {
           "name": "escrow",
           "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "netCurveOut",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "fees",
+          "type": "u64",
           "index": false
         }
       ]
@@ -4927,6 +4957,16 @@
           "name": "totalMarketDebt",
           "type": "u64",
           "index": false
+        },
+        {
+          "name": "netCurveOut",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "fees",
+          "type": "u64",
+          "index": false
         }
       ]
     },
@@ -5076,6 +5116,11 @@
       "code": 6021,
       "name": "InvalidCreatorFeePercent",
       "msg": "Creator fee percent must be between 0 and 25"
+    },
+    {
+      "code": 6022,
+      "name": "AmountTooSmall",
+      "msg": "Trade amount is below the minimum allowed"
     }
   ]
 }

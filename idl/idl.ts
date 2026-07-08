@@ -4207,6 +4207,16 @@ export type Rise = {
           "name": "tokenOut",
           "type": "u64",
           "index": false
+        },
+        {
+          "name": "netCurveIn",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "fees",
+          "type": "u64",
+          "index": false
         }
       ]
     },
@@ -4474,6 +4484,16 @@ export type Rise = {
           "name": "escrow",
           "type": "publicKey",
           "index": false
+        },
+        {
+          "name": "netCurveIn",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "fees",
+          "type": "u64",
+          "index": false
         }
       ]
     },
@@ -4620,6 +4640,16 @@ export type Rise = {
         {
           "name": "escrow",
           "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "netCurveOut",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "fees",
+          "type": "u64",
           "index": false
         }
       ]
@@ -4927,6 +4957,16 @@ export type Rise = {
           "name": "totalMarketDebt",
           "type": "u64",
           "index": false
+        },
+        {
+          "name": "netCurveOut",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "fees",
+          "type": "u64",
+          "index": false
         }
       ]
     },
@@ -5076,6 +5116,11 @@ export type Rise = {
       "code": 6021,
       "name": "InvalidCreatorFeePercent",
       "msg": "Creator fee percent must be between 0 and 25"
+    },
+    {
+      "code": 6022,
+      "name": "AmountTooSmall",
+      "msg": "Trade amount is below the minimum allowed"
     }
   ]
 };
@@ -9289,6 +9334,16 @@ export const IDL: Rise = {
           "name": "tokenOut",
           "type": "u64",
           "index": false
+        },
+        {
+          "name": "netCurveIn",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "fees",
+          "type": "u64",
+          "index": false
         }
       ]
     },
@@ -9556,6 +9611,16 @@ export const IDL: Rise = {
           "name": "escrow",
           "type": "publicKey",
           "index": false
+        },
+        {
+          "name": "netCurveIn",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "fees",
+          "type": "u64",
+          "index": false
         }
       ]
     },
@@ -9702,6 +9767,16 @@ export const IDL: Rise = {
         {
           "name": "escrow",
           "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "netCurveOut",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "fees",
+          "type": "u64",
           "index": false
         }
       ]
@@ -10009,6 +10084,16 @@ export const IDL: Rise = {
           "name": "totalMarketDebt",
           "type": "u64",
           "index": false
+        },
+        {
+          "name": "netCurveOut",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "fees",
+          "type": "u64",
+          "index": false
         }
       ]
     },
@@ -10158,6 +10243,11 @@ export const IDL: Rise = {
       "code": 6021,
       "name": "InvalidCreatorFeePercent",
       "msg": "Creator fee percent must be between 0 and 25"
+    },
+    {
+      "code": 6022,
+      "name": "AmountTooSmall",
+      "msg": "Trade amount is below the minimum allowed"
     }
   ]
 };
