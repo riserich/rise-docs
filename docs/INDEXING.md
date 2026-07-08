@@ -34,6 +34,8 @@ Emitted on every buy transaction.
 | `totalMainTokenInLiquidityPool` | u64 | Base-currency balance in the Mayflower liquidity pool after the trade (TVL proxy) |
 | `totalMarketDebt` | u64 | Sum of debt across all positions on the Mayflower market after the trade |
 | `tokenOut` | u64 | Exact tokens minted to the buyer (RAW). Use this directly as "tokens received" — no need to derive it from pre/post token balances |
+| `netCurveIn` | u64 | Fee-exclusive cash that actually entered the bonding-curve reserve for this swap — i.e. the amount the curve used to mint the tokens. `cashIn = netCurveIn + fees`. Use it for price: `netCurveIn / tokenOut` |
+| `fees` | u64 | The exact protocol fee paid by **this swap only** — never accumulated, not related to `revSplit`. Sum of the market-group + platform fee for the swap (buy 1.25%), as the exact amount computed by the protocol (not recomputed from rates) |
 
 ### SellWithExactTokenInEvent
 
@@ -57,6 +59,8 @@ Emitted on every sell transaction.
 | `tokenDecimals` | u8 | Token decimal places |
 | `totalMainTokenInLiquidityPool` | u64 | Base-currency balance in the Mayflower liquidity pool after the trade (TVL proxy) |
 | `totalMarketDebt` | u64 | Sum of debt across all positions on the Mayflower market after the trade |
+| `netCurveOut` | u64 | Fee-exclusive cash the bonding curve paid for the tokens sold — the swap's value on the curve, before the fee was skimmed from the payout. `netCurveOut = cashOut + fees`. Use it for price: `netCurveOut / tokenIn` |
+| `fees` | u64 | The exact protocol fee paid by **this swap only** — never accumulated, not related to `revSplit`. Sum of the market-group + platform fee for the swap, as the exact amount computed by the protocol (not recomputed from rates) |
 
 ### BorrowEvent
 
@@ -130,8 +134,10 @@ Emitted on every `leverageBuy` transaction. The instruction internally borrows, 
 | `depositedTokenBalance` | u64 | Collateral balance on the buyer's position after the op (RAW) |
 | `debt` | u64 | Debt balance on the buyer's position after the op (RAW) |
 | `escrow` | PublicKey | Escrow token account holding the position's collateral |
+| `netCurveIn` | u64 | Fee-exclusive cash that actually entered the bonding-curve reserve for the buy leg (own funds + borrowed, after fees). Use it for price: `netCurveIn / actualIncreaseCollateralBy` |
+| `fees` | u64 | The exact protocol fee paid by **this transaction's swap only** — never accumulated, not related to `revSplit`. Market-group + platform fee for the swap, plus the borrow fee (buy 1.25% + borrow 3%), as the exact amounts computed by the protocol (not recomputed from rates) |
 
-Fields from `floor` onward are a **post-transaction snapshot** of the market curve and the buyer's position, appended so an indexer can record the full market + position state from the event alone — no RPC fetch of the Mayflower market / position accounts needed.
+Fields from `floor` through `escrow` are a **post-transaction snapshot** of the market curve and the buyer's position, appended so an indexer can record the full market + position state from the event alone — no RPC fetch of the Mayflower market / position accounts needed. The trailing `netCurveIn` / `fees` describe the swap economics of this transaction.
 
 Total cash that flowed into the curve = `exactCashIn + increaseDebtBy` (less the buy fee and borrow fee). Multiplier = `(exactCashIn + increaseDebtBy) / exactCashIn`; when `exactCashIn = 0` the trade is fully leveraged.
 
@@ -165,8 +171,10 @@ Emitted on every `leverageSell` transaction. The instruction withdraws collatera
 | `depositedTokenBalance` | u64 | Collateral balance on the seller's position after the op (RAW) |
 | `debt` | u64 | Debt balance on the seller's position after the op (RAW) |
 | `escrow` | PublicKey | Escrow token account holding the position's collateral |
+| `netCurveOut` | u64 | Fee-exclusive cash the bonding curve paid for the tokens sold — the swap's value on the curve, before the fee was skimmed from the payout. `netCurveOut = actualCashToUser + decreaseDebtBy + fees`. Use it for price: `netCurveOut / decreaseCollateralBy` |
+| `fees` | u64 | The exact protocol fee paid by **this transaction's swap only** — never accumulated, not related to `revSplit`. Market-group + platform fee for the swap, as the exact amount computed by the protocol (not recomputed from rates) |
 
-Fields from `floor` onward are a **post-transaction snapshot** of the market curve and the seller's position, appended so an indexer can record the full market + position state from the event alone — no RPC fetch needed. On a full close (`depositedTokenBalance` and `debt` both `0`) the position may be closed on-chain; the snapshot still carries the final zeroed state.
+Fields from `floor` through `escrow` are a **post-transaction snapshot** of the market curve and the seller's position, appended so an indexer can record the full market + position state from the event alone — no RPC fetch needed. On a full close (`depositedTokenBalance` and `debt` both `0`) the position may be closed on-chain; the snapshot still carries the final zeroed state. The trailing `netCurveOut` / `fees` describe the swap economics of this transaction.
 
 Deleverage percentage = `decreaseDebtBy / pre_tx_debt × 100` (read `pre_tx_debt` from your own state — it's not on the event).
 
