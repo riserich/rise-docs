@@ -35,9 +35,10 @@ Trade Rise tokens in 3 steps: **quote → trade → sign & send**.
 | 8 | [`GET /users/{wallet}/portfolio/positions`](#get-userswalletportfoliopositions) | All positions |
 | 9 | [`POST /markets/{address}/borrow/quote`](#post-marketsaddressborrowquote) | Preview borrowing capacity |
 | 10 | [`POST /program/deposit-and-borrow`](#post-programdeposit-and-borrow) | Deposit collateral + borrow in one tx |
-| 11 | [`POST /program/repay-and-withdraw`](#post-programrepay-and-withdraw) | Repay debt + withdraw in one tx |
-| 12 | [`GET /markets`](#get-markets) | List all markets (filter, sort, paginate) |
-| 13 | [`GET /markets/{address}/holders`](#get-marketsaddressholders) | List token holders (paginated) |
+| 11 | [`POST /markets/{address}/repay/quote`](#post-marketsaddressrepayquote) | Preview repay + withdrawable collateral |
+| 12 | [`POST /program/repay-and-withdraw`](#post-programrepay-and-withdraw) | Repay debt + withdraw in one tx |
+| 13 | [`GET /markets`](#get-markets) | List all markets (filter, sort, paginate) |
+| 14 | [`GET /markets/{address}/holders`](#get-marketsaddressholders) | List token holders (paginated) |
 
 > **Minimum integration:** just endpoints 4 + 5 (quote + buy). Endpoint 1 is useful to get all market data (price, floor, volume, holders, etc.).
 
@@ -56,6 +57,7 @@ Limits are per API key, measured over a rolling 60-second window.
 | `GET /markets/{address}/ohlc/{timeframe}` | 20 |
 | `POST /markets/{address}/quote` | 40 |
 | `POST /markets/{address}/borrow/quote` | 40 |
+| `POST /markets/{address}/repay/quote` | 40 |
 | `POST /program/buyToken` | 30 |
 | `POST /program/sellToken` | 30 |
 | `POST /program/deposit-and-borrow` | 10 |
@@ -659,6 +661,71 @@ Combines deposit + borrow into a single atomic transaction. The backend computes
 | `borrowAmount` | Gross borrow amount before fee (RAW) |
 | `borrowAmountAfterFee` | Net amount you receive after fee |
 | `includedDeposit` | Whether a deposit instruction was included |
+
+</details>
+
+---
+
+<details>
+<summary><strong>POST /markets/{address}/repay/quote</strong> — Preview repay + withdrawable collateral</summary>
+
+```
+POST /markets/{tokenMintOrRiseMarketAddress}/repay/quote
+```
+
+Returns the current lending position for a user on a market — outstanding debt, deposited collateral, and how much collateral is withdrawable. This is the companion of `borrow/quote` for closing a position: use it to get the parameters for [`POST /program/repay-and-withdraw`](#post-programrepay-and-withdraw). Optionally, pass `repayAmount` to see the state after repaying that amount (remaining debt + how much you can then withdraw).
+
+To fully close a position, read `depositedTokens` and pass it as `withdrawAmount` to `repay-and-withdraw` — the backend computes the repay that clears the debt.
+
+**Body:**
+```json
+{
+  "wallet": "YOUR_WALLET_PUBLIC_KEY",
+  "repayAmount": 30000000
+}
+```
+
+| Param | Type | |
+|-------|------|-|
+| `wallet` | string | Your wallet public key |
+| `repayAmount` | number | *(optional)* Amount of debt to repay (RAW) — returns remaining debt + withdrawable collateral after this repay |
+
+**Response:**
+```json
+{
+  "ok": true,
+  "debt": "30000000",
+  "debtUsd": "4.35",
+  "maxRepayable": "30000000",
+  "maxRepayableFromWallet": "30000000",
+  "maxRepayableFromWalletUsd": "4.35",
+  "walletBalance": "500000000",
+  "depositedTokens": "150000000000",
+  "floorPrice": "0.000800",
+  "collateralValue": "120000000",
+  "currentBorrowCapacity": "90000000",
+  "withdrawableWithoutRepay": "112500000000",
+  "remainingDebt": "0",
+  "remainingDebtUsd": "0.00",
+  "borrowCapacityAfterRepay": "120000000",
+  "withdrawableTokens": "150000000000"
+}
+```
+
+| Field | What it is |
+|-------|-----------|
+| `debt` | Current outstanding debt (RAW) |
+| `depositedTokens` | Tokens deposited as collateral (RAW) — pass as `withdrawAmount` to fully close |
+| `walletBalance` | User's collateral (mint_main) balance available to repay with (RAW) |
+| `maxRepayable` | Total debt that can be repaid (RAW) |
+| `maxRepayableFromWallet` | Repayable given the wallet balance = min(debt, balance) (RAW) |
+| `floorPrice` | Floor price used for LTV calculation |
+| `collateralValue` | Deposited collateral valued at the floor (RAW) |
+| `currentBorrowCapacity` | Remaining borrow capacity at current state (RAW) |
+| `withdrawableWithoutRepay` | Collateral withdrawable now without any repay (RAW) |
+| `remainingDebt` | *(only if `repayAmount` provided)* Debt left after the repay (RAW) |
+| `borrowCapacityAfterRepay` | *(only if `repayAmount` provided)* Borrow capacity after the repay (RAW) |
+| `withdrawableTokens` | *(only if `repayAmount` provided)* Collateral withdrawable after the repay (RAW) |
 
 </details>
 
