@@ -1,0 +1,6864 @@
+{
+  "address": "9nJ9wghEHY8bnsJQYrqV77uC9y4ccFHcCT1XyJxAkBVR",
+  "metadata": {
+    "name": "Rise Pro",
+    "version": "0.1.0",
+    "spec": "0.1.0",
+    "description": "Created with Anchor"
+  },
+  "instructions": [
+    {
+      "name": "accept_admin",
+      "docs": [
+        "Step 2 of an admin rotation, signed by the proposed key."
+      ],
+      "discriminator": [
+        112,
+        42,
+        45,
+        90,
+        116,
+        181,
+        13,
+        170
+      ],
+      "accounts": [
+        {
+          "name": "pending_admin",
+          "docs": [
+            "Proposed successor - must sign; validated against `config.pending_admin`."
+          ],
+          "signer": true
+        },
+        {
+          "name": "config",
+          "docs": [
+            "Global config PDA - `admin` and `pending_admin` are rewritten here."
+          ],
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "event_authority"
+        },
+        {
+          "name": "program"
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "borrow",
+      "docs": [
+        "Draw cash against locked collateral, capped at `F \u00d7 collateral`."
+      ],
+      "discriminator": [
+        228,
+        253,
+        131,
+        202,
+        207,
+        116,
+        89,
+        18
+      ],
+      "accounts": [
+        {
+          "name": "owner",
+          "docs": [
+            "Borrower - must own the position (has_one). Pays rent if `owner_cash`",
+            "is created."
+          ],
+          "writable": true,
+          "signer": true,
+          "relations": [
+            "position"
+          ]
+        },
+        {
+          "name": "market",
+          "docs": [
+            "Rise market lending the cash - holds the reserves, debt totals, and the",
+            "floor price `F`; signs the vault payouts as vault authority.",
+            "PDA derived from [\"market\", mint_token]."
+          ],
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  109,
+                  97,
+                  114,
+                  107,
+                  101,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "market.mint_token",
+                "account": "Market"
+              }
+            ]
+          }
+        },
+        {
+          "name": "position",
+          "docs": [
+            "Borrower's lending position - collateral backs the draw, debt is increased.",
+            "PDA derived from [\"position\", market, owner]; has_one pins the owner."
+          ],
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  112,
+                  111,
+                  115,
+                  105,
+                  116,
+                  105,
+                  111,
+                  110
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "market"
+              },
+              {
+                "kind": "account",
+                "path": "owner"
+              }
+            ]
+          }
+        },
+        {
+          "name": "vault",
+          "docs": [
+            "Market cash vault - source of the borrowed cash and all fee legs.",
+            "Validated to match `market.vault`."
+          ],
+          "writable": true
+        },
+        {
+          "name": "creator_claim",
+          "docs": [
+            "Creator fee escrow - receives the creator leg of the origination fee.",
+            "Validated to match `market.creator_claim`."
+          ],
+          "writable": true
+        },
+        {
+          "name": "team_vault",
+          "docs": [
+            "**Pinned by seeds**, not left bare. This account receives the team fee leg, and",
+            "on the vault-funded paths that leg is paid out by the market PDA \u2014 so an",
+            "unconstrained account here would let any caller redirect the team fee to",
+            "themselves. Re-derived from `[TEAM_VAULT_SEED, mint_main]`, the same account",
+            "`withdraw_team_fees` sweeps, which is what makes the destination structural."
+          ],
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  116,
+                  101,
+                  97,
+                  109,
+                  95,
+                  118,
+                  97,
+                  117,
+                  108,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "mint_main"
+              }
+            ]
+          }
+        },
+        {
+          "name": "mint_main",
+          "docs": [
+            "Base currency mint (e.g., USDC) - validated to match `market.mint_main`."
+          ]
+        },
+        {
+          "name": "owner_cash",
+          "docs": [
+            "Receives the borrowed cash \u2014 created on the fly if the borrower has never",
+            "held the collateral (init_if_needed, rent paid by the borrower)."
+          ],
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "account",
+                "path": "owner"
+              },
+              {
+                "kind": "account",
+                "path": "token_program_main"
+              },
+              {
+                "kind": "account",
+                "path": "mint_main"
+              }
+            ],
+            "program": {
+              "kind": "const",
+              "value": [
+                140,
+                151,
+                37,
+                143,
+                78,
+                36,
+                137,
+                241,
+                187,
+                61,
+                16,
+                41,
+                20,
+                142,
+                13,
+                131,
+                11,
+                90,
+                19,
+                153,
+                218,
+                255,
+                16,
+                132,
+                4,
+                142,
+                123,
+                216,
+                219,
+                233,
+                248,
+                89
+              ]
+            }
+          }
+        },
+        {
+          "name": "token_program_main",
+          "docs": [
+            "Token program for base currency transfers."
+          ]
+        },
+        {
+          "name": "associated_token_program",
+          "docs": [
+            "Associated token program - needed to create `owner_cash` on the fly."
+          ],
+          "address": "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL"
+        },
+        {
+          "name": "system_program",
+          "docs": [
+            "System program for account creation."
+          ],
+          "address": "11111111111111111111111111111111"
+        },
+        {
+          "name": "event_authority"
+        },
+        {
+          "name": "program"
+        }
+      ],
+      "args": [
+        {
+          "name": "amount",
+          "type": "u64"
+        }
+      ]
+    },
+    {
+      "name": "buy",
+      "docs": [
+        "Buy with an exact cash amount. Quotes by bisection on the exact forward",
+        "cost, splits obligation-first, and asserts Law 1 before moving anything."
+      ],
+      "discriminator": [
+        102,
+        6,
+        61,
+        18,
+        1,
+        218,
+        235,
+        234
+      ],
+      "accounts": [
+        {
+          "name": "buyer",
+          "docs": [
+            "The buyer - signs, pays `cash_in` from `buyer_cash`, and pays rent for",
+            "`buyer_token` on a wallet's first buy."
+          ],
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "market",
+          "docs": [
+            "Rise market being bought into - PDA derived from `[MARKET_SEED, mint_token]`,",
+            "signs the mint CPI and holds the reserves ledger updated by this trade."
+          ],
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  109,
+                  97,
+                  114,
+                  107,
+                  101,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "market.mint_token",
+                "account": "Market"
+              }
+            ]
+          }
+        },
+        {
+          "name": "vault",
+          "docs": [
+            "Pinned by an `address` check against the key `Market` stored at creation, so a",
+            "substituted account is rejected."
+          ],
+          "writable": true
+        },
+        {
+          "name": "creator_claim",
+          "docs": [
+            "Creator claim account - receives the creator's leg of the buy fee.",
+            "Pinned by an `address` check against the key `Market` stored at creation."
+          ],
+          "writable": true
+        },
+        {
+          "name": "team_vault",
+          "docs": [
+            "**Global per collateral** \u2014 shared by every market on this mint. Taking it",
+            "writable is v1 parity by founder decision, and it is why buys on markets",
+            "sharing a collateral serialise: Solana orders transactions that write the",
+            "same account. The ledger-accrual alternative is recorded in the design.",
+            "**Pinned by seeds**, not left bare. This account receives the team fee leg, and",
+            "on the vault-funded paths that leg is paid out by the market PDA \u2014 so an",
+            "unconstrained account here would let any caller redirect the team fee to",
+            "themselves. Re-derived from `[TEAM_VAULT_SEED, mint_main]`, the same account",
+            "`withdraw_team_fees` sweeps, which is what makes the destination structural."
+          ],
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  116,
+                  101,
+                  97,
+                  109,
+                  95,
+                  118,
+                  97,
+                  117,
+                  108,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "mint_main"
+              }
+            ]
+          }
+        },
+        {
+          "name": "reflection_vault",
+          "docs": [
+            "on reflection markets; on a `reflection_bps == 0` market (incl. every",
+            "pre-upgrade market) it may not exist and is never touched. The seeds check",
+            "pins the address without requiring init; `transfer_checked` validates it as",
+            "a `mint_main` token account when the reflection leg actually fires."
+          ],
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  114,
+                  101,
+                  102,
+                  108,
+                  101,
+                  99,
+                  116,
+                  105,
+                  111,
+                  110,
+                  95,
+                  118,
+                  97,
+                  117,
+                  108,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "market"
+              }
+            ]
+          }
+        },
+        {
+          "name": "mint_token",
+          "docs": [
+            "Market token mint - `token_out` is minted from it to the buyer.",
+            "Validated to match `market.mint_token`, so a foreign mint is rejected."
+          ],
+          "writable": true
+        },
+        {
+          "name": "mint_main",
+          "docs": [
+            "Base currency mint (e.g., USDC) - buyer pays in this token.",
+            "Validated to match `market.mint_main`; needed for `transfer_checked` decimals."
+          ]
+        },
+        {
+          "name": "buyer_cash",
+          "docs": [
+            "Buyer's base-currency account - source of `cash_in`, debited by the three",
+            "transfer legs. Must already exist: whoever holds the funds holds the account."
+          ],
+          "writable": true
+        },
+        {
+          "name": "buyer_token",
+          "docs": [
+            "The buyer's canonical ATA for the market token, created on the fly on a",
+            "wallet's first buy (`init_if_needed` \u2014 a no-op when it exists, rent paid",
+            "by the buyer). Receiving accounts are init_if_needed; paying accounts",
+            "(`buyer_cash`) must exist \u2014 whoever holds the funds holds the account.",
+            "The `associated_token` constraints also pin the canonical ATA, which the",
+            "old bare `token::mint` check did not."
+          ],
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "account",
+                "path": "buyer"
+              },
+              {
+                "kind": "account",
+                "path": "token_program"
+              },
+              {
+                "kind": "account",
+                "path": "mint_token"
+              }
+            ],
+            "program": {
+              "kind": "const",
+              "value": [
+                140,
+                151,
+                37,
+                143,
+                78,
+                36,
+                137,
+                241,
+                187,
+                61,
+                16,
+                41,
+                20,
+                142,
+                13,
+                131,
+                11,
+                90,
+                19,
+                153,
+                218,
+                255,
+                16,
+                132,
+                4,
+                142,
+                123,
+                216,
+                219,
+                233,
+                248,
+                89
+              ]
+            }
+          }
+        },
+        {
+          "name": "token_program_main",
+          "docs": [
+            "Token program for base-currency transfers (vault, creator and team legs)."
+          ]
+        },
+        {
+          "name": "token_program",
+          "docs": [
+            "Token program for the market token - used by the mint CPI and `buyer_token`."
+          ]
+        },
+        {
+          "name": "associated_token_program",
+          "docs": [
+            "Associated token program - required by `init_if_needed` on `buyer_token`."
+          ],
+          "address": "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL"
+        },
+        {
+          "name": "system_program",
+          "docs": [
+            "System program for account creation (`buyer_token` rent on a first buy)."
+          ],
+          "address": "11111111111111111111111111111111"
+        },
+        {
+          "name": "event_authority"
+        },
+        {
+          "name": "program"
+        }
+      ],
+      "args": [
+        {
+          "name": "cash_in",
+          "type": "u64"
+        },
+        {
+          "name": "min_token_out",
+          "type": "u64"
+        }
+      ]
+    },
+    {
+      "name": "claim_creator_fees",
+      "docs": [
+        "Sweep a market's accrued creator fees. Signed by whoever is **currently**",
+        "`market.creator`, so a CTO hands the market over with its unclaimed earnings."
+      ],
+      "discriminator": [
+        0,
+        23,
+        125,
+        234,
+        156,
+        118,
+        134,
+        89
+      ],
+      "accounts": [
+        {
+          "name": "creator",
+          "docs": [
+            "Whoever is **currently** `market.creator`. That is the whole CTO story in one",
+            "constraint: a reassignment hands the market over with its unclaimed earnings,",
+            "because the right to claim follows the field rather than the person who earned",
+            "them. Two residuals were accepted with that decision \u2014 the admin can reassign",
+            "then claim, and the chain keeps no attribution of who earned what."
+          ],
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "market",
+          "docs": [
+            "Market whose fees are being claimed - source of truth for `creator` and",
+            "vault authority. PDA derived from [\"market\", mint_token]."
+          ],
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  109,
+                  97,
+                  114,
+                  107,
+                  101,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "market.mint_token",
+                "account": "Market"
+              }
+            ]
+          }
+        },
+        {
+          "name": "creator_claim",
+          "docs": [
+            "Creator-fee vault - accumulates the creator's fee share for this market;",
+            "the market PDA is its transfer authority. Derived from [\"creator_claim\", market]."
+          ],
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  114,
+                  101,
+                  97,
+                  116,
+                  111,
+                  114,
+                  95,
+                  99,
+                  108,
+                  97,
+                  105,
+                  109
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "market"
+              }
+            ]
+          }
+        },
+        {
+          "name": "mint_main",
+          "docs": [
+            "Base currency mint (e.g., USDC) - validated to match `market.mint_main`,",
+            "so the vault, destination, and `transfer_checked` all agree on the mint."
+          ]
+        },
+        {
+          "name": "destination",
+          "docs": [
+            "The creator's canonical collateral ATA \u2014 created on the fly on the first",
+            "claim (init_if_needed, rent paid by the creator). The associated_token",
+            "constraints also pin the destination to the creator, which the old bare",
+            "token::mint check did not."
+          ],
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "account",
+                "path": "creator"
+              },
+              {
+                "kind": "account",
+                "path": "token_program_main"
+              },
+              {
+                "kind": "account",
+                "path": "mint_main"
+              }
+            ],
+            "program": {
+              "kind": "const",
+              "value": [
+                140,
+                151,
+                37,
+                143,
+                78,
+                36,
+                137,
+                241,
+                187,
+                61,
+                16,
+                41,
+                20,
+                142,
+                13,
+                131,
+                11,
+                90,
+                19,
+                153,
+                218,
+                255,
+                16,
+                132,
+                4,
+                142,
+                123,
+                216,
+                219,
+                233,
+                248,
+                89
+              ]
+            }
+          }
+        },
+        {
+          "name": "token_program_main",
+          "docs": [
+            "Token program for base currency transfers."
+          ]
+        },
+        {
+          "name": "associated_token_program",
+          "docs": [
+            "Associated token program - required to create `destination` on first claim."
+          ],
+          "address": "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL"
+        },
+        {
+          "name": "system_program",
+          "docs": [
+            "System program for account creation (destination ATA rent)."
+          ],
+          "address": "11111111111111111111111111111111"
+        },
+        {
+          "name": "event_authority"
+        },
+        {
+          "name": "program"
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "close_reflection_epoch",
+      "docs": [
+        "Close a finished reflection epoch, returning its rent to the admin."
+      ],
+      "discriminator": [
+        125,
+        77,
+        243,
+        37,
+        170,
+        2,
+        131,
+        170
+      ],
+      "accounts": [
+        {
+          "name": "admin",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "config",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "market",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  109,
+                  97,
+                  114,
+                  107,
+                  101,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "market.mint_token",
+                "account": "Market"
+              }
+            ]
+          }
+        },
+        {
+          "name": "reflection_epoch",
+          "docs": [
+            "Closed here; its rent lamports return to `admin`."
+          ],
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  114,
+                  101,
+                  102,
+                  108,
+                  101,
+                  99,
+                  116,
+                  105,
+                  111,
+                  110,
+                  95,
+                  101,
+                  112,
+                  111,
+                  99,
+                  104
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "market"
+              },
+              {
+                "kind": "arg",
+                "path": "epoch_id"
+              }
+            ]
+          }
+        }
+      ],
+      "args": [
+        {
+          "name": "epoch_id",
+          "type": "u64"
+        }
+      ]
+    },
+    {
+      "name": "deposit",
+      "docs": [
+        "Lock market tokens as collateral."
+      ],
+      "discriminator": [
+        242,
+        35,
+        198,
+        137,
+        82,
+        225,
+        242,
+        182
+      ],
+      "accounts": [
+        {
+          "name": "owner",
+          "docs": [
+            "Depositor - signs the token transfer and pays rent if the position is created."
+          ],
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "market",
+          "docs": [
+            "Rise market being deposited into - its `total_collateral` is increased.",
+            "PDA derived from [\"market\", mint_token]."
+          ],
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  109,
+                  97,
+                  114,
+                  107,
+                  101,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "market.mint_token",
+                "account": "Market"
+              }
+            ]
+          }
+        },
+        {
+          "name": "position",
+          "docs": [
+            "Per-user lending position - tracks this owner's collateral and debt.",
+            "Created on first deposit (init_if_needed, rent paid by owner).",
+            "PDA derived from [\"position\", market, owner]."
+          ],
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  112,
+                  111,
+                  115,
+                  105,
+                  116,
+                  105,
+                  111,
+                  110
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "market"
+              },
+              {
+                "kind": "account",
+                "path": "owner"
+              }
+            ]
+          }
+        },
+        {
+          "name": "collateral_vault",
+          "docs": [
+            "Market collateral vault - receives the deposited tokens.",
+            "PDA derived from [\"collateral_vault\", market]."
+          ],
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  111,
+                  108,
+                  108,
+                  97,
+                  116,
+                  101,
+                  114,
+                  97,
+                  108,
+                  95,
+                  118,
+                  97,
+                  117,
+                  108,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "market"
+              }
+            ]
+          }
+        },
+        {
+          "name": "mint_token",
+          "docs": [
+            "Market token mint - validated to match `market.mint_token`."
+          ]
+        },
+        {
+          "name": "owner_token",
+          "docs": [
+            "Owner's market-token account - source of the deposit.",
+            "Constraints pin it to `mint_token`."
+          ],
+          "writable": true
+        },
+        {
+          "name": "token_program",
+          "docs": [
+            "Token program for market-token transfers."
+          ]
+        },
+        {
+          "name": "system_program",
+          "docs": [
+            "System program for position account creation."
+          ],
+          "address": "11111111111111111111111111111111"
+        },
+        {
+          "name": "event_authority"
+        },
+        {
+          "name": "program"
+        }
+      ],
+      "args": [
+        {
+          "name": "amount",
+          "type": "u64"
+        }
+      ]
+    },
+    {
+      "name": "distribute_reflection",
+      "docs": [
+        "Pay a batch of holders from the reflection vault. Bitmap-idempotent and",
+        "bounded by the frozen epoch pool. Holder ATAs ride in `remaining_accounts`."
+      ],
+      "discriminator": [
+        221,
+        85,
+        6,
+        200,
+        9,
+        79,
+        76,
+        30
+      ],
+      "accounts": [
+        {
+          "name": "admin",
+          "signer": true
+        },
+        {
+          "name": "config",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "market",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  109,
+                  97,
+                  114,
+                  107,
+                  101,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "market.mint_token",
+                "account": "Market"
+              }
+            ]
+          }
+        },
+        {
+          "name": "reflection_vault",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  114,
+                  101,
+                  102,
+                  108,
+                  101,
+                  99,
+                  116,
+                  105,
+                  111,
+                  110,
+                  95,
+                  118,
+                  97,
+                  117,
+                  108,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "market"
+              }
+            ]
+          }
+        },
+        {
+          "name": "reflection_epoch",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  114,
+                  101,
+                  102,
+                  108,
+                  101,
+                  99,
+                  116,
+                  105,
+                  111,
+                  110,
+                  95,
+                  101,
+                  112,
+                  111,
+                  99,
+                  104
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "market"
+              },
+              {
+                "kind": "arg",
+                "path": "epoch_id"
+              }
+            ]
+          }
+        },
+        {
+          "name": "mint_main"
+        },
+        {
+          "name": "token_program_main"
+        },
+        {
+          "name": "event_authority"
+        },
+        {
+          "name": "program"
+        }
+      ],
+      "args": [
+        {
+          "name": "epoch_id",
+          "type": "u64"
+        },
+        {
+          "name": "entries",
+          "type": {
+            "vec": {
+              "defined": {
+                "name": "ReflectionPayout"
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "init_config",
+      "docs": [
+        "Create the protocol singleton. Callable once. The signer becomes the admin."
+      ],
+      "discriminator": [
+        23,
+        235,
+        115,
+        232,
+        168,
+        96,
+        1,
+        231
+      ],
+      "accounts": [
+        {
+          "name": "initializer",
+          "docs": [
+            "Gated on a compile-time key rather than on `config.admin`, because there is",
+            "no admin yet \u2014 this instruction is what creates one.",
+            "",
+            "**The signer becomes the admin.** There is no `admin` argument: on a real",
+            "cluster the initializer and the admin are the same Squads multisig, so",
+            "passing it would add an argument whose only effect is a chance to mistype."
+          ],
+          "writable": true,
+          "signer": true,
+          "address": "7KMCpqVch6huFr1GmEk1KY8w5htxwCuNwuX6wSQm7doQ"
+        },
+        {
+          "name": "config",
+          "docs": [
+            "Singleton-ness is structural: `init` on a fixed-seed PDA fails on the",
+            "second call because the account already exists. No flag to check."
+          ],
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "system_program",
+          "docs": [
+            "System program for creating the config account."
+          ],
+          "address": "11111111111111111111111111111111"
+        },
+        {
+          "name": "event_authority"
+        },
+        {
+          "name": "program"
+        }
+      ],
+      "args": [
+        {
+          "name": "team_wallet",
+          "type": "pubkey"
+        }
+      ]
+    },
+    {
+      "name": "init_market",
+      "docs": [
+        "Permissionless market creation. Mint + vaults + curve params + snapshot."
+      ],
+      "discriminator": [
+        33,
+        253,
+        15,
+        116,
+        89,
+        25,
+        127,
+        236
+      ],
+      "accounts": [
+        {
+          "name": "creator",
+          "docs": [
+            "Market creator - pays rent for every account created here and is recorded",
+            "as `market.creator` (the initial claimant of creator fees)."
+          ],
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "config",
+          "docs": [
+            "Global config PDA - read for `current_fee_config_version` to pin the",
+            "fee config below. Seeds guarantee it is the program's singleton."
+          ],
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "fee_config",
+          "docs": [
+            "Pinned at creation and frozen for the market's life. Must be the currently",
+            "published version \u2014 a caller cannot reach back for cheaper old rates."
+          ],
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  102,
+                  101,
+                  101,
+                  95,
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "fee_config.version",
+                "account": "FeeConfig"
+              }
+            ]
+          }
+        },
+        {
+          "name": "collateral_config",
+          "docs": [
+            "The allowlist gate. Its mere existence is the permission: no",
+            "`CollateralConfig`, no market \u2014 and this account is read here, once, then",
+            "never again on any trade."
+          ],
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  111,
+                  108,
+                  108,
+                  97,
+                  116,
+                  101,
+                  114,
+                  97,
+                  108
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "mint_main"
+              }
+            ]
+          }
+        },
+        {
+          "name": "mint_main",
+          "docs": [
+            "Base currency mint (e.g., USDC) - the market's cash side. Validated to be",
+            "owned by `token_program_main`; further screened in the handler for unsafe",
+            "Token-2022 extensions."
+          ]
+        },
+        {
+          "name": "mint_token",
+          "docs": [
+            "Token-2022 metadata extension, and we deliberately allocate the *maximum* so",
+            "a CTO metadata rewrite never needs a realloc."
+          ],
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  109,
+                  105,
+                  110,
+                  116
+                ]
+              },
+              {
+                "kind": "arg",
+                "path": "args.vanity_seed"
+              }
+            ]
+          }
+        },
+        {
+          "name": "market",
+          "docs": [
+            "Rise market state being created - the immutable snapshot of curve, fee and",
+            "glide parameters. PDA derived from [\"market\", mint_token], so one market",
+            "exists per mint."
+          ],
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  109,
+                  97,
+                  114,
+                  107,
+                  101,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "mint_token"
+              }
+            ]
+          }
+        },
+        {
+          "name": "vault",
+          "docs": [
+            "The single cash vault. `floor_reserve` and `price_reserve` are ledgers on",
+            "`Market` pointing into this one account, never separate vaults."
+          ],
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  118,
+                  97,
+                  117,
+                  108,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "market"
+              }
+            ]
+          }
+        },
+        {
+          "name": "creator_claim",
+          "docs": [
+            "Claimable only by whoever is *currently* `market.creator`, so a CTO hands",
+            "the market over with its unclaimed earnings."
+          ],
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  114,
+                  101,
+                  97,
+                  116,
+                  111,
+                  114,
+                  95,
+                  99,
+                  108,
+                  97,
+                  105,
+                  109
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "market"
+              }
+            ]
+          }
+        },
+        {
+          "name": "collateral_vault",
+          "docs": [
+            "not exist yet when Anchor evaluates constraints."
+          ],
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  111,
+                  108,
+                  108,
+                  97,
+                  116,
+                  101,
+                  114,
+                  97,
+                  108,
+                  95,
+                  118,
+                  97,
+                  117,
+                  108,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "market"
+              }
+            ]
+          }
+        },
+        {
+          "name": "reflection_vault",
+          "docs": [
+            "Reflection-reward vault (collateral). Created for every market \u2014 holds the",
+            "reflection tax until distribution; stays empty on a `reflection_bps == 0`",
+            "market. `mint_main`-denominated, so it can use Anchor `init` like `vault`."
+          ],
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  114,
+                  101,
+                  102,
+                  108,
+                  101,
+                  99,
+                  116,
+                  105,
+                  111,
+                  110,
+                  95,
+                  118,
+                  97,
+                  117,
+                  108,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "market"
+              }
+            ]
+          }
+        },
+        {
+          "name": "token_program_main",
+          "docs": [
+            "Token program owning `mint_main` (Token or Token-2022) - used for the cash",
+            "vault and creator claim accounts."
+          ]
+        },
+        {
+          "name": "token_program",
+          "docs": [
+            "Always Token-2022: the market mint carries the metadata extension."
+          ]
+        },
+        {
+          "name": "system_program",
+          "docs": [
+            "System program for account creation."
+          ],
+          "address": "11111111111111111111111111111111"
+        },
+        {
+          "name": "event_authority"
+        },
+        {
+          "name": "program"
+        }
+      ],
+      "args": [
+        {
+          "name": "args",
+          "type": {
+            "defined": {
+              "name": "InitMarketArgs"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "leverage_buy",
+      "docs": [
+        "Borrow, buy, and lock the result as collateral, atomically. The borrowed cash",
+        "never leaves the vault \u2014 the borrow's payout and the buy's payment cancel \u2014 so",
+        "this costs the same three transfers as a plain buy."
+      ],
+      "discriminator": [
+        113,
+        153,
+        55,
+        91,
+        207,
+        24,
+        175,
+        171
+      ],
+      "accounts": [
+        {
+          "name": "buyer",
+          "docs": [
+            "Buyer - signs, funds `cash_in`, and pays rent for the position on first use."
+          ],
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "market",
+          "docs": [
+            "Rise market being levered into - holds every ledger and signs the vault-funded",
+            "legs and the mint. PDA derived from [\"market\", mint_token]."
+          ],
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  109,
+                  97,
+                  114,
+                  107,
+                  101,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "market.mint_token",
+                "account": "Market"
+              }
+            ]
+          }
+        },
+        {
+          "name": "position",
+          "docs": [
+            "Buyer's loan position - tracks collateral and debt. PDA derived from",
+            "[\"position\", market, buyer]; created on the first leveraged buy",
+            "(`init_if_needed`, rent paid by the buyer)."
+          ],
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  112,
+                  111,
+                  115,
+                  105,
+                  116,
+                  105,
+                  111,
+                  110
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "market"
+              },
+              {
+                "kind": "account",
+                "path": "buyer"
+              }
+            ]
+          }
+        },
+        {
+          "name": "vault",
+          "docs": [
+            "Main cash vault - receives `cash_in` and pays the fee legs. Pinned by an",
+            "`address` check against the key `Market` stored at creation, so a substituted",
+            "account is rejected."
+          ],
+          "writable": true
+        },
+        {
+          "name": "collateral_vault",
+          "docs": [
+            "The bought tokens are minted straight here. They are never in the buyer's",
+            "hands, which is what makes the loan's collateral unconditional rather than",
+            "dependent on a second signature."
+          ],
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  111,
+                  108,
+                  108,
+                  97,
+                  116,
+                  101,
+                  114,
+                  97,
+                  108,
+                  95,
+                  118,
+                  97,
+                  117,
+                  108,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "market"
+              }
+            ]
+          }
+        },
+        {
+          "name": "creator_claim",
+          "docs": [
+            "Creator claim account - receives the creator fee legs. Pinned by an `address`",
+            "check against the key stored at creation."
+          ],
+          "writable": true
+        },
+        {
+          "name": "team_vault",
+          "docs": [
+            "**Pinned by seeds**, not left bare. This account receives the team fee leg, and",
+            "on the vault-funded paths that leg is paid out by the market PDA \u2014 so an",
+            "unconstrained account here would let any caller redirect the team fee to",
+            "themselves. Re-derived from `[TEAM_VAULT_SEED, mint_main]`, the same account",
+            "`withdraw_team_fees` sweeps, which is what makes the destination structural."
+          ],
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  116,
+                  101,
+                  97,
+                  109,
+                  95,
+                  118,
+                  97,
+                  117,
+                  108,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "mint_main"
+              }
+            ]
+          }
+        },
+        {
+          "name": "reflection_vault",
+          "docs": [
+            "on reflection markets; on a `reflection_bps == 0` market (incl. every",
+            "pre-upgrade market) it may not exist and is never touched. `transfer_checked`",
+            "validates it when the reflection leg fires."
+          ],
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  114,
+                  101,
+                  102,
+                  108,
+                  101,
+                  99,
+                  116,
+                  105,
+                  111,
+                  110,
+                  95,
+                  118,
+                  97,
+                  117,
+                  108,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "market"
+              }
+            ]
+          }
+        },
+        {
+          "name": "mint_token",
+          "docs": [
+            "Market token mint - the bought tokens are minted from it into the collateral",
+            "vault. Validated to match `market.mint_token`."
+          ],
+          "writable": true
+        },
+        {
+          "name": "mint_main",
+          "docs": [
+            "Base currency mint (e.g., USDC) - the buyer pays in this token. Validated to",
+            "match `market.mint_main`."
+          ]
+        },
+        {
+          "name": "buyer_cash",
+          "docs": [
+            "Buyer's cash account - pays `cash_in`. Paying accounts must already exist",
+            "(never `init_if_needed`); constrained to the `mint_main` mint."
+          ],
+          "writable": true
+        },
+        {
+          "name": "token_program_main",
+          "docs": [
+            "Token program for base currency transfers."
+          ]
+        },
+        {
+          "name": "token_program",
+          "docs": [
+            "Token program for the market token - used for the mint into the collateral vault."
+          ]
+        },
+        {
+          "name": "system_program",
+          "docs": [
+            "System program for position account creation."
+          ],
+          "address": "11111111111111111111111111111111"
+        },
+        {
+          "name": "event_authority"
+        },
+        {
+          "name": "program"
+        }
+      ],
+      "args": [
+        {
+          "name": "cash_in",
+          "type": "u64"
+        },
+        {
+          "name": "borrow_amount",
+          "type": "u64"
+        },
+        {
+          "name": "min_token_out",
+          "type": "u64"
+        }
+      ]
+    },
+    {
+      "name": "leverage_sell",
+      "docs": [
+        "Sell collateral without releasing it, repay the debt from the proceeds, and pay",
+        "out the remainder. Closes a position whose debt exceeds the holder's free cash."
+      ],
+      "discriminator": [
+        158,
+        249,
+        120,
+        75,
+        3,
+        70,
+        48,
+        108
+      ],
+      "accounts": [
+        {
+          "name": "owner",
+          "docs": [
+            "Position owner - signs, receives the residual payout, and pays rent for",
+            "`owner_cash` if it does not exist yet."
+          ],
+          "writable": true,
+          "signer": true,
+          "relations": [
+            "position"
+          ]
+        },
+        {
+          "name": "market",
+          "docs": [
+            "Rise market being unwound - holds every ledger and signs the burn and the",
+            "vault payouts. PDA derived from [\"market\", mint_token]."
+          ],
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  109,
+                  97,
+                  114,
+                  107,
+                  101,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "market.mint_token",
+                "account": "Market"
+              }
+            ]
+          }
+        },
+        {
+          "name": "position",
+          "docs": [
+            "Owner's loan position - tracks collateral and debt. PDA derived from",
+            "[\"position\", market, owner]; `has_one` pins it to the signer, so nobody can",
+            "unwind someone else's position."
+          ],
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  112,
+                  111,
+                  115,
+                  105,
+                  116,
+                  105,
+                  111,
+                  110
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "market"
+              },
+              {
+                "kind": "account",
+                "path": "owner"
+              }
+            ]
+          }
+        },
+        {
+          "name": "vault",
+          "docs": [
+            "Main cash vault - every payout leaves from here. Pinned by an `address` check",
+            "against the key `Market` stored at creation, so a substituted account is rejected."
+          ],
+          "writable": true
+        },
+        {
+          "name": "collateral_vault",
+          "docs": [
+            "Collateral vault PDA - holds the locked tokens; `collateral_in` is burned",
+            "straight out of it, never released to the owner. Derived from",
+            "[\"collateral_vault\", market]."
+          ],
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  111,
+                  108,
+                  108,
+                  97,
+                  116,
+                  101,
+                  114,
+                  97,
+                  108,
+                  95,
+                  118,
+                  97,
+                  117,
+                  108,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "market"
+              }
+            ]
+          }
+        },
+        {
+          "name": "creator_claim",
+          "docs": [
+            "Creator claim account - receives the creator fee leg. Pinned by an `address`",
+            "check against the key stored at creation."
+          ],
+          "writable": true
+        },
+        {
+          "name": "team_vault",
+          "docs": [
+            "**Pinned by seeds**, not left bare. This account receives the team fee leg, and",
+            "on the vault-funded paths that leg is paid out by the market PDA \u2014 so an",
+            "unconstrained account here would let any caller redirect the team fee to",
+            "themselves. Re-derived from `[TEAM_VAULT_SEED, mint_main]`, the same account",
+            "`withdraw_team_fees` sweeps, which is what makes the destination structural."
+          ],
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  116,
+                  101,
+                  97,
+                  109,
+                  95,
+                  118,
+                  97,
+                  117,
+                  108,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "mint_main"
+              }
+            ]
+          }
+        },
+        {
+          "name": "reflection_vault",
+          "docs": [
+            "on reflection markets; on a `reflection_bps == 0` market (incl. every",
+            "pre-upgrade market) it may not exist and is never touched. `transfer_checked`",
+            "validates it when the reflection leg fires."
+          ],
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  114,
+                  101,
+                  102,
+                  108,
+                  101,
+                  99,
+                  116,
+                  105,
+                  111,
+                  110,
+                  95,
+                  118,
+                  97,
+                  117,
+                  108,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "market"
+              }
+            ]
+          }
+        },
+        {
+          "name": "mint_token",
+          "docs": [
+            "Market token mint - the burn target. Validated to match `market.mint_token`."
+          ],
+          "writable": true
+        },
+        {
+          "name": "mint_main",
+          "docs": [
+            "Base currency mint (e.g., USDC) - all payouts are in this token. Validated to",
+            "match `market.mint_main`."
+          ]
+        },
+        {
+          "name": "owner_cash",
+          "docs": [
+            "Receives the residual payout \u2014 created on the fly if the owner has never",
+            "held the collateral (init_if_needed, rent paid by the owner)."
+          ],
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "account",
+                "path": "owner"
+              },
+              {
+                "kind": "account",
+                "path": "token_program_main"
+              },
+              {
+                "kind": "account",
+                "path": "mint_main"
+              }
+            ],
+            "program": {
+              "kind": "const",
+              "value": [
+                140,
+                151,
+                37,
+                143,
+                78,
+                36,
+                137,
+                241,
+                187,
+                61,
+                16,
+                41,
+                20,
+                142,
+                13,
+                131,
+                11,
+                90,
+                19,
+                153,
+                218,
+                255,
+                16,
+                132,
+                4,
+                142,
+                123,
+                216,
+                219,
+                233,
+                248,
+                89
+              ]
+            }
+          }
+        },
+        {
+          "name": "token_program_main",
+          "docs": [
+            "Token program for base currency transfers."
+          ]
+        },
+        {
+          "name": "token_program",
+          "docs": [
+            "Token program for the market token - used for the collateral burn."
+          ]
+        },
+        {
+          "name": "associated_token_program",
+          "docs": [
+            "Associated token program - creates `owner_cash` on first use."
+          ],
+          "address": "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL"
+        },
+        {
+          "name": "system_program",
+          "docs": [
+            "System program for account creation."
+          ],
+          "address": "11111111111111111111111111111111"
+        },
+        {
+          "name": "event_authority"
+        },
+        {
+          "name": "program"
+        }
+      ],
+      "args": [
+        {
+          "name": "collateral_in",
+          "type": "u64"
+        },
+        {
+          "name": "decrease_debt_by",
+          "type": "u64"
+        },
+        {
+          "name": "min_cash_out",
+          "type": "u64"
+        }
+      ]
+    },
+    {
+      "name": "open_reflection_epoch",
+      "docs": [
+        "Open a reflection distribution epoch: skim the gas reserve to the treasury,",
+        "freeze the (net) pool, and size the paid bitmap to the snapshot's holders."
+      ],
+      "discriminator": [
+        249,
+        16,
+        178,
+        47,
+        149,
+        191,
+        155,
+        56
+      ],
+      "accounts": [
+        {
+          "name": "admin",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "config",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "market",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  109,
+                  97,
+                  114,
+                  107,
+                  101,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "market.mint_token",
+                "account": "Market"
+              }
+            ]
+          }
+        },
+        {
+          "name": "reflection_vault",
+          "docs": [
+            "The reflection pool. Skim source; frozen (net) into the epoch below."
+          ],
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  114,
+                  101,
+                  102,
+                  108,
+                  101,
+                  99,
+                  116,
+                  105,
+                  111,
+                  110,
+                  95,
+                  118,
+                  97,
+                  117,
+                  108,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "market"
+              }
+            ]
+          }
+        },
+        {
+          "name": "mint_main"
+        },
+        {
+          "name": "admin_destination",
+          "docs": [
+            "The admin's own ATA for `mint_main`: receives the `gas_reserve` skim so the",
+            "admin (who pays the distribution gas out of its own SOL) is reimbursed.",
+            "Created on the fly if missing (rent paid by `admin`). The associated_token",
+            "constraints pin the destination to the admin \u2014 it cannot be redirected."
+          ],
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "account",
+                "path": "admin"
+              },
+              {
+                "kind": "account",
+                "path": "token_program_main"
+              },
+              {
+                "kind": "account",
+                "path": "mint_main"
+              }
+            ],
+            "program": {
+              "kind": "const",
+              "value": [
+                140,
+                151,
+                37,
+                143,
+                78,
+                36,
+                137,
+                241,
+                187,
+                61,
+                16,
+                41,
+                20,
+                142,
+                13,
+                131,
+                11,
+                90,
+                19,
+                153,
+                218,
+                255,
+                16,
+                132,
+                4,
+                142,
+                123,
+                216,
+                219,
+                233,
+                248,
+                89
+              ]
+            }
+          }
+        },
+        {
+          "name": "unwrap_holding",
+          "docs": [
+            "Transient collateral holding account, created and closed within this",
+            "instruction. For a native (WSOL) market it receives the frozen pool and is",
+            "closed into `reflection_epoch`, converting the pool to native lamports the",
+            "distribute step pays directly. For any other collateral it stays empty and",
+            "is closed straight back to `admin`."
+          ],
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  114,
+                  101,
+                  102,
+                  108,
+                  101,
+                  99,
+                  116,
+                  105,
+                  111,
+                  110,
+                  95,
+                  117,
+                  110,
+                  119,
+                  114,
+                  97,
+                  112
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "market"
+              }
+            ]
+          }
+        },
+        {
+          "name": "reflection_epoch",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  114,
+                  101,
+                  102,
+                  108,
+                  101,
+                  99,
+                  116,
+                  105,
+                  111,
+                  110,
+                  95,
+                  101,
+                  112,
+                  111,
+                  99,
+                  104
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "market"
+              },
+              {
+                "kind": "arg",
+                "path": "epoch_id"
+              }
+            ]
+          }
+        },
+        {
+          "name": "token_program_main"
+        },
+        {
+          "name": "associated_token_program",
+          "address": "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL"
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        },
+        {
+          "name": "event_authority"
+        },
+        {
+          "name": "program"
+        }
+      ],
+      "args": [
+        {
+          "name": "epoch_id",
+          "type": "u64"
+        },
+        {
+          "name": "holder_count",
+          "type": "u32"
+        },
+        {
+          "name": "gas_reserve",
+          "type": "u64"
+        }
+      ]
+    },
+    {
+      "name": "propose_admin",
+      "docs": [
+        "Step 1 of an admin rotation. The successor must accept before it takes effect."
+      ],
+      "discriminator": [
+        121,
+        214,
+        199,
+        212,
+        87,
+        39,
+        117,
+        234
+      ],
+      "accounts": [
+        {
+          "name": "admin",
+          "docs": [
+            "Current admin - must sign; validated against `config.admin`."
+          ],
+          "signer": true
+        },
+        {
+          "name": "config",
+          "docs": [
+            "Global config PDA - `pending_admin` is written here."
+          ],
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "event_authority"
+        },
+        {
+          "name": "program"
+        }
+      ],
+      "args": [
+        {
+          "name": "new_admin",
+          "type": "pubkey"
+        }
+      ]
+    },
+    {
+      "name": "publish_fee_config",
+      "docs": [
+        "Append an immutable fee version. Reaches new markets only \u2014 no live market",
+        "is touched, and no instruction exists that could change one."
+      ],
+      "discriminator": [
+        128,
+        139,
+        215,
+        170,
+        38,
+        157,
+        136,
+        129
+      ],
+      "accounts": [
+        {
+          "name": "admin",
+          "docs": [
+            "Protocol admin - must sign; validated against `config.admin`.",
+            "Mutable because it pays rent for the new fee config account."
+          ],
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "config",
+          "docs": [
+            "Global config PDA - `current_fee_config_version` is advanced here."
+          ],
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "fee_config",
+          "docs": [
+            "`version` is an argument because PDA seeds must be known before the handler",
+            "runs; the handler then asserts it is exactly `current + 1`. `init` makes the",
+            "append-only property structural \u2014 an existing version cannot be rewritten."
+          ],
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  102,
+                  101,
+                  101,
+                  95,
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              },
+              {
+                "kind": "arg",
+                "path": "version"
+              }
+            ]
+          }
+        },
+        {
+          "name": "system_program",
+          "docs": [
+            "System program for creating the fee config account."
+          ],
+          "address": "11111111111111111111111111111111"
+        },
+        {
+          "name": "event_authority"
+        },
+        {
+          "name": "program"
+        }
+      ],
+      "args": [
+        {
+          "name": "version",
+          "type": "u32"
+        },
+        {
+          "name": "args",
+          "type": {
+            "defined": {
+              "name": "PublishFeeConfigArgs"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "raise_floor_excess_liquidity",
+      "docs": [
+        "Cash-funded raise, permissionless. The **only** path that lowers the derived",
+        "ramp end, so the only one that can leave a ramp-band state."
+      ],
+      "discriminator": [
+        206,
+        245,
+        204,
+        21,
+        98,
+        75,
+        2,
+        159
+      ],
+      "accounts": [
+        {
+          "name": "cranker",
+          "docs": [
+            "Permissionless: the verifier is the defence, not the signer. Anyone may pay",
+            "to push a market's floor up to what its own committed cash already supports."
+          ],
+          "signer": true
+        },
+        {
+          "name": "market",
+          "docs": [
+            "Rise market whose floor is being raised. PDA derived from",
+            "[\"market\", mint_token] \u2014 the seeds constraint pins it to its own token mint."
+          ],
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  109,
+                  97,
+                  114,
+                  107,
+                  101,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "market.mint_token",
+                "account": "Market"
+              }
+            ]
+          }
+        },
+        {
+          "name": "event_authority"
+        },
+        {
+          "name": "program"
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "raise_floor_preserve_area",
+      "docs": [
+        "Area-preserving raise: converts price-discovery area into guaranteed value."
+      ],
+      "discriminator": [
+        22,
+        74,
+        16,
+        160,
+        109,
+        11,
+        103,
+        49
+      ],
+      "accounts": [
+        {
+          "name": "cranker",
+          "docs": [
+            "Permissionless: the verifier is the defence, not the signer. Anyone may pay",
+            "to submit an off-chain-solved raise; every constraint is re-asserted on-chain."
+          ],
+          "signer": true
+        },
+        {
+          "name": "market",
+          "docs": [
+            "Rise market whose floor is being raised. PDA derived from",
+            "[\"market\", mint_token] \u2014 the seeds constraint pins it to its own token mint."
+          ],
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  109,
+                  97,
+                  114,
+                  107,
+                  101,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "market.mint_token",
+                "account": "Market"
+              }
+            ]
+          }
+        },
+        {
+          "name": "event_authority"
+        },
+        {
+          "name": "program"
+        }
+      ],
+      "args": [
+        {
+          "name": "new_floor",
+          "type": "u128"
+        },
+        {
+          "name": "new_x1",
+          "type": "u64"
+        }
+      ]
+    },
+    {
+      "name": "repay",
+      "docs": [
+        "Repay principal. **Ungateable** \u2014 reads no flag and no pause."
+      ],
+      "discriminator": [
+        234,
+        103,
+        67,
+        82,
+        208,
+        234,
+        219,
+        166
+      ],
+      "accounts": [
+        {
+          "name": "owner",
+          "docs": [
+            "The position owner, and only them. The design doc (ix 17) proposed a",
+            "permissionless repay for v1 parity; the founder overrode that \u2014 a position may",
+            "be de-risked only by the account that opened it. `has_one` + the PDA seed pin",
+            "it both ways."
+          ],
+          "writable": true,
+          "signer": true,
+          "relations": [
+            "position"
+          ]
+        },
+        {
+          "name": "market",
+          "docs": [
+            "Rise market owed the debt - its reserves and `total_debt` are updated.",
+            "PDA derived from [\"market\", mint_token]."
+          ],
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  109,
+                  97,
+                  114,
+                  107,
+                  101,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "market.mint_token",
+                "account": "Market"
+              }
+            ]
+          }
+        },
+        {
+          "name": "position",
+          "docs": [
+            "Owner's lending position - its debt is reduced.",
+            "PDA derived from [\"position\", market, owner]; has_one pins the owner."
+          ],
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  112,
+                  111,
+                  115,
+                  105,
+                  116,
+                  105,
+                  111,
+                  110
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "market"
+              },
+              {
+                "kind": "account",
+                "path": "owner"
+              }
+            ]
+          }
+        },
+        {
+          "name": "vault",
+          "docs": [
+            "Market cash vault - receives the repaid cash.",
+            "Validated to match `market.vault`."
+          ],
+          "writable": true
+        },
+        {
+          "name": "mint_main",
+          "docs": [
+            "Base currency mint (e.g., USDC) - validated to match `market.mint_main`."
+          ]
+        },
+        {
+          "name": "owner_cash",
+          "docs": [
+            "Owner's base-currency account - source of the repayment.",
+            "Constraints pin it to `mint_main`."
+          ],
+          "writable": true
+        },
+        {
+          "name": "token_program_main",
+          "docs": [
+            "Token program for base currency transfers."
+          ]
+        },
+        {
+          "name": "event_authority"
+        },
+        {
+          "name": "program"
+        }
+      ],
+      "args": [
+        {
+          "name": "amount",
+          "type": "u64"
+        }
+      ]
+    },
+    {
+      "name": "sell",
+      "docs": [
+        "Sell tokens back into the curve. Pays the floor-attributable share from the",
+        "floor earmark and the rest from the above-floor book; reverts if that book",
+        "cannot cover it."
+      ],
+      "discriminator": [
+        51,
+        230,
+        133,
+        164,
+        1,
+        127,
+        131,
+        173
+      ],
+      "accounts": [
+        {
+          "name": "seller",
+          "docs": [
+            "Seller - signs the burn of their tokens and receives the payout.",
+            "Mutable because it pays rent if `seller_cash` has to be created."
+          ],
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "market",
+          "docs": [
+            "Rise market being sold into - PDA derived from [\"market\", mint_token].",
+            "Vault authority: signs every payout leg out of the vault."
+          ],
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  109,
+                  97,
+                  114,
+                  107,
+                  101,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "market.mint_token",
+                "account": "Market"
+              }
+            ]
+          }
+        },
+        {
+          "name": "vault",
+          "docs": [
+            "Market vault holding both cash ledgers (floor reserve + above-floor book).",
+            "Validated to match `market.vault` - source of every payout leg."
+          ],
+          "writable": true
+        },
+        {
+          "name": "creator_claim",
+          "docs": [
+            "Creator claim account - receives the creator's fee leg, swept later via",
+            "`claim_creator_fees`. Validated to match `market.creator_claim`."
+          ],
+          "writable": true
+        },
+        {
+          "name": "team_vault",
+          "docs": [
+            "**Pinned by seeds**, not left bare. This account receives the team fee leg, and",
+            "on the vault-funded paths that leg is paid out by the market PDA \u2014 so an",
+            "unconstrained account here would let any caller redirect the team fee to",
+            "themselves. Re-derived from `[TEAM_VAULT_SEED, mint_main]`, the same account",
+            "`withdraw_team_fees` sweeps, which is what makes the destination structural."
+          ],
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  116,
+                  101,
+                  97,
+                  109,
+                  95,
+                  118,
+                  97,
+                  117,
+                  108,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "mint_main"
+              }
+            ]
+          }
+        },
+        {
+          "name": "reflection_vault",
+          "docs": [
+            "on reflection markets; on a `reflection_bps == 0` market (incl. every",
+            "pre-upgrade market) it may not exist and is never touched. `transfer_checked`",
+            "validates it when the reflection leg fires."
+          ],
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  114,
+                  101,
+                  102,
+                  108,
+                  101,
+                  99,
+                  116,
+                  105,
+                  111,
+                  110,
+                  95,
+                  118,
+                  97,
+                  117,
+                  108,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "market"
+              }
+            ]
+          }
+        },
+        {
+          "name": "mint_token",
+          "docs": [
+            "Market token mint - the sold tokens are burned against it, shrinking supply.",
+            "Validated to match `market.mint_token`."
+          ],
+          "writable": true
+        },
+        {
+          "name": "mint_main",
+          "docs": [
+            "Base currency mint (e.g., USDC) - seller is paid in this token.",
+            "Validated to match `market.mint_main`."
+          ]
+        },
+        {
+          "name": "seller_cash",
+          "docs": [
+            "Receives the payout \u2014 created on the fly if the seller has never held the",
+            "collateral (init_if_needed, rent paid by the seller)."
+          ],
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "account",
+                "path": "seller"
+              },
+              {
+                "kind": "account",
+                "path": "token_program_main"
+              },
+              {
+                "kind": "account",
+                "path": "mint_main"
+              }
+            ],
+            "program": {
+              "kind": "const",
+              "value": [
+                140,
+                151,
+                37,
+                143,
+                78,
+                36,
+                137,
+                241,
+                187,
+                61,
+                16,
+                41,
+                20,
+                142,
+                13,
+                131,
+                11,
+                90,
+                19,
+                153,
+                218,
+                255,
+                16,
+                132,
+                4,
+                142,
+                123,
+                216,
+                219,
+                233,
+                248,
+                89
+              ]
+            }
+          }
+        },
+        {
+          "name": "seller_token",
+          "docs": [
+            "The burn source, pinned to the seller's canonical ATA \u2014 same discipline as",
+            "`buy`'s `buyer_token`. **Not** `init_if_needed`: unlike a receiving account,",
+            "the burn source must already exist and hold the tokens. A bare `token::mint`",
+            "check would have let any market-token account the seller can burn from stand",
+            "in; pinning the ATA makes the source canonical."
+          ],
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "account",
+                "path": "seller"
+              },
+              {
+                "kind": "account",
+                "path": "token_program"
+              },
+              {
+                "kind": "account",
+                "path": "mint_token"
+              }
+            ],
+            "program": {
+              "kind": "const",
+              "value": [
+                140,
+                151,
+                37,
+                143,
+                78,
+                36,
+                137,
+                241,
+                187,
+                61,
+                16,
+                41,
+                20,
+                142,
+                13,
+                131,
+                11,
+                90,
+                19,
+                153,
+                218,
+                255,
+                16,
+                132,
+                4,
+                142,
+                123,
+                216,
+                219,
+                233,
+                248,
+                89
+              ]
+            }
+          }
+        },
+        {
+          "name": "token_program_main",
+          "docs": [
+            "Token program for base currency transfers (vault payouts)."
+          ]
+        },
+        {
+          "name": "token_program",
+          "docs": [
+            "Token program for the market token (the burn)."
+          ]
+        },
+        {
+          "name": "associated_token_program",
+          "docs": [
+            "Associated token program - creates `seller_cash` if it does not exist yet."
+          ],
+          "address": "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL"
+        },
+        {
+          "name": "system_program",
+          "docs": [
+            "System program for account creation."
+          ],
+          "address": "11111111111111111111111111111111"
+        },
+        {
+          "name": "event_authority"
+        },
+        {
+          "name": "program"
+        }
+      ],
+      "args": [
+        {
+          "name": "token_in",
+          "type": "u64"
+        },
+        {
+          "name": "min_cash_out",
+          "type": "u64"
+        }
+      ]
+    },
+    {
+      "name": "set_collateral_config",
+      "docs": [
+        "List or retune a collateral, and create its per-collateral team vault.",
+        "No `CollateralConfig` means no market can be created on that mint."
+      ],
+      "discriminator": [
+        59,
+        39,
+        3,
+        171,
+        10,
+        224,
+        203,
+        32
+      ],
+      "accounts": [
+        {
+          "name": "admin",
+          "docs": [
+            "Protocol admin - must sign; validated against `config.admin`.",
+            "Mutable because it pays rent for the collateral config and team vault on first listing."
+          ],
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "config",
+          "docs": [
+            "Global config PDA - validates the admin, and is the team vault's token authority."
+          ],
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "mint_main",
+          "docs": [
+            "Loaded through `token_interface` so either token program is accepted; the",
+            "screen in the handler decides whether this particular mint is allowed."
+          ]
+        },
+        {
+          "name": "collateral_config",
+          "docs": [
+            "Per-collateral config PDA - derived from [\"collateral\", mint_main].",
+            "`init_if_needed` lets the same instruction both list and retune."
+          ],
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  111,
+                  108,
+                  108,
+                  97,
+                  116,
+                  101,
+                  114,
+                  97,
+                  108
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "mint_main"
+              }
+            ]
+          }
+        },
+        {
+          "name": "team_vault",
+          "docs": [
+            "**Global per collateral** \u2014 one vault shared by every market on this mint,",
+            "authority = the config PDA so only the program can move it.",
+            "",
+            "Note this is the account the founder decision makes writable on `buy`, which",
+            "serialises buys across every market sharing the collateral."
+          ],
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  116,
+                  101,
+                  97,
+                  109,
+                  95,
+                  118,
+                  97,
+                  117,
+                  108,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "mint_main"
+              }
+            ]
+          }
+        },
+        {
+          "name": "token_program_main",
+          "docs": [
+            "Token program owning `mint_main` - SPL Token or Token-2022, hence the interface."
+          ]
+        },
+        {
+          "name": "system_program",
+          "docs": [
+            "System program for account creation."
+          ],
+          "address": "11111111111111111111111111111111"
+        },
+        {
+          "name": "event_authority"
+        },
+        {
+          "name": "program"
+        }
+      ],
+      "args": [
+        {
+          "name": "min_trade_amount",
+          "type": "u64"
+        }
+      ]
+    },
+    {
+      "name": "set_market_flags",
+      "docs": [
+        "Per-market circuit breaker. Cannot reach withdraw or repay \u2014 those have no",
+        "flag bit at all."
+      ],
+      "discriminator": [
+        73,
+        138,
+        236,
+        76,
+        82,
+        179,
+        94,
+        155
+      ],
+      "accounts": [
+        {
+          "name": "admin",
+          "docs": [
+            "Global admin - the only signer allowed to flip market flags; validated",
+            "against `config.admin`."
+          ],
+          "signer": true
+        },
+        {
+          "name": "config",
+          "docs": [
+            "Global config PDA - source of truth for the admin key. Seeds: [\"config\"]."
+          ],
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "market",
+          "docs": [
+            "Market whose flags are being set - only `flags` and `state_seq` are",
+            "written. PDA derived from [\"market\", mint_token]."
+          ],
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  109,
+                  97,
+                  114,
+                  107,
+                  101,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "market.mint_token",
+                "account": "Market"
+              }
+            ]
+          }
+        },
+        {
+          "name": "event_authority"
+        },
+        {
+          "name": "program"
+        }
+      ],
+      "args": [
+        {
+          "name": "flags",
+          "type": "u16"
+        }
+      ]
+    },
+    {
+      "name": "update_market",
+      "docs": [
+        "CTO path: token metadata and/or the market's creator wallet. Admin-held."
+      ],
+      "discriminator": [
+        153,
+        39,
+        2,
+        197,
+        179,
+        50,
+        199,
+        217
+      ],
+      "accounts": [
+        {
+          "name": "admin",
+          "docs": [
+            "Global admin - the only signer allowed to run a CTO; validated against",
+            "`config.admin`. No creator co-signature is required (see header)."
+          ],
+          "signer": true
+        },
+        {
+          "name": "config",
+          "docs": [
+            "Global config PDA - source of truth for the admin key. Seeds: [\"config\"]."
+          ],
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "market",
+          "docs": [
+            "Market being updated - holds the creator, fee split, and floor/reflexive",
+            "parameters, and signs the metadata CPI as the mint's update authority.",
+            "PDA derived from [\"market\", mint_token]."
+          ],
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  109,
+                  97,
+                  114,
+                  107,
+                  101,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "market.mint_token",
+                "account": "Market"
+              }
+            ]
+          }
+        },
+        {
+          "name": "mint_token",
+          "docs": [
+            "metadata inline; the Market PDA is its update authority."
+          ],
+          "writable": true
+        },
+        {
+          "name": "token_program",
+          "docs": [
+            "Token program for the metadata CPIs - the mint stores its metadata inline",
+            "via the Token-2022 metadata extension."
+          ]
+        },
+        {
+          "name": "event_authority"
+        },
+        {
+          "name": "program"
+        }
+      ],
+      "args": [
+        {
+          "name": "args",
+          "type": {
+            "defined": {
+              "name": "UpdateMarketArgs"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "withdraw",
+      "docs": [
+        "Release collateral. **Ungateable** \u2014 reads no flag and no pause."
+      ],
+      "discriminator": [
+        183,
+        18,
+        70,
+        156,
+        148,
+        109,
+        161,
+        34
+      ],
+      "accounts": [
+        {
+          "name": "owner",
+          "docs": [
+            "Position owner - must match `position.owner` (has_one)."
+          ],
+          "writable": true,
+          "signer": true,
+          "relations": [
+            "position"
+          ]
+        },
+        {
+          "name": "market",
+          "docs": [
+            "Rise market - holds the floor price `F` for the release bound and signs",
+            "the vault transfer as `collateral_vault` authority.",
+            "PDA derived from [\"market\", mint_token]."
+          ],
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  109,
+                  97,
+                  114,
+                  107,
+                  101,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "market.mint_token",
+                "account": "Market"
+              }
+            ]
+          }
+        },
+        {
+          "name": "position",
+          "docs": [
+            "Owner's lending position - its collateral is reduced.",
+            "PDA derived from [\"position\", market, owner]; has_one pins the owner."
+          ],
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  112,
+                  111,
+                  115,
+                  105,
+                  116,
+                  105,
+                  111,
+                  110
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "market"
+              },
+              {
+                "kind": "account",
+                "path": "owner"
+              }
+            ]
+          }
+        },
+        {
+          "name": "collateral_vault",
+          "docs": [
+            "Market collateral vault - source of the released tokens.",
+            "PDA derived from [\"collateral_vault\", market]."
+          ],
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  111,
+                  108,
+                  108,
+                  97,
+                  116,
+                  101,
+                  114,
+                  97,
+                  108,
+                  95,
+                  118,
+                  97,
+                  117,
+                  108,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "market"
+              }
+            ]
+          }
+        },
+        {
+          "name": "mint_token",
+          "docs": [
+            "Market token mint - validated to match `market.mint_token`."
+          ]
+        },
+        {
+          "name": "owner_token",
+          "docs": [
+            "Owner's market-token account - receives the released collateral.",
+            "Constraints pin it to `mint_token`."
+          ],
+          "writable": true
+        },
+        {
+          "name": "token_program",
+          "docs": [
+            "Token program for market-token transfers."
+          ]
+        },
+        {
+          "name": "event_authority"
+        },
+        {
+          "name": "program"
+        }
+      ],
+      "args": [
+        {
+          "name": "amount",
+          "type": "u64"
+        }
+      ]
+    },
+    {
+      "name": "withdraw_team_fees",
+      "docs": [
+        "Sweep a collateral's team vault. Permissionless trigger, single pinned",
+        "destination: a stranger can cause the sweep but can never redirect it."
+      ],
+      "discriminator": [
+        104,
+        224,
+        248,
+        39,
+        107,
+        100,
+        205,
+        54
+      ],
+      "accounts": [
+        {
+          "name": "payer",
+          "docs": [
+            "**Permissionless trigger.** Anyone may pay to move team fees, because the",
+            "destination is pinned by a constraint and not by the caller: a stranger can",
+            "cause the sweep but can never redirect it. That also means the team never has",
+            "to hold SOL to collect."
+          ],
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "config",
+          "docs": [
+            "Global config PDA - holds the immutable `team_wallet` and, being the",
+            "vault's authority, signs the transfer. Seeds: [\"config\"]."
+          ],
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "team_vault",
+          "docs": [
+            "Global per collateral, shared by every market on this mint."
+          ],
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  116,
+                  101,
+                  97,
+                  109,
+                  95,
+                  118,
+                  97,
+                  117,
+                  108,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "mint_main"
+              }
+            ]
+          }
+        },
+        {
+          "name": "mint_main",
+          "docs": [
+            "Base currency mint (e.g., USDC) - selects which per-collateral vault is",
+            "swept via the `team_vault` seeds; also supplies `transfer_checked` decimals."
+          ]
+        },
+        {
+          "name": "team_wallet",
+          "docs": [
+            "Pinned to `config.team_wallet` by an account constraint, so the sweep has",
+            "exactly one possible destination. `team_wallet` is itself immutable \u2014 there is",
+            "no `update_team_wallet` \u2014 which is what makes \"not even the admin can redirect",
+            "the fee destination\" structural rather than checked.",
+            "the ATA-create CPI needs the authority as an account, never read or written."
+          ]
+        },
+        {
+          "name": "team_destination",
+          "docs": [
+            "Team wallet's canonical ATA for `mint_main` - created on the fly on the",
+            "first withdrawal (init_if_needed, rent paid by `payer`). The",
+            "associated_token constraints pin it to `team_wallet`, closing the redirect path."
+          ],
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "account",
+                "path": "team_wallet"
+              },
+              {
+                "kind": "account",
+                "path": "token_program_main"
+              },
+              {
+                "kind": "account",
+                "path": "mint_main"
+              }
+            ],
+            "program": {
+              "kind": "const",
+              "value": [
+                140,
+                151,
+                37,
+                143,
+                78,
+                36,
+                137,
+                241,
+                187,
+                61,
+                16,
+                41,
+                20,
+                142,
+                13,
+                131,
+                11,
+                90,
+                19,
+                153,
+                218,
+                255,
+                16,
+                132,
+                4,
+                142,
+                123,
+                216,
+                219,
+                233,
+                248,
+                89
+              ]
+            }
+          }
+        },
+        {
+          "name": "token_program_main",
+          "docs": [
+            "Token program for base currency transfers."
+          ]
+        },
+        {
+          "name": "associated_token_program",
+          "docs": [
+            "Associated token program - required to create `team_destination` if missing."
+          ],
+          "address": "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL"
+        },
+        {
+          "name": "system_program",
+          "docs": [
+            "System program for account creation (destination ATA rent)."
+          ],
+          "address": "11111111111111111111111111111111"
+        },
+        {
+          "name": "event_authority"
+        },
+        {
+          "name": "program"
+        }
+      ],
+      "args": []
+    }
+  ],
+  "accounts": [
+    {
+      "name": "CollateralConfig",
+      "discriminator": [
+        150,
+        147,
+        210,
+        201,
+        79,
+        202,
+        93,
+        49
+      ]
+    },
+    {
+      "name": "FeeConfig",
+      "discriminator": [
+        143,
+        52,
+        146,
+        187,
+        219,
+        123,
+        76,
+        155
+      ]
+    },
+    {
+      "name": "GlobalConfig",
+      "discriminator": [
+        149,
+        8,
+        156,
+        202,
+        160,
+        252,
+        176,
+        217
+      ]
+    },
+    {
+      "name": "Market",
+      "discriminator": [
+        219,
+        190,
+        213,
+        55,
+        0,
+        227,
+        198,
+        154
+      ]
+    },
+    {
+      "name": "Position",
+      "discriminator": [
+        170,
+        188,
+        143,
+        228,
+        122,
+        64,
+        247,
+        208
+      ]
+    },
+    {
+      "name": "ReflectionEpoch",
+      "discriminator": [
+        221,
+        1,
+        94,
+        218,
+        142,
+        77,
+        247,
+        244
+      ]
+    }
+  ],
+  "events": [
+    {
+      "name": "AdminAcceptedEvent",
+      "discriminator": [
+        14,
+        221,
+        60,
+        92,
+        241,
+        147,
+        95,
+        66
+      ]
+    },
+    {
+      "name": "AdminProposedEvent",
+      "discriminator": [
+        212,
+        163,
+        91,
+        28,
+        223,
+        95,
+        2,
+        102
+      ]
+    },
+    {
+      "name": "BorrowEvent",
+      "discriminator": [
+        86,
+        8,
+        140,
+        206,
+        215,
+        179,
+        118,
+        201
+      ]
+    },
+    {
+      "name": "BuyEvent",
+      "discriminator": [
+        103,
+        244,
+        82,
+        31,
+        44,
+        245,
+        119,
+        119
+      ]
+    },
+    {
+      "name": "CollateralConfigSetEvent",
+      "discriminator": [
+        61,
+        46,
+        184,
+        105,
+        139,
+        137,
+        55,
+        112
+      ]
+    },
+    {
+      "name": "ConfigInitializedEvent",
+      "discriminator": [
+        22,
+        167,
+        192,
+        50,
+        220,
+        20,
+        10,
+        71
+      ]
+    },
+    {
+      "name": "CreatorFeesClaimedEvent",
+      "discriminator": [
+        40,
+        137,
+        200,
+        40,
+        154,
+        133,
+        234,
+        251
+      ]
+    },
+    {
+      "name": "DepositEvent",
+      "discriminator": [
+        120,
+        248,
+        61,
+        83,
+        31,
+        142,
+        107,
+        144
+      ]
+    },
+    {
+      "name": "FeeConfigPublishedEvent",
+      "discriminator": [
+        54,
+        121,
+        226,
+        230,
+        237,
+        202,
+        139,
+        182
+      ]
+    },
+    {
+      "name": "FloorRaisedEvent",
+      "discriminator": [
+        180,
+        150,
+        147,
+        252,
+        238,
+        147,
+        174,
+        236
+      ]
+    },
+    {
+      "name": "LeverageBuyEvent",
+      "discriminator": [
+        192,
+        251,
+        245,
+        66,
+        149,
+        87,
+        79,
+        195
+      ]
+    },
+    {
+      "name": "LeverageSellEvent",
+      "discriminator": [
+        83,
+        204,
+        210,
+        96,
+        206,
+        215,
+        12,
+        154
+      ]
+    },
+    {
+      "name": "MarketFlagsSetEvent",
+      "discriminator": [
+        58,
+        254,
+        223,
+        22,
+        195,
+        116,
+        134,
+        114
+      ]
+    },
+    {
+      "name": "MarketInitializedEvent",
+      "discriminator": [
+        70,
+        173,
+        96,
+        202,
+        100,
+        143,
+        45,
+        25
+      ]
+    },
+    {
+      "name": "MarketUpdatedEvent",
+      "discriminator": [
+        56,
+        197,
+        234,
+        194,
+        244,
+        125,
+        181,
+        218
+      ]
+    },
+    {
+      "name": "ReflectionAccruedEvent",
+      "discriminator": [
+        88,
+        98,
+        87,
+        195,
+        25,
+        225,
+        128,
+        149
+      ]
+    },
+    {
+      "name": "ReflectionDistributedEvent",
+      "discriminator": [
+        103,
+        134,
+        80,
+        57,
+        6,
+        40,
+        217,
+        236
+      ]
+    },
+    {
+      "name": "ReflectionEpochOpenedEvent",
+      "discriminator": [
+        157,
+        225,
+        187,
+        102,
+        176,
+        167,
+        89,
+        235
+      ]
+    },
+    {
+      "name": "RepayEvent",
+      "discriminator": [
+        129,
+        213,
+        0,
+        108,
+        218,
+        108,
+        82,
+        140
+      ]
+    },
+    {
+      "name": "SellEvent",
+      "discriminator": [
+        62,
+        47,
+        55,
+        10,
+        165,
+        3,
+        220,
+        42
+      ]
+    },
+    {
+      "name": "TeamFeesWithdrawnEvent",
+      "discriminator": [
+        62,
+        98,
+        123,
+        152,
+        178,
+        122,
+        230,
+        127
+      ]
+    },
+    {
+      "name": "WithdrawEvent",
+      "discriminator": [
+        22,
+        9,
+        133,
+        26,
+        160,
+        44,
+        71,
+        192
+      ]
+    }
+  ],
+  "errors": [
+    {
+      "code": 6000,
+      "name": "NotAuthorizedInitializer",
+      "msg": "signer is not the authorized initializer"
+    },
+    {
+      "code": 6001,
+      "name": "NotAdmin",
+      "msg": "signer is not the protocol admin"
+    },
+    {
+      "code": 6002,
+      "name": "NotPendingAdmin",
+      "msg": "signer is not the pending admin"
+    },
+    {
+      "code": 6003,
+      "name": "NoPendingAdmin",
+      "msg": "no admin transfer is pending"
+    },
+    {
+      "code": 6004,
+      "name": "DefaultPubkeyNotAllowed",
+      "msg": "pubkey must not be the default (all-zero) address"
+    },
+    {
+      "code": 6005,
+      "name": "AdminUnchanged",
+      "msg": "proposed admin is already the current admin"
+    },
+    {
+      "code": 6006,
+      "name": "AdminIsTeamWallet",
+      "msg": "admin and team_wallet must be different keys"
+    },
+    {
+      "code": 6100,
+      "name": "UnsupportedTokenProgram",
+      "msg": "collateral mint is not owned by a supported token program"
+    },
+    {
+      "code": 6101,
+      "name": "CollateralExtensionNotAllowed",
+      "msg": "collateral mint carries a Token-2022 extension, which is not allowed"
+    },
+    {
+      "code": 6102,
+      "name": "MinTradeAmountTooLow",
+      "msg": "min_trade_amount must be at least 1"
+    },
+    {
+      "code": 6103,
+      "name": "CollateralMintMismatch",
+      "msg": "collateral config does not match the provided mint"
+    },
+    {
+      "code": 6200,
+      "name": "BuyFeeTooHigh",
+      "msg": "buy fee exceeds the program maximum"
+    },
+    {
+      "code": 6201,
+      "name": "SellFeeTooHigh",
+      "msg": "sell fee exceeds the program maximum"
+    },
+    {
+      "code": 6202,
+      "name": "BorrowFeeTooHigh",
+      "msg": "borrow fee exceeds the program maximum"
+    },
+    {
+      "code": 6203,
+      "name": "FeeBelowMinimum",
+      "msg": "fee rate is below the program minimum"
+    },
+    {
+      "code": 6204,
+      "name": "TeamShareTooHigh",
+      "msg": "team share exceeds 100% of the fee"
+    },
+    {
+      "code": 6205,
+      "name": "FeeConfigVersionMismatch",
+      "msg": "fee config version must be exactly the current version plus one"
+    },
+    {
+      "code": 6300,
+      "name": "MetadataTooLong",
+      "msg": "metadata name, symbol or uri exceeds the allocated maximum"
+    },
+    {
+      "code": 6301,
+      "name": "InvalidVanitySuffix",
+      "msg": "market mint address must end with the required suffix"
+    },
+    {
+      "code": 6302,
+      "name": "ReservedName",
+      "msg": "token name or symbol may not contain the protocol name"
+    },
+    {
+      "code": 6303,
+      "name": "CreatorShareTooHigh",
+      "msg": "creator share exceeds what the team share leaves of the fee"
+    },
+    {
+      "code": 6304,
+      "name": "NoFeeConfigPublished",
+      "msg": "no fee config has been published yet"
+    },
+    {
+      "code": 6305,
+      "name": "StaleFeeConfig",
+      "msg": "fee config does not match the current published version"
+    },
+    {
+      "code": 6306,
+      "name": "InvalidGlide",
+      "msg": "glide parameters are out of bounds"
+    },
+    {
+      "code": 6307,
+      "name": "InvalidStressDepth",
+      "msg": "stress depth q_max_bps must be in (0, 10_000)"
+    },
+    {
+      "code": 6308,
+      "name": "ReservedFlagBitsSet",
+      "msg": "reserved flag bits must be zero"
+    },
+    {
+      "code": 6309,
+      "name": "FlagsUnchanged",
+      "msg": "flags are already set to this value"
+    },
+    {
+      "code": 6310,
+      "name": "MathOverflow",
+      "msg": "arithmetic overflow"
+    },
+    {
+      "code": 6311,
+      "name": "RampBelowFloor",
+      "msg": "ramp would price below the floor"
+    },
+    {
+      "code": 6312,
+      "name": "InvalidCurveParams",
+      "msg": "curve slope or base price is out of bounds"
+    },
+    {
+      "code": 6313,
+      "name": "InvalidRampScalar",
+      "msg": "ramp scalar must be greater than one"
+    },
+    {
+      "code": 6314,
+      "name": "UnsupportedCurveKind",
+      "msg": "curve kind is not supported by this program version"
+    },
+    {
+      "code": 6315,
+      "name": "MetadataEmpty",
+      "msg": "token name and symbol must not be empty"
+    },
+    {
+      "code": 6400,
+      "name": "BuyDisabled",
+      "msg": "buying is disabled on this market"
+    },
+    {
+      "code": 6401,
+      "name": "TradeBelowMinimum",
+      "msg": "trade is below the collateral minimum"
+    },
+    {
+      "code": 6402,
+      "name": "ZeroFloor",
+      "msg": "market floor price is zero"
+    },
+    {
+      "code": 6403,
+      "name": "DustTrade",
+      "msg": "trade is too small to produce any output"
+    },
+    {
+      "code": 6404,
+      "name": "DustOutput",
+      "msg": "quote produced zero tokens"
+    },
+    {
+      "code": 6405,
+      "name": "SlippageExceeded",
+      "msg": "output below min_token_out"
+    },
+    {
+      "code": 6406,
+      "name": "MathCorruption",
+      "msg": "internal accounting inconsistency"
+    },
+    {
+      "code": 6407,
+      "name": "VaultMismatch",
+      "msg": "vault account does not match the market"
+    },
+    {
+      "code": 6408,
+      "name": "MintMismatch",
+      "msg": "mint account does not match the market"
+    },
+    {
+      "code": 6500,
+      "name": "SellDisabled",
+      "msg": "selling is disabled on this market"
+    },
+    {
+      "code": 6501,
+      "name": "SupplyUnderflow",
+      "msg": "token_in exceeds the market supply"
+    },
+    {
+      "code": 6502,
+      "name": "InsufficientPriceReserve",
+      "msg": "above-floor book cannot cover this sale"
+    },
+    {
+      "code": 6600,
+      "name": "DepositDisabled",
+      "msg": "deposits are disabled on this market"
+    },
+    {
+      "code": 6601,
+      "name": "BorrowDisabled",
+      "msg": "borrowing is disabled on this market"
+    },
+    {
+      "code": 6602,
+      "name": "NotPositionOwner",
+      "msg": "signer does not own this position"
+    },
+    {
+      "code": 6603,
+      "name": "DebtExceedsCollateral",
+      "msg": "debt would exceed what the collateral supports"
+    },
+    {
+      "code": 6604,
+      "name": "InsufficientLiquidity",
+      "msg": "market has insufficient cash for this borrow"
+    },
+    {
+      "code": 6605,
+      "name": "NoDebt",
+      "msg": "position has no debt to repay"
+    },
+    {
+      "code": 6606,
+      "name": "InsufficientCollateral",
+      "msg": "position does not hold that much collateral"
+    },
+    {
+      "code": 6607,
+      "name": "RepayExceedsDebt",
+      "msg": "cannot repay more than the standing debt"
+    },
+    {
+      "code": 6608,
+      "name": "RepayExceedsProceeds",
+      "msg": "cannot repay more debt than the sale proceeds cover"
+    },
+    {
+      "code": 6700,
+      "name": "RaiseDisabled",
+      "msg": "floor raises are disabled on this market"
+    },
+    {
+      "code": 6701,
+      "name": "NoSupply",
+      "msg": "market has no supply to raise against"
+    },
+    {
+      "code": 6702,
+      "name": "FloorNotIncreasing",
+      "msg": "floor must strictly increase"
+    },
+    {
+      "code": 6703,
+      "name": "FloorAboveSpot",
+      "msg": "floor would exceed spot"
+    },
+    {
+      "code": 6704,
+      "name": "FloorStepTooLarge",
+      "msg": "raise exceeds the per-operation cap"
+    },
+    {
+      "code": 6705,
+      "name": "NoFloorHeadroom",
+      "msg": "no headroom: committed cash already backs the current floor"
+    },
+    {
+      "code": 6706,
+      "name": "RaiseAlreadyThisSlot",
+      "msg": "only one geometry write per slot"
+    },
+    {
+      "code": 6707,
+      "name": "RampStartRetreats",
+      "msg": "ramp start may not retreat"
+    },
+    {
+      "code": 6708,
+      "name": "RampStartAboveSupply",
+      "msg": "ramp start must stay below supply"
+    },
+    {
+      "code": 6709,
+      "name": "AreaWouldShrink",
+      "msg": "area under the effective curve would shrink"
+    },
+    {
+      "code": 6710,
+      "name": "RampBandRaiseUnavailable",
+      "msg": "preserve-area raise unavailable from a ramp-band state"
+    },
+    {
+      "code": 6711,
+      "name": "InvalidReflexiveParams",
+      "msg": "reflexive parameters are inconsistent or out of bounds"
+    },
+    {
+      "code": 6712,
+      "name": "FloorStepCapTooHigh",
+      "msg": "floor step cap exceeds the hard maximum"
+    },
+    {
+      "code": 6713,
+      "name": "StressCapExceeded",
+      "msg": "floor would exceed the declared stress-depth cap"
+    },
+    {
+      "code": 6800,
+      "name": "NotCreator",
+      "msg": "signer is not the market creator"
+    },
+    {
+      "code": 6801,
+      "name": "NoFeesToClaim",
+      "msg": "no fees available to claim"
+    },
+    {
+      "code": 6900,
+      "name": "LawZeroViolated",
+      "msg": "law 0 violated: ledgers exceed the vault balance"
+    },
+    {
+      "code": 6901,
+      "name": "LawOneViolated",
+      "msg": "law 1 violated: floor coverage is insufficient"
+    },
+    {
+      "code": 7000,
+      "name": "InvalidReflectionBps",
+      "msg": "reflection tax must be one of the allowed values (0, 100, 300 bps)"
+    },
+    {
+      "code": 7001,
+      "name": "ReflectionEpochMismatch",
+      "msg": "reflection epoch id does not match the on-chain epoch"
+    },
+    {
+      "code": 7002,
+      "name": "ReflectionAlreadyPaid",
+      "msg": "this holder index was already paid in this reflection epoch"
+    },
+    {
+      "code": 7003,
+      "name": "ReflectionPoolExceeded",
+      "msg": "reflection distribution would exceed the frozen epoch pool"
+    },
+    {
+      "code": 7004,
+      "name": "PoolTooSmall",
+      "msg": "reflection pool is too small to cover its own distribution gas"
+    },
+    {
+      "code": 7005,
+      "name": "GasReserveTooHigh",
+      "msg": "gas reserve skim exceeds the allowed share of the pool"
+    },
+    {
+      "code": 7006,
+      "name": "ReflectionIndexOutOfRange",
+      "msg": "holder index is out of range for this epoch's bitmap"
+    }
+  ],
+  "types": [
+    {
+      "name": "AdminAcceptedEvent",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "previous_admin",
+            "type": "pubkey"
+          },
+          {
+            "name": "new_admin",
+            "type": "pubkey"
+          }
+        ]
+      }
+    },
+    {
+      "name": "AdminProposedEvent",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "current_admin",
+            "type": "pubkey"
+          },
+          {
+            "name": "pending_admin",
+            "type": "pubkey"
+          }
+        ]
+      }
+    },
+    {
+      "name": "BorrowEvent",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "market",
+            "type": "pubkey"
+          },
+          {
+            "name": "owner",
+            "type": "pubkey"
+          },
+          {
+            "name": "amount",
+            "type": "u64"
+          },
+          {
+            "name": "fee",
+            "type": "u64"
+          },
+          {
+            "name": "fee_floor",
+            "type": "u64"
+          },
+          {
+            "name": "fee_creator",
+            "type": "u64"
+          },
+          {
+            "name": "fee_team",
+            "type": "u64"
+          },
+          {
+            "name": "received",
+            "type": "u64"
+          },
+          {
+            "name": "debt",
+            "type": "u64"
+          },
+          {
+            "name": "drawn_from_floor",
+            "docs": [
+              "How much of the draw came out of the floor earmark \u2014 the Mayflower rule in",
+              "one number, matched one-for-one by the receivable."
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "state_seq",
+            "type": "u64"
+          },
+          {
+            "name": "floor_reserve",
+            "docs": [
+              "Market-wide post-state, for the indexer's aggregate columns."
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "price_reserve",
+            "type": "u64"
+          },
+          {
+            "name": "total_debt",
+            "type": "u64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "BuyEvent",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "market",
+            "type": "pubkey"
+          },
+          {
+            "name": "buyer",
+            "type": "pubkey"
+          },
+          {
+            "name": "cash_in",
+            "type": "u64"
+          },
+          {
+            "name": "fee",
+            "type": "u64"
+          },
+          {
+            "name": "fee_floor",
+            "type": "u64"
+          },
+          {
+            "name": "fee_creator",
+            "type": "u64"
+          },
+          {
+            "name": "fee_team",
+            "type": "u64"
+          },
+          {
+            "name": "token_out",
+            "type": "u64"
+          },
+          {
+            "name": "obligation",
+            "docs": [
+              "`ceil(F \u00d7 token_out)` \u2014 the Law-1 leg, credited before anything else."
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "glide_credit",
+            "type": "u64"
+          },
+          {
+            "name": "price_credit",
+            "type": "u64"
+          },
+          {
+            "name": "token_supply",
+            "type": "u64"
+          },
+          {
+            "name": "floor_reserve",
+            "type": "u64"
+          },
+          {
+            "name": "price_reserve",
+            "type": "u64"
+          },
+          {
+            "name": "state_seq",
+            "type": "u64"
+          },
+          {
+            "name": "cum_net_inflow",
+            "docs": [
+              "Post-trade glide progress \u2014 the indexer's quote state, so it never reads",
+              "the Market account back."
+            ],
+            "type": "u128"
+          }
+        ]
+      }
+    },
+    {
+      "name": "CollateralConfig",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "bump",
+            "docs": [
+              "PDA bump, stored so every instruction re-derives instead of trusting input."
+            ],
+            "type": "u8"
+          },
+          {
+            "name": "mint_main",
+            "docs": [
+              "The collateral mint this config is keyed on. Stored so every consumer can",
+              "assert the passed mint matches, rather than trusting the caller's pairing."
+            ],
+            "type": "pubkey"
+          },
+          {
+            "name": "decimals",
+            "docs": [
+              "Cached from the mint account \u2014 **read from the mint, never an argument.**",
+              "An admin typo of 6 for a 9-decimal mint would silently corrupt every price",
+              "and amount downstream with no error anywhere. Safe to cache because SPL",
+              "mint decimals are immutable."
+            ],
+            "type": "u8"
+          },
+          {
+            "name": "min_trade_amount",
+            "docs": [
+              "Anti-dust minimum in raw units, supplied explicitly. This is the",
+              "rounding-harvest defence, so there is no fallback formula to get it subtly",
+              "wrong \u2014 see `MIN_TRADE_AMOUNT_FLOOR`."
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "reserved",
+            "docs": [
+              "Padding so a future field needs no migration."
+            ],
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "CollateralConfigSetEvent",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "mint_main",
+            "type": "pubkey"
+          },
+          {
+            "name": "decimals",
+            "type": "u8"
+          },
+          {
+            "name": "min_trade_amount",
+            "type": "u64"
+          },
+          {
+            "name": "team_vault",
+            "type": "pubkey"
+          },
+          {
+            "name": "updated",
+            "docs": [
+              "False on the first listing, true when an existing listing is retuned \u2014",
+              "the two are the same instruction, so the event has to disambiguate."
+            ],
+            "type": "bool"
+          }
+        ]
+      }
+    },
+    {
+      "name": "ConfigInitializedEvent",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "admin",
+            "type": "pubkey"
+          },
+          {
+            "name": "team_wallet",
+            "type": "pubkey"
+          }
+        ]
+      }
+    },
+    {
+      "name": "CreatorFeesClaimedEvent",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "market",
+            "type": "pubkey"
+          },
+          {
+            "name": "creator",
+            "docs": [
+              "Whoever held `market.creator` at claim time \u2014 not necessarily whoever earned it."
+            ],
+            "type": "pubkey"
+          },
+          {
+            "name": "amount",
+            "type": "u64"
+          },
+          {
+            "name": "destination",
+            "type": "pubkey"
+          }
+        ]
+      }
+    },
+    {
+      "name": "DepositEvent",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "market",
+            "type": "pubkey"
+          },
+          {
+            "name": "owner",
+            "type": "pubkey"
+          },
+          {
+            "name": "amount",
+            "type": "u64"
+          },
+          {
+            "name": "collateral",
+            "type": "u64"
+          },
+          {
+            "name": "state_seq",
+            "type": "u64"
+          },
+          {
+            "name": "total_collateral",
+            "docs": [
+              "Market-wide post-state, for the indexer's aggregate columns."
+            ],
+            "type": "u64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "FeeConfig",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "bump",
+            "docs": [
+              "PDA bump, stored so every instruction re-derives instead of trusting input."
+            ],
+            "type": "u8"
+          },
+          {
+            "name": "version",
+            "docs": [
+              "Strictly sequential from 1. Seeds are `[FEE_CONFIG_SEED, version_le]`, so",
+              "each version lives at its own address and none can be rewritten."
+            ],
+            "type": "u32"
+          },
+          {
+            "name": "buy_fee_mbps",
+            "docs": [
+              "Micro-basis points (`1_000_000` = 100%). Launch: `12_500` = 1.25%."
+            ],
+            "type": "u32"
+          },
+          {
+            "name": "sell_fee_mbps",
+            "docs": [
+              "Launch: `12_500` = 1.25%."
+            ],
+            "type": "u32"
+          },
+          {
+            "name": "borrow_fee_mbps",
+            "docs": [
+              "Origination fee on the borrowed amount. Launch: `30_000` = 3%."
+            ],
+            "type": "u32"
+          },
+          {
+            "name": "redeem_fee_mbps",
+            "docs": [
+              "Reserved: `redeem_at_floor` was removed. Kept so a future re-add needs no",
+              "`FeeConfig` migration."
+            ],
+            "type": "u32"
+          },
+          {
+            "name": "team_share_bps",
+            "docs": [
+              "The protocol's share of every fee, in bps of the fee taken. Launch `7_500`.",
+              "",
+              "This is the **only** split value that is protocol policy. The remaining",
+              "`10_000 \u2212 team_share_bps` is split per market between the creator and the",
+              "floor, chosen at `init_market` \u2014 see `Market::fees_*`. Kept here rather",
+              "than passed at creation because `init_market` is permissionless: an",
+              "argument would let a creator submit `0` and keep the protocol's share."
+            ],
+            "type": "u16"
+          },
+          {
+            "name": "reserved",
+            "docs": [
+              "Padding so a future field needs no migration."
+            ],
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "FeeConfigPublishedEvent",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "version",
+            "type": "u32"
+          },
+          {
+            "name": "buy_fee_mbps",
+            "type": "u32"
+          },
+          {
+            "name": "sell_fee_mbps",
+            "type": "u32"
+          },
+          {
+            "name": "borrow_fee_mbps",
+            "type": "u32"
+          },
+          {
+            "name": "redeem_fee_mbps",
+            "type": "u32"
+          },
+          {
+            "name": "team_share_bps",
+            "type": "u16"
+          }
+        ]
+      }
+    },
+    {
+      "name": "FloorRaisedEvent",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "market",
+            "type": "pubkey"
+          },
+          {
+            "name": "preserve_area",
+            "docs": [
+              "Which path ran: the area-preserving accelerator, or the cash-funded raise",
+              "that is the only one able to leave a ramp-band state."
+            ],
+            "type": "bool"
+          },
+          {
+            "name": "previous_floor",
+            "type": "u128"
+          },
+          {
+            "name": "floor",
+            "type": "u128"
+          },
+          {
+            "name": "ramp_start_x",
+            "type": "u64"
+          },
+          {
+            "name": "previous_x2",
+            "type": "u64"
+          },
+          {
+            "name": "x2",
+            "type": "u64"
+          },
+          {
+            "name": "state_seq",
+            "type": "u64"
+          },
+          {
+            "name": "m_x1",
+            "docs": [
+              "`m_x1_cached` after the raise's `refresh_memos()` \u2014 the third geometry memo,",
+              "so the indexer mirrors curve state without re-deriving it."
+            ],
+            "type": "u128"
+          }
+        ]
+      }
+    },
+    {
+      "name": "GlobalConfig",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "bump",
+            "docs": [
+              "PDA bump, stored so every instruction re-derives instead of trusting input."
+            ],
+            "type": "u8"
+          },
+          {
+            "name": "admin",
+            "docs": [
+              "Protocol admin: publishes fee configs, lists collaterals, sets market",
+              "flags, and holds the CTO path. Required to be a Squads multisig.",
+              "",
+              "Explicitly **cannot**: lower a floor, touch any vault, mint tokens, change",
+              "a live market's curve, change a live market's fees, or redirect the team",
+              "fee destination. Those powers are absent from the program, not gated."
+            ],
+            "type": "pubkey"
+          },
+          {
+            "name": "pending_admin",
+            "docs": [
+              "Two-step rotation target; `Pubkey::default()` when nothing is pending.",
+              "A single-step rotation to a mistyped key would brick every admin path,",
+              "so the successor must sign to accept."
+            ],
+            "type": "pubkey"
+          },
+          {
+            "name": "team_wallet",
+            "docs": [
+              "Destination of team fee sweeps. **Immutable for the life of the program** \u2014",
+              "`update_team_wallet` does not exist in v2, which makes non-redirectability",
+              "structural rather than checked.",
+              "",
+              "The flip side, and why this must be a multisig: a lost *or compromised*",
+              "key is permanent and unfixable, since no redeploy can alter an existing",
+              "PDA. Rotation lives at the Squads member layer instead."
+            ],
+            "type": "pubkey"
+          },
+          {
+            "name": "current_fee_config_version",
+            "docs": [
+              "Latest published `FeeConfig`. New markets pin this version at creation and",
+              "keep it for life. `0` means none published yet, so no market can be",
+              "created \u2014 see `publish_fee_config`."
+            ],
+            "type": "u32"
+          },
+          {
+            "name": "reserved",
+            "type": {
+              "array": [
+                "u8",
+                64
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "InitMarketArgs",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "vanity_seed",
+            "type": "u64"
+          },
+          {
+            "name": "metadata",
+            "type": {
+              "defined": {
+                "name": "MarketMetadata"
+              }
+            }
+          },
+          {
+            "name": "curve_kind",
+            "docs": [
+              "Selects what `char_params` means. Only `Linear` is evaluable today; the",
+              "hinged-exponential family plugs in behind the same discriminant."
+            ],
+            "type": "u8"
+          },
+          {
+            "name": "hinge_x",
+            "docs": [
+              "Supply (raw units) where the hinged exponential ignites; must be 0 for",
+              "the linear family."
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "char_params",
+            "docs": [
+              "Linear: `(p0, m, _, _)` \u2014 `M(x) = p0 + m\u00b7x`, both Q64.64. **No curve table**:",
+              "the shape is these numbers, evaluated directly, so nothing has to travel in",
+              "the transaction and the point-count question disappears entirely."
+            ],
+            "type": {
+              "array": [
+                "i128",
+                4
+              ]
+            }
+          },
+          {
+            "name": "ramp_scalar",
+            "docs": [
+              "Q64.64, pinned per preset. `> 1`. Never a runtime lever."
+            ],
+            "type": "u128"
+          },
+          {
+            "name": "fees_creator",
+            "docs": [
+              "The **only** caller input to the fee split: `0..=(10_000 \u2212 fees_team)` bps",
+              "of the fee \u2014 no standalone cap, the remainder computation is the bound.",
+              "`fees_team` comes from the pinned FeeConfig and `fees_floor` is the computed",
+              "remainder (zero allowed), so no argument combination can break `\u03a3 = 10_000`."
+            ],
+            "type": "u16"
+          },
+          {
+            "name": "g0_mbps",
+            "type": "u32"
+          },
+          {
+            "name": "g_min_mbps",
+            "type": "u32"
+          },
+          {
+            "name": "glide_end_inflow",
+            "type": "u128"
+          },
+          {
+            "name": "q_max_bps",
+            "docs": [
+              "Declared stress depth, in bps of supply."
+            ],
+            "type": "u16"
+          },
+          {
+            "name": "disable_sell",
+            "type": "bool"
+          },
+          {
+            "name": "self_healing",
+            "docs": [
+              "Opt into the self-healing sell semantics (`SELF_HEALING.md`) at birth.",
+              "Immutable for the market's life \u2014 the bit is outside `WRITABLE_MASK`."
+            ],
+            "type": "bool"
+          },
+          {
+            "name": "reflection_bps",
+            "docs": [
+              "Reflection tax pinned at birth, bps of the trade: must be one of",
+              "`REFLECTION_BPS_ALLOWED` (0 / 100 / 300). Immutable for life. Appended",
+              "last so old serialized args stay prefix-compatible."
+            ],
+            "type": "u16"
+          }
+        ]
+      }
+    },
+    {
+      "name": "LeverageBuyEvent",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "market",
+            "type": "pubkey"
+          },
+          {
+            "name": "owner",
+            "type": "pubkey"
+          },
+          {
+            "name": "cash_in",
+            "type": "u64"
+          },
+          {
+            "name": "borrowed",
+            "type": "u64"
+          },
+          {
+            "name": "borrow_fee",
+            "type": "u64"
+          },
+          {
+            "name": "buy_fee",
+            "type": "u64"
+          },
+          {
+            "name": "token_out",
+            "type": "u64"
+          },
+          {
+            "name": "collateral",
+            "type": "u64"
+          },
+          {
+            "name": "debt",
+            "type": "u64"
+          },
+          {
+            "name": "drawn_from_floor",
+            "type": "u64"
+          },
+          {
+            "name": "token_supply",
+            "type": "u64"
+          },
+          {
+            "name": "state_seq",
+            "type": "u64"
+          },
+          {
+            "name": "floor_reserve",
+            "docs": [
+              "Market-wide post-state, for the indexer's aggregate columns."
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "price_reserve",
+            "type": "u64"
+          },
+          {
+            "name": "total_debt",
+            "type": "u64"
+          },
+          {
+            "name": "total_collateral",
+            "type": "u64"
+          },
+          {
+            "name": "cum_net_inflow",
+            "type": "u128"
+          }
+        ]
+      }
+    },
+    {
+      "name": "LeverageSellEvent",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "market",
+            "type": "pubkey"
+          },
+          {
+            "name": "owner",
+            "type": "pubkey"
+          },
+          {
+            "name": "collateral_in",
+            "type": "u64"
+          },
+          {
+            "name": "gross",
+            "type": "u64"
+          },
+          {
+            "name": "fee",
+            "type": "u64"
+          },
+          {
+            "name": "repaid",
+            "type": "u64"
+          },
+          {
+            "name": "paid_out",
+            "type": "u64"
+          },
+          {
+            "name": "collateral",
+            "type": "u64"
+          },
+          {
+            "name": "debt",
+            "type": "u64"
+          },
+          {
+            "name": "token_supply",
+            "type": "u64"
+          },
+          {
+            "name": "contracted",
+            "type": "bool"
+          },
+          {
+            "name": "state_seq",
+            "type": "u64"
+          },
+          {
+            "name": "floor_reserve",
+            "docs": [
+              "Market-wide post-state + post-contraction geometry memos (unchanged values",
+              "when `contracted` is false), for the indexer's aggregate columns."
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "price_reserve",
+            "type": "u64"
+          },
+          {
+            "name": "total_debt",
+            "type": "u64"
+          },
+          {
+            "name": "total_collateral",
+            "type": "u64"
+          },
+          {
+            "name": "cum_net_inflow",
+            "type": "u128"
+          },
+          {
+            "name": "ramp_start_x",
+            "type": "u64"
+          },
+          {
+            "name": "x2",
+            "type": "u64"
+          },
+          {
+            "name": "m_x1",
+            "type": "u128"
+          },
+          {
+            "name": "book_shortfall",
+            "docs": [
+              "Curve value the ledgers could not cover, clamped off the sell leg (0 on",
+              "a normal deleverage). See `SellEvent::book_shortfall`."
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "y_shift",
+            "docs": [
+              "See `SellEvent::y_shift` / `heal_spread` (prefix-compatible appends)."
+            ],
+            "type": "i128"
+          },
+          {
+            "name": "heal_spread",
+            "type": "u64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Market",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "bump",
+            "docs": [
+              "PDA bump, stored so every instruction re-derives instead of trusting input."
+            ],
+            "type": "u8"
+          },
+          {
+            "name": "version",
+            "docs": [
+              "`2`. Mirrors the backend's `market.program_version` discriminator."
+            ],
+            "type": "u8"
+          },
+          {
+            "name": "curve_kind",
+            "docs": [
+              "`0 = linear`, `1 = hinged exponential` (reserved) \u2014 matches the `CurveKind`",
+              "enum. A real discriminant: nothing may assume \"a curve *is* a table\"; the",
+              "closed-form tail family plugs in here."
+            ],
+            "type": "u8"
+          },
+          {
+            "name": "token_decimals",
+            "docs": [
+              "`== mint_main.decimals == mint_token.decimals` (v1 invariant; the backend's",
+              "price maths depends on it)."
+            ],
+            "type": "u8"
+          },
+          {
+            "name": "flags",
+            "docs": [
+              "Permission bits \u2014 see the `flags` module above.",
+              "bit 0: CanBuy, bit 1: CanSell, bit 2: CanBorrow, bit 6: CanRaiseFloor,",
+              "bit 7: CanDeposit, bit 8: SelfHealing (creation-time only, never writable)."
+            ],
+            "type": "u16"
+          },
+          {
+            "name": "creator",
+            "docs": [
+              "Current creator-fee claimant. Reassignable via `update_market` (the CTO",
+              "path), so this is whoever *holds* the market, not necessarily who made it."
+            ],
+            "type": "pubkey"
+          },
+          {
+            "name": "mint_token",
+            "docs": [
+              "The market's token mint \u2014 the market PDA seed (`[\"market\", mint_token]`)."
+            ],
+            "type": "pubkey"
+          },
+          {
+            "name": "mint_main",
+            "docs": [
+              "Collateral (base currency) mint (e.g., USDC) \u2014 trades pay and pay out in it."
+            ],
+            "type": "pubkey"
+          },
+          {
+            "name": "token_program_main",
+            "docs": [
+              "Resolved once from `mint_main.owner` and stored, so no later instruction has",
+              "to guess which token program the collateral belongs to."
+            ],
+            "type": "pubkey"
+          },
+          {
+            "name": "vault",
+            "type": "pubkey"
+          },
+          {
+            "name": "collateral_vault",
+            "type": "pubkey"
+          },
+          {
+            "name": "creator_claim",
+            "type": "pubkey"
+          },
+          {
+            "name": "vault_bumps",
+            "docs": [
+              "`[vault, collateral_vault, creator_claim]` \u2014 every instruction re-derives",
+              "from seeds + stored bump, which makes vault substitution structurally",
+              "impossible rather than checked."
+            ],
+            "type": {
+              "array": [
+                "u8",
+                3
+              ]
+            }
+          },
+          {
+            "name": "fee_config_version",
+            "type": "u32"
+          },
+          {
+            "name": "buy_fee_mbps",
+            "docs": [
+              "Buy fee in mbps (`1_000_000` = 100%), copied from the pinned `FeeConfig`."
+            ],
+            "type": "u32"
+          },
+          {
+            "name": "sell_fee_mbps",
+            "docs": [
+              "Sell fee, mbps \u2014 same snapshot."
+            ],
+            "type": "u32"
+          },
+          {
+            "name": "borrow_fee_mbps",
+            "docs": [
+              "Origination fee on the borrowed amount, mbps \u2014 same snapshot."
+            ],
+            "type": "u32"
+          },
+          {
+            "name": "redeem_fee_mbps",
+            "docs": [
+              "Reserved \u2014 mirrors `FeeConfig::redeem_fee_mbps` (`redeem_at_floor` was removed)."
+            ],
+            "type": "u32"
+          },
+          {
+            "name": "fees_team",
+            "docs": [
+              "Fee split in bps of the fee taken. One pinned, one supplied, one computed \u2014",
+              "see `fees_floor`."
+            ],
+            "type": "u16"
+          },
+          {
+            "name": "fees_creator",
+            "type": "u16"
+          },
+          {
+            "name": "fees_floor",
+            "docs": [
+              "`10_000 \u2212 fees_team \u2212 fees_creator`, **computed, never supplied**. Deriving",
+              "it makes `\u03a3 = 10_000` true by construction instead of by an assertion every",
+              "writer has to remember."
+            ],
+            "type": "u16"
+          },
+          {
+            "name": "min_trade_amount",
+            "type": "u64"
+          },
+          {
+            "name": "q_max_bps",
+            "docs": [
+              "Declared stress depth in bps of supply: the market promises this fraction is",
+              "sellable in one transaction, which caps how high `floor_price` may ratchet."
+            ],
+            "type": "u16"
+          },
+          {
+            "name": "char_params",
+            "docs": [
+              "Curve parameters, meaning fixed by `curve_kind`:",
+              "",
+              "* `Linear` \u2014 `(p0, m, _, _)`: `M(x) = p0 + m\u00b7x`, both Q64.64.",
+              "* `HingedExponential` \u2014 `(p0, m, g2, k)` with `g2 = 2q/k\u00b2`, all Q64.64:",
+              "`M(x) = p0 + m\u00b7x + g2\u00b7(e^{k\u00b7d} \u2212 1 \u2212 k\u00b7d)`, `d = max(x \u2212 hinge_x, 0)`",
+              "(see `docs/hinged-exp-fixed-point.md`); the hinge lives in `hinge_x`.",
+              "",
+              "A generic slot on purpose: adding a curve family adds a `Characteristic`",
+              "implementation, not a `Market` layout change. There is **no curve table** \u2014",
+              "the shape is these numbers, evaluated directly.",
+              "",
+              "Formats: `p0` and `g2` are Q64.64 values; the per-raw-unit `m` and `k`",
+              "are Q64.96 (`curve::SLOPE_FRAC_EXTRA`) so ultra-low launch prices on",
+              "expensive many-decimal collateral stay representable."
+            ],
+            "type": {
+              "array": [
+                "i128",
+                4
+              ]
+            }
+          },
+          {
+            "name": "floor_price",
+            "docs": [
+              "Q64.64. THE ratchet: monotone non-decreasing, forever."
+            ],
+            "type": "u128"
+          },
+          {
+            "name": "ramp_start_x",
+            "docs": [
+              "`x1`, in raw table x-units (integer \u2014 kills a division on the hot path)."
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "ramp_scalar",
+            "docs": [
+              "`s`, Q64.64. Pinned per preset, never a runtime lever: it carries the chord",
+              "certificate, and \u00a77.5b's ramp-band routing depends on its immutability."
+            ],
+            "type": "u128"
+          },
+          {
+            "name": "x2_cached",
+            "docs": [
+              "Memos, **not authority** \u2014 both re-derive from `{floor_price, ramp_start_x}`",
+              "and must be refreshed on every write to either. That refresh is the one new",
+              "bug class this design introduces; fuzz it."
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "m_x1_cached",
+            "type": "u128"
+          },
+          {
+            "name": "y_shift",
+            "docs": [
+              "Reserved, inactive: activates only if WP0's replay proves v1 re-anchors `b\u2082`",
+              "on ramp sells."
+            ],
+            "type": "i128"
+          },
+          {
+            "name": "token_supply",
+            "docs": [
+              "Circulating supply in raw token units \u2014 the `x` every curve is evaluated at."
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "floor_reserve",
+            "docs": [
+              "Book value of the floor earmark *inside* the single vault."
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "price_reserve",
+            "docs": [
+              "Book value of the above-floor exit book, same vault."
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "total_debt",
+            "docs": [
+              "Outstanding borrows across all positions, raw collateral units. Counted",
+              "as an obligation by every solvency check."
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "total_collateral",
+            "docs": [
+              "Market tokens locked in the collateral vault across all positions, raw units."
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "total_fees_floor",
+            "docs": [
+              "Cumulative fees routed to the floor reserve (raw collateral units)."
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "total_fees_creator",
+            "docs": [
+              "Cumulative fees accrued to `creator_claim` (raw collateral units)."
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "total_fees_team",
+            "docs": [
+              "Cumulative fees sent to the per-collateral team vault (raw collateral units)."
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "cum_net_inflow",
+            "docs": [
+              "Glide progress key. **Cumulative net inflow, never wall-clock** \u2014 a",
+              "time-keyed glide is gameable by waiting."
+            ],
+            "type": "u128"
+          },
+          {
+            "name": "g0_mbps",
+            "docs": [
+              "Glide start value, mbps: the share of a buy's premium credited to the",
+              "floor reserve at zero inflow (see `glide_at` in `buy.rs`)."
+            ],
+            "type": "u32"
+          },
+          {
+            "name": "g_min_mbps",
+            "docs": [
+              "Glide end value, mbps \u2014 what `g` decays to at `glide_end_inflow`.",
+              "Launch ships `g_min == g0` (flat), which short-circuits the decay entirely."
+            ],
+            "type": "u32"
+          },
+          {
+            "name": "glide_end_inflow",
+            "docs": [
+              "Inflow at which `g` reaches `g_min` (linear decay between). Launch ships a",
+              "**flat** glide (`g_min == g0`), so this is inert until calibration."
+            ],
+            "type": "u128"
+          },
+          {
+            "name": "peak_price",
+            "docs": [
+              "Highest effective spot seen since the last disarm. This is the memory that",
+              "makes the ratchet reflexive: it is what lets a raise know the market *was*",
+              "high even though it is no longer trading there."
+            ],
+            "type": "u128"
+          },
+          {
+            "name": "peak_slot",
+            "docs": [
+              "Slot at which `peak_price` was latched. The reflexive window requires",
+              "`peak_slot < current_slot`, which is what makes a spike and the raise that",
+              "exploits it non-atomic."
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "reflexive_arm_ratio_mbps",
+            "docs": [
+              "Arm threshold as a multiple of the floor, in mbps (`1_800_000` = 1.8\u00d7). The",
+              "market is armed when `peak_price \u2265 ratio \u00d7 F`."
+            ],
+            "type": "u32"
+          },
+          {
+            "name": "reflexive_band_mbps",
+            "docs": [
+              "Fire threshold as a multiple of the floor, in mbps (`1_300_000` = 1.3\u00d7). The",
+              "window is open when armed **and** `spot \u2264 band \u00d7 F` \u2014 i.e. the excursion has",
+              "retraced back toward the floor."
+            ],
+            "type": "u32"
+          },
+          {
+            "name": "reflexive_step_bps",
+            "docs": [
+              "Per-operation cap while the reflexive window is open, replacing",
+              "`max_floor_step_bps`. A second cap rather than a multiplier: there is no",
+              "product to reason about, it is bounded by the same maximum, and setting it",
+              "equal to `max_floor_step_bps` disables the mechanism without a flag."
+            ],
+            "type": "u16"
+          },
+          {
+            "name": "starting_price",
+            "docs": [
+              "Floor at creation. Display/analytics only \u2014 v1's cooldown ratio table is gone."
+            ],
+            "type": "u128"
+          },
+          {
+            "name": "last_floor_raise_ts",
+            "docs": [
+              "Unix time of the last floor raise. Analytics only \u2014 no cooldown reads it;",
+              "`max_floor_step_bps` (below) is the sole throttle on raise velocity."
+            ],
+            "type": "i64"
+          },
+          {
+            "name": "floor_raise_count",
+            "docs": [
+              "How many times the floor has been raised \u2014 the market's \"level\".",
+              "Analytics only, never read by a check."
+            ],
+            "type": "u32"
+          },
+          {
+            "name": "last_raise_slot",
+            "docs": [
+              "One geometry write per slot (reentrancy bound, not a cooldown)."
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "max_floor_step_bps",
+            "docs": [
+              "Per-operation ceiling on a floor raise, in bps of the current floor. With",
+              "cooldowns removed entirely this is the **only** throttle on raise velocity,",
+              "so it has to actually bind \u2014 v1's bound read as a 101\u00d7 multiplier per call",
+              "with no time gate behind it."
+            ],
+            "type": "u16"
+          },
+          {
+            "name": "min_ramp_headroom_x",
+            "docs": [
+              "Minimum gap the derived ramp end must keep below supply, in raw x-units.",
+              "Absolute units, not a fraction: the predicate is `x2 + headroom < supply`,",
+              "and a fraction would force a multiply and a rounding decision inside it."
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "area_under_curve",
+            "docs": [
+              "Event-only statistic, maintained incrementally for snapshots."
+            ],
+            "type": "u128"
+          },
+          {
+            "name": "state_seq",
+            "docs": [
+              "Monotone, incremented wherever `assert_laws` runs and emitted in every",
+              "snapshot. The indexer is last-write-wins across three async writers with no",
+              "ordering key, so this is what lets it reject a stale update \u2014 and a gap in",
+              "it is the only mechanical detector for an event that never arrived."
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "hinge_x",
+            "docs": [
+              "Supply (raw units) where the hinged exponential ignites. Zero for the",
+              "linear family. Carved out of the former `reserved[96]` prefix, so the",
+              "account layout of live markets is unchanged (old bytes read as zero)."
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "reflection_bps",
+            "docs": [
+              "Reflection tax pinned at creation, bps of the trade: 0 / 100 / 300.",
+              "Immutable for life. Carved out of the `reserved` prefix (88 \u2192 86), so the",
+              "account layout of live markets is unchanged (old bytes read as zero =",
+              "no reflection). See `REFLECTION_TOKENS_DESIGN.md`."
+            ],
+            "type": "u16"
+          },
+          {
+            "name": "reserved",
+            "docs": [
+              "Padding. Grew by 32 bytes when the withdrawn-fee counters and the",
+              "area-shrink-budget window were removed as dead state \u2014 the fee-custody",
+              "decision made the withdrawn counters a permanent zero, and the preserve-area",
+              "raise enforces one-sided non-shrink directly rather than a budgeted \u03b4. Keeping",
+              "the account size fixed lets those bytes back a future field without a",
+              "migration."
+            ],
+            "type": {
+              "array": [
+                "u8",
+                86
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "MarketFlagsSetEvent",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "market",
+            "type": "pubkey"
+          },
+          {
+            "name": "previous_flags",
+            "type": "u16"
+          },
+          {
+            "name": "flags",
+            "type": "u16"
+          },
+          {
+            "name": "state_seq",
+            "type": "u64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "MarketInitializedEvent",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "market",
+            "type": "pubkey"
+          },
+          {
+            "name": "creator",
+            "type": "pubkey"
+          },
+          {
+            "name": "mint_token",
+            "type": "pubkey"
+          },
+          {
+            "name": "mint_main",
+            "type": "pubkey"
+          },
+          {
+            "name": "name",
+            "docs": [
+              "Full strings, not a hash: the indexer populates name/symbol/uri straight",
+              "from the event, so nothing has to be fetched back over RPC."
+            ],
+            "type": "string"
+          },
+          {
+            "name": "symbol",
+            "type": "string"
+          },
+          {
+            "name": "uri",
+            "type": "string"
+          },
+          {
+            "name": "decimals",
+            "type": "u8"
+          },
+          {
+            "name": "fee_config_version",
+            "type": "u32"
+          },
+          {
+            "name": "fees_team",
+            "type": "u16"
+          },
+          {
+            "name": "fees_creator",
+            "type": "u16"
+          },
+          {
+            "name": "fees_floor",
+            "type": "u16"
+          },
+          {
+            "name": "floor_price",
+            "type": "u128"
+          },
+          {
+            "name": "curve_kind",
+            "type": "u8"
+          },
+          {
+            "name": "flags",
+            "type": "u16"
+          },
+          {
+            "name": "state_seq",
+            "type": "u64"
+          },
+          {
+            "name": "buy_fee_mbps",
+            "docs": [
+              "Trade-fee rates snapshotted from the FeeConfig \u2014 in the event so the",
+              "indexer never needs the FeeConfig account (or a DB copy of it) to fill a",
+              "market row. New fields sit after `state_seq`: historical events stay",
+              "prefix-compatible."
+            ],
+            "type": "u32"
+          },
+          {
+            "name": "sell_fee_mbps",
+            "type": "u32"
+          },
+          {
+            "name": "borrow_fee_mbps",
+            "type": "u32"
+          },
+          {
+            "name": "redeem_fee_mbps",
+            "type": "u32"
+          },
+          {
+            "name": "hinge_x",
+            "docs": [
+              "Hinge of the hinged-exponential family (0 for linear). Appended last,",
+              "per the prefix-compatibility rule above."
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "reflection_bps",
+            "docs": [
+              "Reflection tax pinned at creation (bps of the trade): 0 / 100 / 300.",
+              "Appended last, per the prefix-compatibility rule above."
+            ],
+            "type": "u16"
+          }
+        ]
+      }
+    },
+    {
+      "name": "MarketMetadata",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "name",
+            "type": "string"
+          },
+          {
+            "name": "symbol",
+            "type": "string"
+          },
+          {
+            "name": "uri",
+            "docs": [
+              "The creator's metadata JSON link (IPFS or otherwise). Stored inline in the",
+              "mint via the Token-2022 metadata extension \u2014 there is no Metaplex account."
+            ],
+            "type": "string"
+          }
+        ]
+      }
+    },
+    {
+      "name": "MarketUpdatedEvent",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "market",
+            "type": "pubkey"
+          },
+          {
+            "name": "previous_creator",
+            "type": "pubkey"
+          },
+          {
+            "name": "creator",
+            "type": "pubkey"
+          },
+          {
+            "name": "fees_creator",
+            "type": "u16"
+          },
+          {
+            "name": "fees_floor",
+            "type": "u16"
+          },
+          {
+            "name": "metadata_updated",
+            "type": "bool"
+          },
+          {
+            "name": "state_seq",
+            "type": "u64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Position",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "bump",
+            "docs": [
+              "PDA bump, stored so every instruction re-derives instead of trusting input."
+            ],
+            "type": "u8"
+          },
+          {
+            "name": "market",
+            "docs": [
+              "The market this position belongs to. Seeds are",
+              "`[\"position\", market, owner]`, so exactly one position exists per pair."
+            ],
+            "type": "pubkey"
+          },
+          {
+            "name": "owner",
+            "docs": [
+              "The position holder \u2014 the other PDA seed."
+            ],
+            "type": "pubkey"
+          },
+          {
+            "name": "collateral",
+            "docs": [
+              "Market tokens locked in the collateral vault, raw units."
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "debt",
+            "docs": [
+              "Outstanding principal in raw collateral units. Interest-free by design."
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "reserved",
+            "docs": [
+              "Padding so a future field needs no migration."
+            ],
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "PublishFeeConfigArgs",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "buy_fee_mbps",
+            "type": "u32"
+          },
+          {
+            "name": "sell_fee_mbps",
+            "type": "u32"
+          },
+          {
+            "name": "borrow_fee_mbps",
+            "type": "u32"
+          },
+          {
+            "name": "redeem_fee_mbps",
+            "docs": [
+              "`redeem_at_floor` was removed; kept so a future re-add needs no migration."
+            ],
+            "type": "u32"
+          },
+          {
+            "name": "team_share_bps",
+            "type": "u16"
+          }
+        ]
+      }
+    },
+    {
+      "name": "ReflectionAccruedEvent",
+      "docs": [
+        "Emitted on every buy/sell (and their leverage variants) that carries a",
+        "non-zero reflection tax: the amount routed to the market's `reflection_vault`",
+        "and the running vault total after the leg."
+      ],
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "market",
+            "type": "pubkey"
+          },
+          {
+            "name": "is_buy",
+            "docs": [
+              "`true` = buy-side (buyer \u2192 vault), `false` = sell-side (vault \u2192 vault)."
+            ],
+            "type": "bool"
+          },
+          {
+            "name": "amount",
+            "type": "u64"
+          },
+          {
+            "name": "state_seq",
+            "type": "u64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "ReflectionDistributedEvent",
+      "docs": [
+        "Emitted per `distribute_reflection` batch: how many holders were paid, the",
+        "running total distributed against the frozen pool, and the per-holder credits",
+        "(wallet + amount) so the indexer can record reward history without decoding",
+        "the instruction or resolving ATAs."
+      ],
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "market",
+            "type": "pubkey"
+          },
+          {
+            "name": "epoch",
+            "type": "u64"
+          },
+          {
+            "name": "count",
+            "type": "u32"
+          },
+          {
+            "name": "batch_total",
+            "type": "u64"
+          },
+          {
+            "name": "total_distributed",
+            "type": "u64"
+          },
+          {
+            "name": "entries",
+            "type": {
+              "vec": {
+                "defined": {
+                  "name": "ReflectionPayment"
+                }
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "ReflectionEpoch",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "market",
+            "type": "pubkey"
+          },
+          {
+            "name": "epoch",
+            "type": "u64"
+          },
+          {
+            "name": "pool",
+            "docs": [
+              "Distributable pool frozen at open (already net of `gas_reserve`)."
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "total_distributed",
+            "type": "u64"
+          },
+          {
+            "name": "holder_count",
+            "type": "u32"
+          },
+          {
+            "name": "gas_reserve",
+            "type": "u64"
+          },
+          {
+            "name": "bump",
+            "type": "u8"
+          },
+          {
+            "name": "paid_bitmap",
+            "docs": [
+              "`ceil(holder_count / 8)` bytes; bit `i` = holder index `i` has been paid."
+            ],
+            "type": "bytes"
+          }
+        ]
+      }
+    },
+    {
+      "name": "ReflectionEpochOpenedEvent",
+      "docs": [
+        "Emitted when an admin opens a reflection distribution epoch: the pool is",
+        "frozen (net of the gas skim) and the per-holder bitmap is sized."
+      ],
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "market",
+            "type": "pubkey"
+          },
+          {
+            "name": "epoch",
+            "type": "u64"
+          },
+          {
+            "name": "pool",
+            "docs": [
+              "Distributable pool frozen at open (already net of `gas_reserve`)."
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "holder_count",
+            "type": "u32"
+          },
+          {
+            "name": "gas_reserve",
+            "type": "u64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "ReflectionPayment",
+      "docs": [
+        "One holder's credit in a distribute batch. `owner` is ALWAYS the holder's",
+        "wallet \u2014 never the ATA: native markets pay the wallet directly; for SPL",
+        "markets the program reads the ATA's owner so the indexer records the wallet."
+      ],
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "owner",
+            "type": "pubkey"
+          },
+          {
+            "name": "amount",
+            "type": "u64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "ReflectionPayout",
+      "docs": [
+        "One holder's payout in a `distribute_reflection` batch. `index` keys the",
+        "epoch bitmap (the snapshot's stable ordering); the destination ATA is the",
+        "matching entry in `remaining_accounts`."
+      ],
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "index",
+            "type": "u32"
+          },
+          {
+            "name": "amount",
+            "type": "u64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "ReflexiveParams",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "arm_ratio_mbps",
+            "type": "u32"
+          },
+          {
+            "name": "band_mbps",
+            "type": "u32"
+          },
+          {
+            "name": "step_bps",
+            "type": "u16"
+          }
+        ]
+      }
+    },
+    {
+      "name": "RepayEvent",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "market",
+            "type": "pubkey"
+          },
+          {
+            "name": "owner",
+            "type": "pubkey"
+          },
+          {
+            "name": "amount",
+            "type": "u64"
+          },
+          {
+            "name": "debt",
+            "type": "u64"
+          },
+          {
+            "name": "state_seq",
+            "type": "u64"
+          },
+          {
+            "name": "floor_reserve",
+            "docs": [
+              "Market-wide post-state, for the indexer's aggregate columns."
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "price_reserve",
+            "type": "u64"
+          },
+          {
+            "name": "total_debt",
+            "type": "u64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "SellEvent",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "market",
+            "type": "pubkey"
+          },
+          {
+            "name": "seller",
+            "type": "pubkey"
+          },
+          {
+            "name": "token_in",
+            "type": "u64"
+          },
+          {
+            "name": "gross",
+            "type": "u64"
+          },
+          {
+            "name": "fee",
+            "type": "u64"
+          },
+          {
+            "name": "fee_floor",
+            "type": "u64"
+          },
+          {
+            "name": "fee_creator",
+            "type": "u64"
+          },
+          {
+            "name": "fee_team",
+            "type": "u64"
+          },
+          {
+            "name": "payout",
+            "type": "u64"
+          },
+          {
+            "name": "floor_debit",
+            "type": "u64"
+          },
+          {
+            "name": "price_debit",
+            "type": "u64"
+          },
+          {
+            "name": "token_supply",
+            "type": "u64"
+          },
+          {
+            "name": "floor_reserve",
+            "type": "u64"
+          },
+          {
+            "name": "price_reserve",
+            "type": "u64"
+          },
+          {
+            "name": "contracted",
+            "docs": [
+              "True when the sale landed inside the flat band and pulled `x1` down to the",
+              "new supply \u2014 which always leaves the market ramp-band."
+            ],
+            "type": "bool"
+          },
+          {
+            "name": "state_seq",
+            "type": "u64"
+          },
+          {
+            "name": "cum_net_inflow",
+            "docs": [
+              "Post-trade glide progress + the post-contraction geometry memos. Carried on",
+              "every sell (unchanged values when `contracted` is false) so the indexer",
+              "mirrors curve state without re-deriving fixed-point maths off-chain."
+            ],
+            "type": "u128"
+          },
+          {
+            "name": "ramp_start_x",
+            "type": "u64"
+          },
+          {
+            "name": "x2",
+            "type": "u64"
+          },
+          {
+            "name": "m_x1",
+            "type": "u128"
+          },
+          {
+            "name": "book_shortfall",
+            "docs": [
+              "Curve value the ledgers could not cover, clamped off the payout (0 on a",
+              "normal sale). Non-zero means the unconditional-exit fallback engaged and",
+              "part of the sale effectively exited at the floor."
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "y_shift",
+            "docs": [
+              "Post-trade curve translation (SELF_HEALING.md); 0 on legacy markets.",
+              "Appended prefix-compatible: old decoders simply stop before it."
+            ],
+            "type": "i128"
+          },
+          {
+            "name": "heal_spread",
+            "docs": [
+              "What the shoulder confiscated into the floor reserve this sale."
+            ],
+            "type": "u64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "TeamFeesWithdrawnEvent",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "mint_main",
+            "type": "pubkey"
+          },
+          {
+            "name": "amount",
+            "type": "u64"
+          },
+          {
+            "name": "destination",
+            "type": "pubkey"
+          }
+        ]
+      }
+    },
+    {
+      "name": "UpdateMarketArgs",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "metadata",
+            "type": {
+              "option": {
+                "defined": {
+                  "name": "MarketMetadata"
+                }
+              }
+            }
+          },
+          {
+            "name": "creator",
+            "docs": [
+              "New creator. `fees_floor` is recomputed from `fees_creator`; this",
+              "instruction never writes it directly and never touches `fees_team`, so the",
+              "leg sum cannot be broken here."
+            ],
+            "type": {
+              "option": "pubkey"
+            }
+          },
+          {
+            "name": "fees_creator",
+            "type": {
+              "option": "u16"
+            }
+          },
+          {
+            "name": "reflexive",
+            "docs": [
+              "Arm, retune, or disable the reflexive ratchet. `Some` with",
+              "`arm_ratio_mbps == 0` disables it; there is no separate flag, so the state",
+              "\"armed but with nonsense thresholds\" is unrepresentable."
+            ],
+            "type": {
+              "option": {
+                "defined": {
+                  "name": "ReflexiveParams"
+                }
+              }
+            }
+          },
+          {
+            "name": "max_floor_step_bps",
+            "docs": [
+              "The ordinary per-operation step cap. A runtime lever because it is the only",
+              "throttle on raise velocity, and the right value is a function of how the",
+              "market actually trades."
+            ],
+            "type": {
+              "option": "u16"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "WithdrawEvent",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "market",
+            "type": "pubkey"
+          },
+          {
+            "name": "owner",
+            "type": "pubkey"
+          },
+          {
+            "name": "amount",
+            "type": "u64"
+          },
+          {
+            "name": "collateral",
+            "type": "u64"
+          },
+          {
+            "name": "state_seq",
+            "type": "u64"
+          },
+          {
+            "name": "total_collateral",
+            "docs": [
+              "Market-wide post-state, for the indexer's aggregate columns."
+            ],
+            "type": "u64"
+          }
+        ]
+      }
+    }
+  ]
+}
