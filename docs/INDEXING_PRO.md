@@ -1,77 +1,104 @@
 # Rise Pro (v2) — Indexing & Events
 
-The Rise Pro program emits an event on every state change — buy, sell, leverage, deposit, borrow, repay, withdraw, floor raise, reflection, and lifecycle actions. Parse them from on-chain transactions to build your own indexer.
+| | |
+|---|---|
+| **Program (Devnet)** | `9nJ9wghEHY8bnsJQYrqV77uC9y4ccFHcCT1XyJxAkBVR` |
+| **IDL (JSON)** | [`../idl/rise_pro.json`](../idl/rise_pro.json) |
+| **Program surface** | [Program (Pro)](./PROGRAM_PRO.md) |
 
-> For the program surface (instructions, the `Market` account, the curve), see [**Program (Pro)**](./PROGRAM_PRO.md). This doc describes v2 only (program `9nJ9wghEHY8bnsJQYrqV77uC9y4ccFHcCT1XyJxAkBVR`, IDL name `Rise Pro`). The v1 [INDEXING.md](./INDEXING.md) is the Mayflower program and does not apply.
+Every state change emits an event — trades, lending, leverage, floor raises, reflection, lifecycle. Parse them from transactions to build an indexer; no account re-reads needed.
 
 ---
 
-## How events are emitted
+## Decoding events
 
-Like v1, Rise Pro emits via Anchor `emit_cpi!` — **not** `emit!`. Events are **not** in `Program data:` log lines. Each emitted event is the data of an **inner self-CPI instruction** back to the Rise Pro program (one inner instruction per event). This survives log truncation, so the block path and a gRPC stream see identical data.
-
-### Wire format
-
-Each inner-instruction payload is:
+Events are emitted via Anchor **`emit_cpi!`** — each one is the data of an **inner self-CPI instruction** back to the program (never a `Program data:` log line, so nothing is lost to log truncation; block path and gRPC see identical data).
 
 ```
-EVENT_CPI_DISC (8 bytes)  ++  eventDiscriminator (8 bytes)  ++  borsh(fields)
+inner ix data = EVENT_CPI_DISC (8) ++ eventDiscriminator (8) ++ borsh(fields)
+
+EVENT_CPI_DISC     = e4 45 a5 2e 51 cb 9a 1d          // sha256("anchor:event")[..8]
+eventDiscriminator = sha256("event:<EventName>")[..8]  // table below
 ```
 
-- `EVENT_CPI_DISC = e4 45 a5 2e 51 cb 9a 1d` = `sha256("anchor:event")[..8]` — the same constant across Anchor versions.
-- `eventDiscriminator = sha256("event:<EventName>")[..8]`.
+Recipe:
+1. Skip txs with `meta.err` or without the program id.
+2. Account keys = `[staticAccountKeys, loadedAddresses.writable, loadedAddresses.readonly]`.
+3. For each inner instruction owned by the program with `data[0..8] == EVENT_CPI_DISC`: match `data[8..16]` in the table below, Borsh-decode the rest in struct order.
 
-### Parsing recipe
+## Reading rules
 
-1. Skip transactions with `meta.err`, and transactions that don't reference the Rise Pro program id.
-2. Build the full account-key list: `[staticAccountKeys, loadedAddresses.writable, loadedAddresses.readonly]`.
-3. Walk `meta.innerInstructions`. For each inner instruction whose `programIdIndex` resolves to the Rise Pro program and whose data is `≥ 16` bytes with the first 8 bytes equal to `EVENT_CPI_DISC`, take `data.subarray(8)` — that is `eventDiscriminator ++ borsh(fields)`.
-4. Match the next 8 bytes against the discriminator table below and Borsh-decode the remainder **in struct order**.
+| Rule | Detail |
+|---|---|
+| **`[post]` fields are snapshots** | `floor_price`, `token_supply`, `floor_reserve`, `price_reserve`, `total_debt`, `total_collateral`, `cum_net_inflow` and the geometry memos (`x1`, `x2`, `m_x1`, `y_shift`) are the market state **after** the tx — never read the `Market` account back. |
+| **Payloads are self-contained** | `market` + actor (`buyer`/`seller`/`owner`/`creator`) are in every event. Instruction accounts are only needed for the position escrow (`position`, `collateral_vault`) and `init_market`'s vault pubkeys. |
+| **`state_seq` orders everything** | Monotone per market. Apply state in `state_seq` order; drop any event ≤ the last one stored (keep its history row). |
+| **Missing trailing bytes = 0 / empty** | Events append fields over time (`book_shortfall`, `y_shift`, `heal_spread` on sells; `reflection_bps` on init; `entries` on distribution). |
 
-### Field notes that apply to every event
+## Price-feed essentials
 
-- **Fields marked `[post]` are post-transaction snapshots**, not deltas. `floor_price`, `token_supply`, `floor_reserve`, `price_reserve`, `total_debt`, `total_collateral`, `cum_net_inflow`, and the geometry memos (`ramp_start_x`/`x1`, `x2`, `m_x1`, `y_shift`) are the market state **after** the trade — so an indexer never has to read the `Market` account back.
-- **The actor and the market are in the payload.** Unlike v1, every trading/lending/floor/reflection event carries `market` and the actor (`buyer`/`seller`/`owner`/`creator`). You only need the enclosing instruction's accounts for the per-position escrow (`position`, `collateral_vault`) and for `init_market`'s vault pubkeys.
-- **`state_seq`** is a monotone per-market counter. Use it as the ordering key for last-write-wins: ignore an event whose `state_seq` is ≤ the one you already stored for that market.
-- **Prefix-compatible trailing fields.** Some events append fields over time (`book_shortfall`, `y_shift`, `heal_spread` on sells; `reflection_bps` on market init; `entries` on reflection distribution). A decoder should treat missing trailing bytes as `0` / empty.
+Index these first — the rest is enrichment:
 
-### The fields that matter most
-
-If you're building a market feed (price, volume, market cap, floor), these are the load-bearing attributes — index these first and the rest is enrichment:
-
-| Attribute | Where | Why it matters |
+| Attribute | Where | Use |
 |---|---|---|
-| **`stateSeq`** | every event | **The ordering key.** Monotone per market; apply events in `stateSeq` order and drop any `≤` the last one you stored. This is how you stay consistent across the block path, a gRPC stream, and retries. |
-| **`market`** + **actor** (`buyer`/`seller`/`owner`) | every event | Row identity and per-user history — both in the payload, no account lookups. |
-| **`tokenOut`** (buy) / **`tokenIn`**, **gross**, **payout** (sell) | trade events | Tokens and cash of the swap (RAW). Price = `(cashIn − fee − reflection) / tokenOut` on buys, `gross / tokenIn` on sells — decimals cancel. |
-| **`cashIn`** / **`fee`** | trade events | Volume and the exact protocol fee of **this** swap (not accumulated). |
-| **`tokenSupply`** `[post]` | trade events | Circulating supply after the trade → market cap, and the `x` the curve is priced at. |
-| **`floorReserve`** / **`priceReserve`** `[post]` | trade events | The two vault ledgers → TVL / backing. |
-| **`floor_price`** | `MarketInitializedEvent` (start) + `FloorRaisedEvent.floor` (updates) | The guaranteed floor. **Not** on trade events — you must track it from these two. Monotone, only ever rises. |
-| **`char_params`**, `ramp_scalar`, `hingeX`, `curveKind` | `init_market` **args** + event | The curve shape, needed to quote an exact spot price. See [bootstrap](#start-here-bootstrap-a-market-from-init_market). |
-| **`reflectionBps`** | `MarketInitializedEvent` | Whether to apply the 0/1/3 % reflection leg when pricing — getting this wrong overstates fills by that percentage. |
+| `stateSeq` | every event | ordering / dedup key |
+| `market` + actor | every event | row identity, per-user history |
+| `tokenOut` · `tokenIn`, `gross`, `payout` | Buy / Sell | swap legs (RAW). Buy price = `(cashIn − fee − reflection) / tokenOut`; sell price = `gross / tokenIn` — decimals cancel (v2: token decimals == collateral decimals) |
+| `cashIn`, `fee` | Buy / Sell | volume + exact per-swap protocol fee |
+| `tokenSupply` **[post]** | trades | market cap; the curve's `x` |
+| `floorReserve` / `priceReserve` **[post]** | trades | TVL / backing |
+| `floor_price` | `MarketInitializedEvent` → `FloorRaisedEvent.floor` | the guaranteed floor — **not on trade events**; monotone, only rises |
+| `char_params`, `ramp_scalar`, `hingeX`, `curveKind` | init args + event | curve shape, needed for exact spot quotes (see bootstrap) |
+| `reflectionBps` | `MarketInitializedEvent` | apply the 0/1/3 % leg when pricing, or fills are overstated by that % |
 
-Everything else (`glideCredit`, `x2`, `yShift`, `mX1`, `bookShortfall`, `healSpread`, `cumNetInflow`…) is curve-internal state you only need if you reimplement the overlay or self-healing; a price/volume feed can ignore it.
+Everything else (`glideCredit`, `x2`, `yShift`, `mX1`, `bookShortfall`, `healSpread`, `cumNetInflow`…) is curve-internal — needed only to reimplement the overlay or self-healing.
 
-### Discriminators
+## Discriminators
 
-```
-MarketInitialized      70,173,96,202,100,143,45,25
-Buy                    103,244,82,31,44,245,119,119
-Sell                   62,47,55,10,165,3,220,42
-Borrow                 86,8,140,206,215,179,118,201
-Repay                  129,213,0,108,218,108,82,140
-LeverageBuy            192,251,245,66,149,87,79,195
-LeverageSell           83,204,210,96,206,215,12,154
-FloorRaised            180,150,147,252,238,147,174,236
-CreatorFeesClaimed     40,137,200,40,154,133,234,251
-TeamFeesWithdrawn      62,98,123,152,178,122,230,127
-Deposit                120,248,61,83,31,142,107,144
-Withdraw               22,9,133,26,160,44,71,192
-MarketFlagsSet         58,254,223,22,195,116,134,114
-MarketUpdated          56,197,234,194,244,125,181,218
-ReflectionDistributed  103,134,80,57,6,40,217,236
-```
+| Event | Discriminator (hex) |
+|---|---|
+| `AdminAcceptedEvent` | `0e dd 3c 5c f1 93 5f 42` |
+| `AdminProposedEvent` | `d4 a3 5b 1c df 5f 02 66` |
+| `BorrowEvent` | `56 08 8c ce d7 b3 76 c9` |
+| `BuyEvent` | `67 f4 52 1f 2c f5 77 77` |
+| `CollateralConfigSetEvent` | `3d 2e b8 69 8b 89 37 70` |
+| `ConfigInitializedEvent` | `16 a7 c0 32 dc 14 0a 47` |
+| `CreatorFeesClaimedEvent` | `28 89 c8 28 9a 85 ea fb` |
+| `DepositEvent` | `78 f8 3d 53 1f 8e 6b 90` |
+| `FeeConfigPublishedEvent` | `36 79 e2 e6 ed ca 8b b6` |
+| `FloorRaisedEvent` | `b4 96 93 fc ee 93 ae ec` |
+| `LeverageBuyEvent` | `c0 fb f5 42 95 57 4f c3` |
+| `LeverageSellEvent` | `53 cc d2 60 ce d7 0c 9a` |
+| `MarketFlagsSetEvent` | `3a fe df 16 c3 74 86 72` |
+| `MarketInitializedEvent` | `46 ad 60 ca 64 8f 2d 19` |
+| `MarketUpdatedEvent` | `38 c5 ea c2 f4 7d b5 da` |
+| `ReflectionAccruedEvent` | `58 62 57 c3 19 e1 80 95` |
+| `ReflectionDistributedEvent` | `67 86 50 39 06 28 d9 ec` |
+| `ReflectionEpochOpenedEvent` | `9d e1 bb 66 b0 a7 59 eb` |
+| `RepayEvent` | `81 d5 00 6c da 6c 52 8c` |
+| `SellEvent` | `3e 2f 37 0a a5 03 dc 2a` |
+| `TeamFeesWithdrawnEvent` | `3e 62 7b 98 b2 7a e6 7f` |
+| `WithdrawEvent` | `16 09 85 1a a0 2c 47 c0` |
+
+---
+
+## Event index
+
+| Event | Emitted by | What to update |
+|---|---|---|
+| `BuyEvent` / `SellEvent` | `buy` / `sell` | tx row, candles, supply/reserves, spot price |
+| `LeverageBuyEvent` / `LeverageSellEvent` | `leverage_buy` / `leverage_sell` | tx row, position (collateral+debt), candles |
+| `DepositEvent` / `WithdrawEvent` | `deposit` / `withdraw` | position collateral, market totals |
+| `BorrowEvent` / `RepayEvent` | `borrow` / `repay` | position debt, reserves, market totals |
+| `FloorRaisedEvent` | both raise instructions | floor, x1/x2 geometry, candles |
+| `MarketInitializedEvent` | `init_market` | create the market row |
+| `MarketFlagsSetEvent` / `MarketUpdatedEvent` | admin | flags / creator & fee splits |
+| `CreatorFeesClaimedEvent` / `TeamFeesWithdrawnEvent` | claims | fee counters |
+| `ReflectionAccruedEvent` | taxed trades | reflection pool accrual |
+| `ReflectionEpochOpenedEvent` / `ReflectionDistributedEvent` | reflection epoch | holder reward rows |
+| `ConfigInitializedEvent` / `AdminProposedEvent` / `AdminAcceptedEvent` / `FeeConfigPublishedEvent` / `CollateralConfigSetEvent` | global admin | usually ignorable by market indexers |
+
+Ordering across all of them: apply state writes only when the event's `stateSeq` is greater than the last one you stored for that scope — stale events keep their history rows but must not touch state.
 
 ---
 
@@ -113,7 +140,7 @@ From then on: `MarketInitializedEvent.floorPrice` is the starting floor, updated
 
 ### BuyEvent
 
-Emitted on every `buy`. Field order (Borsh wire order):
+Emitted on every `buy`.
 
 | Field | Type | Description |
 |---|---|---|
@@ -213,16 +240,64 @@ Emitted on every `sell`.
 The actor wallet (`owner`) and `market` are in the payload; the **position PDA** and `collateral_vault` are not — read them from the enclosing instruction's accounts if you need the per-position escrow address.
 
 ### DepositEvent
-`market`, `owner`, `amount: u64`, `collateral: u64` (position total **[post]**), `stateSeq: u64`, `totalCollateral: u64` (market-wide **[post]**).
+Discriminator: `[120, 248, 61, 83, 31, 142, 107, 144]`
+
+| Field | Type | Description |
+|---|---|---|
+| `market` | pubkey |  |
+| `owner` | pubkey |  |
+| `amount` | u64 |  |
+| `collateral` | u64 |  |
+| `state_seq` | u64 |  |
+| `total_collateral` | u64 | Market-wide post-state, for the indexer's aggregate columns. |
 
 ### BorrowEvent
-`market`, `owner`, `amount: u64`, `fee: u64`, `feeFloor: u64`, `feeCreator: u64`, `feeTeam: u64`, `received: u64` (cash to the borrower, net of fee), `debt: u64` (position **[post]**), `drawnFromFloor: u64`, `stateSeq: u64`, `floorReserve: u64` **[post]**, `priceReserve: u64` **[post]**, `totalDebt: u64` **[post]**.
+Discriminator: `[86, 8, 140, 206, 215, 179, 118, 201]`
+
+| Field | Type | Description |
+|---|---|---|
+| `market` | pubkey |  |
+| `owner` | pubkey |  |
+| `amount` | u64 |  |
+| `fee` | u64 |  |
+| `fee_floor` | u64 |  |
+| `fee_creator` | u64 |  |
+| `fee_team` | u64 |  |
+| `received` | u64 |  |
+| `debt` | u64 |  |
+| `drawn_from_floor` | u64 | How much of the draw came out of the floor earmark — the Mayflower rule in one number, matched one-for-one by the … |
+| `state_seq` | u64 |  |
+| `floor_reserve` | u64 | Market-wide post-state, for the indexer's aggregate columns. |
+| `price_reserve` | u64 |  |
+| `total_debt` | u64 |  |
 
 ### RepayEvent
-`market`, `owner`, `amount: u64`, `debt: u64` (position **[post]**), `stateSeq: u64`, `floorReserve: u64` **[post]**, `priceReserve: u64` **[post]**, `totalDebt: u64` **[post]**.
+Discriminator: `[129, 213, 0, 108, 218, 108, 82, 140]`
+
+| Field | Type | Description |
+|---|---|---|
+| `market` | pubkey |  |
+| `owner` | pubkey |  |
+| `amount` | u64 |  |
+| `debt` | u64 |  |
+| `state_seq` | u64 |  |
+| `floor_reserve` | u64 | Market-wide post-state, for the indexer's aggregate columns. |
+| `price_reserve` | u64 |  |
+| `total_debt` | u64 |  |
 
 ### WithdrawEvent
-`market`, `owner`, `amount: u64`, `collateral: u64` (position total **[post]**), `stateSeq: u64`, `totalCollateral: u64` (market-wide **[post]**).
+Discriminator: `[22, 9, 133, 26, 160, 44, 71, 192]`
+
+| Field | Type | Description |
+|---|---|---|
+| `market` | pubkey |  |
+| `owner` | pubkey |  |
+| `amount` | u64 |  |
+| `collateral` | u64 |  |
+| `state_seq` | u64 |  |
+| `total_collateral` | u64 | Market-wide post-state, for the indexer's aggregate columns. |
+
+> **Guaranteed close:** a `leverage_sell` that fully exits emits only `LeverageSellEvent` — no separate Repay/Withdraw events for its internal legs. Don't double-count.
 
 ---
 
@@ -246,33 +321,115 @@ The actor wallet (`owner`) and `market` are in the payload; the **position PDA**
 ## Market lifecycle events
 
 ### MarketInitializedEvent
-`market`, `creator`, `mintToken`, `mintMain`, `name: String`, `symbol: String`, `uri: String`, `decimals: u8`, `feeConfigVersion: u32`, `feesTeam: u16`, `feesCreator: u16`, `feesFloor: u16`, `floorPrice: u128` **[Q64.64]**, `curveKind: u8`, `flags: u16`, `stateSeq: u64`, `buyFeeMbps: u32`, `sellFeeMbps: u32`, `borrowFeeMbps: u32`, `redeemFeeMbps: u32`, `hingeX: u64`, `reflectionBps: u16` (`0`/`100`/`300`).
+Discriminator: `[70, 173, 96, 202, 100, 143, 45, 25]`
+
+| Field | Type | Description |
+|---|---|---|
+| `market` | pubkey |  |
+| `creator` | pubkey |  |
+| `mint_token` | pubkey |  |
+| `mint_main` | pubkey |  |
+| `name` | string | Full strings, not a hash: the indexer populates name/symbol/uri straight from the event, so nothing has to be fetched … |
+| `symbol` | string |  |
+| `uri` | string |  |
+| `decimals` | u8 |  |
+| `fee_config_version` | u32 |  |
+| `fees_team` | u16 |  |
+| `fees_creator` | u16 |  |
+| `fees_floor` | u16 |  |
+| `floor_price` | u128 |  |
+| `curve_kind` | u8 |  |
+| `flags` | u16 |  |
+| `state_seq` | u64 |  |
+| `buy_fee_mbps` | u32 | Trade-fee rates snapshotted from the FeeConfig — in the event so the indexer never needs the FeeConfig account (or a DB … |
+| `sell_fee_mbps` | u32 |  |
+| `borrow_fee_mbps` | u32 |  |
+| `redeem_fee_mbps` | u32 |  |
+| `hinge_x` | u64 | Hinge of the hinged-exponential family (0 for linear). Appended last, per the prefix-compatibility rule above. |
+| `reflection_bps` | u16 | Reflection tax pinned at creation (bps of the trade): 0 / 100 / 300. |
 
 > `hingeX` and `reflectionBps` are appended fields — decode them as `0` if the payload is short (older markets).
 
 ### MarketFlagsSetEvent
-`market`, `previousFlags: u16`, `flags: u16`, `stateSeq: u64`.
+Discriminator: `[58, 254, 223, 22, 195, 116, 134, 114]`
+
+| Field | Type | Description |
+|---|---|---|
+| `market` | pubkey |  |
+| `previous_flags` | u16 |  |
+| `flags` | u16 |  |
+| `state_seq` | u64 |  |
 
 ### MarketUpdatedEvent
-`market`, `previousCreator`, `creator`, `feesCreator: u16`, `feesFloor: u16`, `metadataUpdated: bool`, `stateSeq: u64`.
+Discriminator: `[56, 197, 234, 194, 244, 125, 181, 218]`
+
+| Field | Type | Description |
+|---|---|---|
+| `market` | pubkey |  |
+| `previous_creator` | pubkey |  |
+| `creator` | pubkey |  |
+| `fees_creator` | u16 |  |
+| `fees_floor` | u16 |  |
+| `metadata_updated` | bool |  |
+| `state_seq` | u64 |  |
 
 ### CreatorFeesClaimedEvent
-`market`, `creator` (whoever held `market.creator` at claim), `amount: u64`, `destination`.
+Discriminator: `[40, 137, 200, 40, 154, 133, 234, 251]`
+
+| Field | Type | Description |
+|---|---|---|
+| `market` | pubkey |  |
+| `creator` | pubkey | Whoever held `market.creator` at claim time — not necessarily whoever earned it. |
+| `amount` | u64 |  |
+| `destination` | pubkey |  |
 
 ### TeamFeesWithdrawnEvent
-`mintMain`, `amount: u64`, `destination`.
+Discriminator: `[62, 98, 123, 152, 178, 122, 230, 127]`
+
+| Field | Type | Description |
+|---|---|---|
+| `mint_main` | pubkey |  |
+| `amount` | u64 |  |
+| `destination` | pubkey |  |
 
 ---
 
 ## Reflection events
 
-| Event | Fields |
-|---|---|
-| `ReflectionAccruedEvent` | `market`, `isBuy: bool` (`true` = buy-side), `amount: u64` (routed to the reflection vault), `stateSeq: u64`. Emitted on every trade with a non-zero reflection tax. |
-| `ReflectionEpochOpenedEvent` | `market`, `epoch: u64`, `pool: u64` (distributable, net of gas skim), `holderCount: u32`, `gasReserve: u64`. |
-| `ReflectionDistributedEvent` | `market`, `epoch: u64`, `count: u32`, `batchTotal: u64`, `totalDistributed: u64`, `entries: Vec<{ owner: Pubkey, amount: u64 }>`. `owner` is always the holder **wallet**, never the ATA. |
+### ReflectionAccruedEvent
+Emitted on every trade with a non-zero reflection tax. Discriminator: `[88, 98, 87, 195, 25, 225, 128, 149]`
 
-The per-trade reflection amount lives on `ReflectionAccruedEvent`, **not** on the Buy/Sell event — join by `(market, stateSeq)` if you want the reflection leg of a specific swap.
+| Field | Type | Description |
+|---|---|---|
+| `market` | pubkey |  |
+| `is_buy` | bool | `true` = buy-side (buyer → vault), `false` = sell-side (vault → vault). |
+| `amount` | u64 |  |
+| `state_seq` | u64 |  |
+
+### ReflectionEpochOpenedEvent
+Discriminator: `[157, 225, 187, 102, 176, 167, 89, 235]`
+
+| Field | Type | Description |
+|---|---|---|
+| `market` | pubkey |  |
+| `epoch` | u64 |  |
+| `pool` | u64 | Distributable pool frozen at open (already net of `gas_reserve`). |
+| `holder_count` | u32 |  |
+| `gas_reserve` | u64 |  |
+
+### ReflectionDistributedEvent
+Discriminator: `[103, 134, 80, 57, 6, 40, 217, 236]`
+
+| Field | Type | Description |
+|---|---|---|
+| `market` | pubkey |  |
+| `epoch` | u64 |  |
+| `count` | u32 |  |
+| `batch_total` | u64 |  |
+| `total_distributed` | u64 |  |
+| `entries` | Vec<ReflectionPayment> |  |
+
+`entries[].owner` is always the holder **wallet**, never the ATA. The per-trade reflection amount lives on `ReflectionAccruedEvent`, **not** on the Buy/Sell event — join by `(market, stateSeq)` if you want the reflection leg of a specific swap.
 
 ---
 
