@@ -74,6 +74,7 @@ Everything else (`glideCredit`, `x2`, `yShift`, `mX1`, `bookShortfall`, `healSpr
 | `MarketUpdatedEvent` | `38 c5 ea c2 f4 7d b5 da` |
 | `ReflectionAccruedEvent` | `58 62 57 c3 19 e1 80 95` |
 | `ReflectionDistributedEvent` | `67 86 50 39 06 28 d9 ec` |
+| `ReflectionEpochClosedEvent` | `ab e2 bb af 4b ae f4 8b` |
 | `ReflectionEpochOpenedEvent` | `9d e1 bb 66 b0 a7 59 eb` |
 | `RepayEvent` | `81 d5 00 6c da 6c 52 8c` |
 | `SellEvent` | `3e 2f 37 0a a5 03 dc 2a` |
@@ -96,6 +97,7 @@ Everything else (`glideCredit`, `x2`, `yShift`, `mX1`, `bookShortfall`, `healSpr
 | `CreatorFeesClaimedEvent` / `TeamFeesWithdrawnEvent` | claims | fee counters |
 | `ReflectionAccruedEvent` | taxed trades | reflection pool accrual |
 | `ReflectionEpochOpenedEvent` / `ReflectionDistributedEvent` | reflection epoch | holder reward rows |
+| `ReflectionEpochClosedEvent` | `close_reflection_epoch` | epoch settled; `pool − total_distributed` was not paid out |
 | `ConfigInitializedEvent` / `AdminProposedEvent` / `AdminAcceptedEvent` / `FeeConfigPublishedEvent` / `CollateralConfigSetEvent` | global admin | usually ignorable by market indexers |
 
 Ordering across all of them: apply state writes only when the event's `stateSeq` is greater than the last one you stored for that scope — stale events keep their history rows but must not touch state.
@@ -429,7 +431,17 @@ Discriminator: `[103, 134, 80, 57, 6, 40, 217, 236]`
 | `total_distributed` | u64 |  |
 | `entries` | Vec<ReflectionPayment> |  |
 
-`entries[].owner` is always the holder **wallet**, never the ATA. The per-trade reflection amount lives on `ReflectionAccruedEvent`, **not** on the Buy/Sell event — join by `(market, stateSeq)` if you want the reflection leg of a specific swap.
+`entries[].owner` is always the holder **wallet**, never the ATA. A recipient the runtime would reject (native wallet left below rent-exempt, closed or frozen token account) is skipped: left unpaid and absent from `entries`. The per-trade reflection amount lives on `ReflectionAccruedEvent`, **not** on the Buy/Sell event — join by `(market, stateSeq)` if you want the reflection leg of a specific swap.
+
+### ReflectionEpochClosedEvent
+Discriminator: `[171, 226, 187, 175, 75, 174, 244, 139]`
+
+| Field | Type | Description |
+|---|---|---|
+| `market` | pubkey |  |
+| `epoch` | u64 |  |
+| `pool` | u64 | Distributable pool frozen at open |
+| `total_distributed` | u64 | Amount actually paid out |
 
 ---
 

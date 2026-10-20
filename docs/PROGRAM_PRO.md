@@ -411,6 +411,7 @@ PDA seed: `["market", mint_token]`. The fields an integrator or indexer reads:
 | `x2_cached` | u64 | Memo. `0` = degenerate ramp; `u64::MAX` = floor-above-characteristic sentinel. |
 | `m_x1_cached` | u128 | **Q64.64** memo = `M̃(x1)`. |
 | `y_shift` | i128 | **Q64.64** signed curve translation (self-healing; `0` on legacy markets). |
+| `y_ref` | i128 | **Q64.64** reference shift the self-healing spread is measured against. |
 
 ### Ledgers & analytics
 
@@ -419,6 +420,7 @@ PDA seed: `["market", mint_token]`. The fields an integrator or indexer reads:
 | `token_supply` | u64 | Circulating supply = `x` |
 | `floor_reserve`, `price_reserve` | u64 | The two ledgers inside `vault` |
 | `total_debt`, `total_collateral` | u64 | Lending aggregates |
+| `debt_from_price` | u64 | Part of `total_debt` drawn from the price reserve — excluded from the floor backing (`floor_reserve + total_debt − debt_from_price`) |
 | `cum_net_inflow` | u128 | Glide progress key |
 | `state_seq` | u64 | Monotone write counter — **the ordering key** for last-write-wins indexing |
 
@@ -558,6 +560,8 @@ Close a finished reflection epoch, returning its rent to the admin.
 | 1 | `config` | `["config"]` |  |  |  |
 | 2 | `market` | `["market", market.mint_token]` |  |  |  |
 | 3 | `reflection_epoch` | `["reflection_epoch", market, arg:epoch_id]` | ✓ |  | Closed here; its rent lamports return to `admin`. |
+| 4 | `event_authority` |  |  |  | Anchor event-CPI self-invoke authority (fixed PDA). |
+| 5 | `program` |  |  |  | This program — target of the event self-CPI. |
 
 ---
 

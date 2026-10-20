@@ -871,6 +871,12 @@
               }
             ]
           }
+        },
+        {
+          "name": "event_authority"
+        },
+        {
+          "name": "program"
         }
       ],
       "args": [
@@ -1234,7 +1240,7 @@
           ],
           "writable": true,
           "signer": true,
-          "address": "7KMCpqVch6huFr1GmEk1KY8w5htxwCuNwuX6wSQm7doQ"
+          "address": "FM4Wfd5q1tPJYeNrsiQQQe1focwsQ9QeXdgXnBAzjKEX"
         },
         {
           "name": "config",
@@ -2954,8 +2960,10 @@
       "name": "sell",
       "docs": [
         "Sell tokens back into the curve. Pays the floor-attributable share from the",
-        "floor earmark and the rest from the above-floor book; reverts if that book",
-        "cannot cover it."
+        "floor earmark and the rest from the above-floor book; if the two ledgers",
+        "cannot cover the full curve quote, the payout is clamped to what they hold \u2014",
+        "never below the floor value of the tokens burned (Law 1). `min_cash_out` is",
+        "the seller's refusal point for a clamped exit."
       ],
       "discriminator": [
         51,
@@ -4269,6 +4277,19 @@
       ]
     },
     {
+      "name": "ReflectionEpochClosedEvent",
+      "discriminator": [
+        171,
+        226,
+        187,
+        175,
+        75,
+        174,
+        244,
+        139
+      ]
+    },
+    {
       "name": "ReflectionEpochOpenedEvent",
       "discriminator": [
         157,
@@ -4488,7 +4509,7 @@
     {
       "code": 6313,
       "name": "InvalidRampScalar",
-      "msg": "ramp scalar must be greater than one"
+      "msg": "ramp scalar must be 2.0 or 2.5"
     },
     {
       "code": 6314,
@@ -4558,7 +4579,12 @@
     {
       "code": 6502,
       "name": "InsufficientPriceReserve",
-      "msg": "above-floor book cannot cover this sale"
+      "msg": "internal accounting error: sale split exceeded the price reserve"
+    },
+    {
+      "code": 6503,
+      "name": "HealingWouldStrandFloor",
+      "msg": "self-healing shift would strand the floor above the shifted main"
     },
     {
       "code": 6600,
@@ -4676,6 +4702,11 @@
       "msg": "floor would exceed the declared stress-depth cap"
     },
     {
+      "code": 6714,
+      "name": "RaiseGeometryUnevaluable",
+      "msg": "raise would leave an unquotable ramp geometry"
+    },
+    {
       "code": 6800,
       "name": "NotCreator",
       "msg": "signer is not the market creator"
@@ -4729,6 +4760,21 @@
       "code": 7006,
       "name": "ReflectionIndexOutOfRange",
       "msg": "holder index is out of range for this epoch's bitmap"
+    },
+    {
+      "code": 7007,
+      "name": "CurveCapReachable",
+      "msg": "curve computation limit reachable with real funds"
+    },
+    {
+      "code": 7008,
+      "name": "AreaWouldGrow",
+      "msg": "area under the effective curve would grow"
+    },
+    {
+      "code": 7009,
+      "name": "RaiseStepTooSmall",
+      "msg": "floor raise below the minimum step"
     }
   ],
   "types": [
@@ -5523,6 +5569,10 @@
           },
           {
             "name": "paid_out",
+            "docs": [
+              "What the owner received. `0` on a full close whose repayment debits the",
+              "owner's wallet \u2014 the top-up appears in the transaction, not in the event."
+            ],
             "type": "u64"
           },
           {
@@ -6023,7 +6073,8 @@
           {
             "name": "area_under_curve",
             "docs": [
-              "Event-only statistic, maintained incrementally for snapshots."
+              "Informational, kept for future use \u2014 recomputed by every trade, left",
+              "stale by raises, read by nothing on-chain or off-chain today."
             ],
             "type": "u128"
           },
@@ -6057,6 +6108,29 @@
             "type": "u16"
           },
           {
+            "name": "debt_from_price",
+            "docs": [
+              "Of `total_debt`, the part drawn from `price_reserve` (borrows draw price-first).",
+              "Excluded from floor-raise backing so a price-drawn loan cannot inflate the floor."
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "y_ref",
+            "docs": [
+              "`y_shift` frozen at the top of the current sell descent \u2014 the reference the",
+              "shoulder spread is measured against, so splitting one sale into N slices",
+              "funds the floor exactly as the single sale would (`SELF_HEALING.md`). Reset",
+              "to the live `y_shift` on any supply increase or geometry re-anchor (buy,",
+              "raise, contraction), frozen through a run of shoulder sells. Carved out of",
+              "the `reserved` prefix (78 \u2192 62), after `debt_from_price` (borsh",
+              "layout is declaration order), so live accounts read it as zero = the",
+              "unshifted characteristic, which is the correct reference for a market that",
+              "has never healed."
+            ],
+            "type": "i128"
+          },
+          {
             "name": "reserved",
             "docs": [
               "Padding. Grew by 32 bytes when the withdrawn-fee counters and the",
@@ -6069,7 +6143,7 @@
             "type": {
               "array": [
                 "u8",
-                86
+                62
               ]
             }
           }
@@ -6365,8 +6439,7 @@
       "name": "ReflectionAccruedEvent",
       "docs": [
         "Emitted on every buy/sell (and their leverage variants) that carries a",
-        "non-zero reflection tax: the amount routed to the market's `reflection_vault`",
-        "and the running vault total after the leg."
+        "non-zero reflection tax: the amount routed to the market's `reflection_vault`."
       ],
       "type": {
         "kind": "struct",
@@ -6479,6 +6552,36 @@
               "`ceil(holder_count / 8)` bytes; bit `i` = holder index `i` has been paid."
             ],
             "type": "bytes"
+          }
+        ]
+      }
+    },
+    {
+      "name": "ReflectionEpochClosedEvent",
+      "docs": [
+        "Emitted when an admin closes a reflection epoch."
+      ],
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "market",
+            "type": "pubkey"
+          },
+          {
+            "name": "epoch",
+            "type": "u64"
+          },
+          {
+            "name": "pool",
+            "docs": [
+              "Distributable pool frozen at open."
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "total_distributed",
+            "type": "u64"
           }
         ]
       }
