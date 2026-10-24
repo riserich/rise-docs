@@ -6120,15 +6120,45 @@
             "docs": [
               "`y_shift` frozen at the top of the current sell descent \u2014 the reference the",
               "shoulder spread is measured against, so splitting one sale into N slices",
-              "funds the floor exactly as the single sale would (`SELF_HEALING.md`). Reset",
-              "to the live `y_shift` on any supply increase or geometry re-anchor (buy,",
-              "raise, contraction), frozen through a run of shoulder sells. Carved out of",
+              "funds the floor exactly as the single sale would (`SELF_HEALING.md`). Frozen",
+              "for the whole descent \u2014 through sells, buys and floor-band re-anchors \u2014",
+              "and reset to the live `y_shift` only by a raise (see `heal_low_x`). Carved out of",
               "the `reserved` prefix (78 \u2192 62), after `debt_from_price` (borsh",
               "layout is declaration order), so live accounts read it as zero = the",
               "unshifted characteristic, which is the correct reference for a market that",
               "has never healed."
             ],
             "type": "i128"
+          },
+          {
+            "name": "heal_low_x",
+            "docs": [
+              "Low-water mark of the current sell descent: the deepest supply a",
+              "self-healing sale has landed on since the descent began (`0` = no landing",
+              "yet \u2014 a fresh descent, where `y_ref == y_shift`). A sale only crystallizes",
+              "against `y_ref` over `[a, min(heal_low_x, S)]`: everything above the mark",
+              "was bought back on the already-lowered main and sells back on it, so it",
+              "carries no spread. With it, buys no longer end the descent (Sherlock #52",
+              "fix-review: `sell \u2192 min buy \u2192 sell` reset `y_ref` every slice) and the",
+              "total a descent credits depends only on its deepest landing, not the path.",
+              "Reset (with `y_ref`) only by a raise or a landing at zero supply. Carved",
+              "out of `reserved` (62 \u2192 54); live accounts read `0` = fresh descent, the",
+              "pre-upgrade behaviour."
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "heal_locked",
+            "docs": [
+              "Floor cash credited by self-healing shoulder sales and not yet turned into",
+              "floor by a raise. Later sellers' glide share may not draw on it (they still",
+              "receive the released obligation and the cash-short fallback, so every exit",
+              "stays at or above the floor); a raise consumes it. Without it, each slice's",
+              "heal credit became floor surplus the next slice paid out (Sherlock #52",
+              "fix-review: splitting a crash cost ~13% of the next raise when fees route to",
+              "the floor). Carved out of `reserved` (54 \u2192 46); live accounts read 0."
+            ],
+            "type": "u64"
           },
           {
             "name": "reserved",
@@ -6143,7 +6173,7 @@
             "type": {
               "array": [
                 "u8",
-                62
+                46
               ]
             }
           }

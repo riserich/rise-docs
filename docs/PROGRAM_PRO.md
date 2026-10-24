@@ -411,7 +411,9 @@ PDA seed: `["market", mint_token]`. The fields an integrator or indexer reads:
 | `x2_cached` | u64 | Memo. `0` = degenerate ramp; `u64::MAX` = floor-above-characteristic sentinel. |
 | `m_x1_cached` | u128 | **Q64.64** memo = `M̃(x1)`. |
 | `y_shift` | i128 | **Q64.64** signed curve translation (self-healing; `0` on legacy markets). |
-| `y_ref` | i128 | **Q64.64** reference shift the self-healing spread is measured against. |
+| `y_ref` | i128 | **Q64.64** reference shift the self-healing spread is measured against. Frozen for the whole sell descent (buys no longer reset it); reset to `y_shift` by a preserve-area raise or a landing at zero supply. |
+| `heal_low_x` | u64 | Low-water mark of the current sell descent, raw supply units. `0` = fresh descent. Tokens below it are valued against `y_ref`, tokens bought back since against `y_shift`. |
+| `heal_locked` | u64 | Floor cash credited by self-healing sales and not yet consumed by a raise. A later seller's glide share cannot draw it. |
 
 ### Ledgers & analytics
 
