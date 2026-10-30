@@ -4956,6 +4956,15 @@
               "the Market account back."
             ],
             "type": "u128"
+          },
+          {
+            "name": "total_debt",
+            "docs": [
+              "Market-wide outstanding debt after the trade (unchanged by a buy), as on",
+              "`BorrowEvent` / `RepayEvent`. Appended prefix-compatible: old decoders",
+              "simply stop before it."
+            ],
+            "type": "u64"
           }
         ]
       }
@@ -6871,6 +6880,14 @@
             "name": "heal_spread",
             "docs": [
               "What the shoulder confiscated into the floor reserve this sale."
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "total_debt",
+            "docs": [
+              "Market-wide outstanding debt after the trade (unchanged by a sell), as on",
+              "`BorrowEvent` / `RepayEvent`. Appended prefix-compatible."
             ],
             "type": "u64"
           }
