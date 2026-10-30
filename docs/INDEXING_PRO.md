@@ -33,7 +33,7 @@ Recipe:
 | **`[post]` fields are snapshots** | `floor_price`, `token_supply`, `floor_reserve`, `price_reserve`, `total_debt`, `total_collateral`, `cum_net_inflow` and the geometry memos (`x1`, `x2`, `m_x1`, `y_shift`) are the market state **after** the tx — never read the `Market` account back. |
 | **Payloads are self-contained** | `market` + actor (`buyer`/`seller`/`owner`/`creator`) are in every event. Instruction accounts are only needed for the position escrow (`position`, `collateral_vault`) and `init_market`'s vault pubkeys. |
 | **`state_seq` orders everything** | Monotone per market. Apply state in `state_seq` order; drop any event ≤ the last one stored (keep its history row). |
-| **Missing trailing bytes = 0 / empty** | Events append fields over time (`book_shortfall`, `y_shift`, `heal_spread` on sells; `reflection_bps` on init; `entries` on distribution). |
+| **Missing trailing bytes = 0 / empty** | Events append fields over time (`book_shortfall`, `y_shift`, `heal_spread`, `total_debt` on sells; `total_debt` on buys; `reflection_bps` on init; `entries` on distribution). |
 
 ## Price-feed essentials
 
@@ -162,6 +162,7 @@ Emitted on every `buy`.
 | `priceReserve` | u64 | Exit-book ledger after the trade **[post]** |
 | `stateSeq` | u64 | Monotone write counter |
 | `cumNetInflow` | u128 | Cumulative net inflow after the trade **[post]** |
+| `totalDebt` | u64 | Market-wide outstanding debt after the trade **[post]** (a buy never changes it). Appended later: absent (= 0) on older events |
 
 > **Price from a buy:** the curve-effective cash is `cashIn − fee − reflection`; the simplest exact average price is `(cashIn − fee − reflection) / tokenOut`. The reflection amount is **not** on this event — see [Reflection events](#reflection-events). On a 0 % reflection market it is simply `(cashIn − fee) / tokenOut`.
 
@@ -194,6 +195,7 @@ Emitted on every `sell`.
 | `bookShortfall` | u64 | Curve value the ledgers couldn't cover (`0` in the normal case) |
 | `yShift` | i128 | Curve translation after **[post, Q64.64]** (`0` on legacy markets) |
 | `healSpread` | u64 | Amount the shoulder confiscated into the floor on this sale |
+| `totalDebt` | u64 | Market-wide outstanding debt after the trade **[post]** (a sell never changes it). Appended later: absent (= 0) on older events |
 
 ### LeverageBuyEvent
 
