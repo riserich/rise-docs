@@ -40,12 +40,21 @@ Build directly on the Rise Solana program. Full control over transactions, accou
 → [**IDL (JSON)**](./idl/idl.json)
 → [**IDL (TypeScript)**](./idl/idl.ts)
 
+## Rise Pro (v2)
+
+The next-generation single-program design: hinged-exponential curve, floor ledger, lending, leverage, floor raises and holder reflection rewards — all in one Anchor program (`Market.version == 2`).
+
+→ [**Program (Pro)**](./docs/PROGRAM_PRO.md)
+→ [**Indexing & Events (Pro)**](./docs/INDEXING_PRO.md)
+→ [**IDL (JSON)**](./idl/rise_pro.json)
+
 ## Program IDs
 
 | | Address |
 |---|---|
-| **Rise Program (Mainnet)** | `RiseZSHaLdj7pfn1tisUoSdG2i3QcVz9sQKuaRG9rar` |
-| **Rise Program (Devnet)** | `7gDn1L2Bmg53royeUgvZtWujfvxS9TmpchtBToP9zDhB` |
+| **Rise Pro (Devnet)** | `9nJ9wghEHY8bnsJQYrqV77uC9y4ccFHcCT1XyJxAkBVR` |
+| **Rise Program v1 (Mainnet)** | `RiseZSHaLdj7pfn1tisUoSdG2i3QcVz9sQKuaRG9rar` |
+| **Rise Program v1 (Devnet)** | `7gDn1L2Bmg53royeUgvZtWujfvxS9TmpchtBToP9zDhB` |
 | **Mayflower (Devnet)** | `MD2pPJCjpUT5ttJFUVeP2Xka1ZSvCJMZUoX4XTdPdet` |
 | **Mayflower (Mainnet)** | `AVMmmRzwc2kETQNhPiFVnyu62HrgsQXTD6D7SnSfEz7v` |
 
