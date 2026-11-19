@@ -52,6 +52,7 @@ The next-generation single-program design: hinged-exponential curve, floor ledge
 
 | | Address |
 |---|---|
+| **Rise Pro (Mainnet)** | `RiseP9yY3UnMxd1df7mgGJiR39frg9QGsr1ro3zxrDq` |
 | **Rise Pro (Devnet)** | `9nJ9wghEHY8bnsJQYrqV77uC9y4ccFHcCT1XyJxAkBVR` |
 | **Rise Program v1 (Mainnet)** | `RiseZSHaLdj7pfn1tisUoSdG2i3QcVz9sQKuaRG9rar` |
 | **Rise Program v1 (Devnet)** | `7gDn1L2Bmg53royeUgvZtWujfvxS9TmpchtBToP9zDhB` |
