@@ -2,8 +2,9 @@
 
 | | |
 |---|---|
+| **Program (Mainnet)** | `RiseP9yY3UnMxd1df7mgGJiR39frg9QGsr1ro3zxrDq` |
 | **Program (Devnet)** | `9nJ9wghEHY8bnsJQYrqV77uC9y4ccFHcCT1XyJxAkBVR` |
-| **IDL (JSON)** | [`../idl/rise_pro.json`](../idl/rise_pro.json) |
+| **IDL (JSON)** | [`../idl/rise_pro.json`](../idl/rise_pro.json) (its `address` is the mainnet id; on devnet, override it with the devnet id) |
 | **Program surface** | [Program (Pro)](./PROGRAM_PRO.md) |
 
 Every state change emits an event — trades, lending, leverage, floor raises, reflection, lifecycle. Parse them from transactions to build an indexer; no account re-reads needed.

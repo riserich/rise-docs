@@ -2,8 +2,9 @@
 
 | | |
 |---|---|
+| **Program (Mainnet)** | `RiseP9yY3UnMxd1df7mgGJiR39frg9QGsr1ro3zxrDq` |
 | **Program (Devnet)** | `9nJ9wghEHY8bnsJQYrqV77uC9y4ccFHcCT1XyJxAkBVR` |
-| **IDL (JSON)** | [`../idl/rise_pro.json`](../idl/rise_pro.json) |
+| **IDL (JSON)** | [`../idl/rise_pro.json`](../idl/rise_pro.json) (its `address` is the mainnet id; on devnet, override it with the devnet id) |
 
 A single Anchor program owns the bonding curve, the floor, lending, leverage, floor raises and the reflection reward system. One cash vault per market holds two book-entry ledgers (`floor_reserve`, `price_reserve`); sells always exit at or above the floor value (Law 1).
 
