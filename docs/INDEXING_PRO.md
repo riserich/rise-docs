@@ -15,6 +15,8 @@ Every state change emits an event — trades, lending, leverage, floor raises, r
 
 Events are emitted via Anchor **`emit_cpi!`** — each one is the data of an **inner self-CPI instruction** back to the program (never a `Program data:` log line, so nothing is lost to log truncation; block path and gRPC see identical data).
 
+One exception: `MarketGraduatedEvent` (launch-market migration) is logged with `emit!`, as a `Program data:` log line. See [Launch events](#launch-events).
+
 ```
 inner ix data = EVENT_CPI_DISC (8) ++ eventDiscriminator (8) ++ borsh(fields)
 
@@ -34,7 +36,7 @@ Recipe:
 | **`[post]` fields are snapshots** | `floor_price`, `token_supply`, `floor_reserve`, `price_reserve`, `total_debt`, `total_collateral`, `cum_net_inflow` and the geometry memos (`x1`, `x2`, `m_x1`, `y_shift`) are the market state **after** the tx — never read the `Market` account back. |
 | **Payloads are self-contained** | `market` + actor (`buyer`/`seller`/`owner`/`creator`) are in every event. Instruction accounts are only needed for the position escrow (`position`, `collateral_vault`) and `init_market`'s vault pubkeys. |
 | **`state_seq` orders everything** | Monotone per market. Apply state in `state_seq` order; drop any event ≤ the last one stored (keep its history row). |
-| **Missing trailing bytes = 0 / empty** | Events append fields over time (`book_shortfall`, `y_shift`, `heal_spread`, `total_debt` on sells; `total_debt` on buys; `reflection_bps` on init; `entries` on distribution). |
+| **Missing trailing bytes = 0 / empty** | Events append fields over time (`book_shortfall`, `y_shift`, `heal_spread`, `total_debt` on sells; `total_debt` on buys; `reflection_bps`, `market_kind` on init; `migration_fee` on graduation; `entries` on distribution). |
 
 ## Price-feed essentials
 
@@ -68,9 +70,12 @@ Everything else (`glideCredit`, `x2`, `yShift`, `mX1`, `bookShortfall`, `healSpr
 | `DepositEvent` | `78 f8 3d 53 1f 8e 6b 90` |
 | `FeeConfigPublishedEvent` | `36 79 e2 e6 ed ca 8b b6` |
 | `FloorRaisedEvent` | `b4 96 93 fc ee 93 ae ec` |
+| `LaunchReadyEvent` | `78 38 b2 f1 17 b0 b5 eb` |
 | `LeverageBuyEvent` | `c0 fb f5 42 95 57 4f c3` |
 | `LeverageSellEvent` | `53 cc d2 60 ce d7 0c 9a` |
+| `LpFeesClaimedEvent` | `67 50 f2 13 d4 29 2c 47` |
 | `MarketFlagsSetEvent` | `3a fe df 16 c3 74 86 72` |
+| `MarketGraduatedEvent` | `be 06 9e ca 39 fc 61 1c` (logged with `emit!`, see [Launch events](#launch-events)) |
 | `MarketInitializedEvent` | `46 ad 60 ca 64 8f 2d 19` |
 | `MarketUpdatedEvent` | `38 c5 ea c2 f4 7d b5 da` |
 | `ReflectionAccruedEvent` | `58 62 57 c3 19 e1 80 95` |
@@ -88,12 +93,14 @@ Everything else (`glideCredit`, `x2`, `yShift`, `mX1`, `bookShortfall`, `healSpr
 
 | Event | Emitted by | What to update |
 |---|---|---|
-| `BuyEvent` / `SellEvent` | `buy` / `sell` | tx row, candles, supply/reserves, spot price |
+| `BuyEvent` / `SellEvent` | `buy` / `sell`, `launch_buy` / `launch_sell` | tx row, candles, supply/reserves, spot price |
 | `LeverageBuyEvent` / `LeverageSellEvent` | `leverage_buy` / `leverage_sell` | tx row, position (collateral+debt), candles |
 | `DepositEvent` / `WithdrawEvent` | `deposit` / `withdraw` | position collateral, market totals |
 | `BorrowEvent` / `RepayEvent` | `borrow` / `repay` | position debt, reserves, market totals |
-| `FloorRaisedEvent` | both raise instructions | floor, x1/x2 geometry, candles |
-| `MarketInitializedEvent` | `init_market` | create the market row |
+| `FloorRaisedEvent` | both raise instructions, `launch_buy` | floor, x1/x2 geometry, candles |
+| `MarketInitializedEvent` | `init_market`, `init_launch_market` | create the market row (`market_kind` tells which) |
+| `LaunchReadyEvent` / `MarketGraduatedEvent` | `launch_buy` (cap filled) / `graduate` | launch phase `1` / `2`, pool address |
+| `LpFeesClaimedEvent` | Rise's LP-fee collection on graduated markets | fee counters |
 | `MarketFlagsSetEvent` / `MarketUpdatedEvent` | admin | flags / creator & fee splits |
 | `CreatorFeesClaimedEvent` / `TeamFeesWithdrawnEvent` | claims | fee counters |
 | `ReflectionAccruedEvent` | taxed trades | reflection pool accrual |
@@ -352,8 +359,11 @@ Discriminator: `[70, 173, 96, 202, 100, 143, 45, 25]`
 | `redeem_fee_mbps` | u32 |  |
 | `hinge_x` | u64 | Hinge of the hinged-exponential family (0 for linear). Appended last, per the prefix-compatibility rule above. |
 | `reflection_bps` | u16 | Reflection tax pinned at creation (bps of the trade): 0 / 100 / 300. |
+| `market_kind` | u8 | `0` = curve market, `1` = launch market (`init_launch_market`) |
 
-> `hingeX` and `reflectionBps` are appended fields — decode them as `0` if the payload is short (older markets).
+> `hingeX`, `reflectionBps` and `marketKind` are appended fields — decode them as `0` if the payload is short (older markets).
+>
+> A launch market's `init_launch_market` has no curve args: its `char_params` are fixed (`[P0, P0·k, P0, k]`, `curve_kind = 3`) and are read from the `Market` account.
 
 ### MarketFlagsSetEvent
 Discriminator: `[58, 254, 223, 22, 195, 116, 134, 114]`
@@ -445,6 +455,54 @@ Discriminator: `[171, 226, 187, 175, 75, 174, 244, 139]`
 | `epoch` | u64 |  |
 | `pool` | u64 | Distributable pool frozen at open |
 | `total_distributed` | u64 | Amount actually paid out |
+
+## Launch events
+
+Launch markets (`market_kind = 1`, see [Launch markets](./PROGRAM_PRO.md#launch-markets)) reuse the trade events. On `BuyEvent` / `SellEvent`, `floorReserve` **[post]** is the SOL vault balance, and `priceReserve` and `totalDebt` are `0`. A buy that lifts the average-price floor also emits `FloorRaisedEvent` (`preserve_area = false`, geometry fields `0`). Three events are specific to launch markets:
+
+### LaunchReadyEvent
+Discriminator: `[120, 56, 178, 241, 23, 176, 181, 235]`
+
+Emitted by the `launch_buy` that fills the sale cap. The market is now in phase `1`: trading on the program stops until graduation.
+
+| Field | Type | Description |
+|---|---|---|
+| `market` | pubkey |  |
+| `state_seq` | u64 |  |
+| `slot` | u64 |  |
+
+### MarketGraduatedEvent
+Discriminator: `[190, 6, 158, 202, 57, 252, 97, 28]`
+
+Emitted by `graduate`: the market is migrated to its Raydium CPMM pool (phase `2`), and trading continues on the pool. **This event is logged with `emit!`, so it arrives as a `Program data:` log line (base64 of `discriminator ++ borsh(fields)`) and not as a self-CPI.** Read it from the transaction logs.
+
+| Field | Type | Description |
+|---|---|---|
+| `market` | pubkey |  |
+| `pool` | pubkey | Raydium CPMM pool, the PDA `["launch_pool", market]` of this program |
+| `lp_mint` | pubkey | Pool LP mint |
+| `locked_liquidity` | pubkey | Raydium lock state of the LP |
+| `fee_nft_mint` | pubkey | Fee NFT that owns the locked LP |
+| `sol_amount` | u64 | Lamports moved from the vault into the pool |
+| `token_amount` | u64 | Tokens moved from the inventory into the pool (raw) |
+| `lp_amount` | u64 | LP minted and permanently locked |
+| `state_seq` | u64 |  |
+| `slot` | u64 |  |
+| `migration_fee` | u64 | Lamports kept from the raise to pay for the migration (Raydium's creation fee plus rents). Appended, so decode it as `0` if the payload is short. |
+
+### LpFeesClaimedEvent
+Discriminator: `[103, 80, 242, 19, 212, 41, 44, 71]`
+
+Emitted when Rise collects a graduated market's pool fees. Everything is paid out in SOL.
+
+| Field | Type | Description |
+|---|---|---|
+| `market` | pubkey |  |
+| `sol_team` | u64 | SOL to the team vault |
+| `sol_creator` | u64 | SOL to the market's `creator_claim` (claimable with `claim_creator_fees`) |
+| `creator_fee_sol` | u64 | Part of `sol_team + sol_creator` that came from Raydium's pool-creator fee |
+| `tokens_swapped` | u64 | Token-side LP fees swapped back to SOL on the pool |
+| `sol_from_swap` | u64 | SOL received for them |
 
 ---
 

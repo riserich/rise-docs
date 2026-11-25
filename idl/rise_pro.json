@@ -771,6 +771,254 @@
       "args": []
     },
     {
+      "name": "claim_lp_fees",
+      "docs": [
+        "Crank only (the graduation key): collect the pool's LP fees into the team vault",
+        "and creator claim."
+      ],
+      "discriminator": [
+        72,
+        86,
+        212,
+        142,
+        60,
+        38,
+        74,
+        75
+      ],
+      "accounts": [
+        {
+          "name": "payer",
+          "docs": [
+            "The crank (same key as `graduate`); pays the rent of the landing /",
+            "destination token accounts when they do not exist yet. Crank only so",
+            "nobody else picks the moment of the token-half swap (a dump / claim /",
+            "buy-back bundle would sandwich it)."
+          ],
+          "writable": true,
+          "signer": true,
+          "address": "6MiYw9XyBhQmvhEW2X1N8JY6tQGuyeDZF4zCin3iQsFB"
+        },
+        {
+          "name": "market",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  109,
+                  97,
+                  114,
+                  107,
+                  101,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "market.mint_token",
+                "account": "Market"
+              }
+            ]
+          }
+        },
+        {
+          "name": "pool_authority",
+          "docs": [
+            "split with its seeds."
+          ],
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  112,
+                  111,
+                  111,
+                  108,
+                  95,
+                  97,
+                  117,
+                  116,
+                  104
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "market"
+              }
+            ]
+          }
+        },
+        {
+          "name": "mint_token"
+        },
+        {
+          "name": "mint_main"
+        },
+        {
+          "name": "pool",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  108,
+                  97,
+                  117,
+                  110,
+                  99,
+                  104,
+                  95,
+                  112,
+                  111,
+                  111,
+                  108
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "market"
+              }
+            ]
+          }
+        },
+        {
+          "name": "raydium",
+          "accounts": [
+            {
+              "name": "cpmm_program",
+              "address": "CPMMoo8L3F4NbTegBCKVNunggL7H1ZpdTHKxQB5qKP1C"
+            },
+            {
+              "name": "cpmm_authority"
+            },
+            {
+              "name": "amm_config"
+            },
+            {
+              "name": "creator_fee_share",
+              "docs": [
+                "re-derived; may not exist (then the config's share applies)."
+              ]
+            },
+            {
+              "name": "lp_mint",
+              "writable": true
+            },
+            {
+              "name": "token_0_vault",
+              "writable": true
+            },
+            {
+              "name": "token_1_vault",
+              "writable": true
+            },
+            {
+              "name": "observation_state",
+              "writable": true
+            },
+            {
+              "name": "memo_program",
+              "address": "MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr"
+            }
+          ]
+        },
+        {
+          "name": "lock",
+          "accounts": [
+            {
+              "name": "lock_authority"
+            },
+            {
+              "name": "fee_nft_account",
+              "writable": true
+            },
+            {
+              "name": "locked_liquidity",
+              "writable": true
+            },
+            {
+              "name": "locked_lp_vault",
+              "writable": true
+            },
+            {
+              "name": "lock_program",
+              "address": "LockrWmn6K5twhz3y9w1dQERbmgSaRkfnTeTKbpofwE"
+            }
+          ]
+        },
+        {
+          "name": "cash_landing",
+          "docs": [
+            "created by CP-Swap on the first claim. Re-derived."
+          ],
+          "writable": true
+        },
+        {
+          "name": "token_landing",
+          "docs": [
+            "the LP fees, swapped back into SOL; created by CP-Swap on the first claim.",
+            "Re-derived."
+          ],
+          "writable": true
+        },
+        {
+          "name": "team_vault",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  116,
+                  101,
+                  97,
+                  109,
+                  95,
+                  118,
+                  97,
+                  117,
+                  108,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "mint_main"
+              }
+            ]
+          }
+        },
+        {
+          "name": "creator_claim",
+          "writable": true
+        },
+        {
+          "name": "token_program_main"
+        },
+        {
+          "name": "token_program"
+        },
+        {
+          "name": "associated_token_program",
+          "address": "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL"
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        },
+        {
+          "name": "event_authority"
+        },
+        {
+          "name": "program"
+        }
+      ],
+      "args": []
+    },
+    {
       "name": "close_reflection_epoch",
       "docs": [
         "Close a finished reflection epoch, returning its rent to the admin."
@@ -1305,6 +1553,254 @@
       ]
     },
     {
+      "name": "graduate",
+      "docs": [
+        "Crank-only: move a filled launch market into a locked Raydium CPMM pool."
+      ],
+      "discriminator": [
+        45,
+        235,
+        225,
+        181,
+        17,
+        218,
+        64,
+        130
+      ],
+      "accounts": [
+        {
+          "name": "crank",
+          "docs": [
+            "The graduation crank: the same key that cranks floor raises."
+          ],
+          "writable": true,
+          "signer": true,
+          "address": "6MiYw9XyBhQmvhEW2X1N8JY6tQGuyeDZF4zCin3iQsFB"
+        },
+        {
+          "name": "market",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  109,
+                  97,
+                  114,
+                  107,
+                  101,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "market.mint_token",
+                "account": "Market"
+              }
+            ]
+          }
+        },
+        {
+          "name": "vault",
+          "writable": true
+        },
+        {
+          "name": "inventory",
+          "writable": true
+        },
+        {
+          "name": "mint_token"
+        },
+        {
+          "name": "mint_main"
+        },
+        {
+          "name": "pool_authority",
+          "docs": [
+            "Pool creator, payer of the Raydium rents, owner of the vault and the",
+            "inventory from here on (they are the deposit), transient owner of the LP,",
+            "owner of the fee NFT. Zero-data PDA, emptied at the end."
+          ],
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  112,
+                  111,
+                  111,
+                  108,
+                  95,
+                  97,
+                  117,
+                  116,
+                  104
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "market"
+              }
+            ]
+          }
+        },
+        {
+          "name": "pool",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  108,
+                  97,
+                  117,
+                  110,
+                  99,
+                  104,
+                  95,
+                  112,
+                  111,
+                  111,
+                  108
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "market"
+              }
+            ]
+          }
+        },
+        {
+          "name": "fee_nft_mint",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  108,
+                  97,
+                  117,
+                  110,
+                  99,
+                  104,
+                  95,
+                  110,
+                  102,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "market"
+              }
+            ]
+          }
+        },
+        {
+          "name": "raydium",
+          "accounts": [
+            {
+              "name": "amm_config"
+            },
+            {
+              "name": "cpmm_authority"
+            },
+            {
+              "name": "lp_mint",
+              "writable": true
+            },
+            {
+              "name": "creator_lp_token",
+              "writable": true
+            },
+            {
+              "name": "token_0_vault",
+              "writable": true
+            },
+            {
+              "name": "token_1_vault",
+              "writable": true
+            },
+            {
+              "name": "create_pool_fee",
+              "writable": true,
+              "address": "DNXgeM9EiiaAbaWvwjHj9fQQLAX5ZsfHyvmYUNRAdNC8"
+            },
+            {
+              "name": "observation_state",
+              "writable": true
+            },
+            {
+              "name": "cpmm_program",
+              "address": "CPMMoo8L3F4NbTegBCKVNunggL7H1ZpdTHKxQB5qKP1C"
+            }
+          ]
+        },
+        {
+          "name": "lock",
+          "accounts": [
+            {
+              "name": "lock_authority"
+            },
+            {
+              "name": "fee_nft_account",
+              "writable": true
+            },
+            {
+              "name": "locked_liquidity",
+              "writable": true
+            },
+            {
+              "name": "locked_lp_vault",
+              "writable": true
+            },
+            {
+              "name": "metadata_account",
+              "writable": true
+            },
+            {
+              "name": "metadata_program",
+              "address": "metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s"
+            },
+            {
+              "name": "lock_program",
+              "address": "LockrWmn6K5twhz3y9w1dQERbmgSaRkfnTeTKbpofwE"
+            }
+          ]
+        },
+        {
+          "name": "token_program_main",
+          "docs": [
+            "SPL Token: owns wSOL, the LP mint and the fee NFT."
+          ]
+        },
+        {
+          "name": "token_program",
+          "docs": [
+            "Token-2022: owns the market mint."
+          ]
+        },
+        {
+          "name": "associated_token_program",
+          "address": "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL"
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        },
+        {
+          "name": "rent",
+          "address": "SysvarRent111111111111111111111111111111111"
+        }
+      ],
+      "args": []
+    },
+    {
       "name": "init_config",
       "docs": [
         "Create the protocol singleton. Callable once. The signer becomes the admin."
@@ -1375,6 +1871,283 @@
         {
           "name": "team_wallet",
           "type": "pubkey"
+        }
+      ]
+    },
+    {
+      "name": "init_launch_market",
+      "docs": [
+        "Create a launch market: 1B fixed-supply token sold from a program",
+        "inventory on a 10× linear curve derived from the graduation target."
+      ],
+      "discriminator": [
+        60,
+        8,
+        52,
+        165,
+        149,
+        222,
+        130,
+        152
+      ],
+      "accounts": [
+        {
+          "name": "creator",
+          "docs": [
+            "Pays rent for every account created here; recorded as `market.creator`."
+          ],
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "config",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "fee_config",
+          "docs": [
+            "Pinned at creation: must be the currently published version."
+          ],
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  102,
+                  101,
+                  101,
+                  95,
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "fee_config.version",
+                "account": "FeeConfig"
+              }
+            ]
+          }
+        },
+        {
+          "name": "collateral_config",
+          "docs": [
+            "The wSOL listing: launch markets are SOL-only."
+          ],
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  111,
+                  108,
+                  108,
+                  97,
+                  116,
+                  101,
+                  114,
+                  97,
+                  108
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "mint_main"
+              }
+            ]
+          }
+        },
+        {
+          "name": "mint_main",
+          "address": "So11111111111111111111111111111111111111112"
+        },
+        {
+          "name": "mint_token",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  109,
+                  105,
+                  110,
+                  116
+                ]
+              },
+              {
+                "kind": "arg",
+                "path": "args.vanity_seed"
+              }
+            ]
+          }
+        },
+        {
+          "name": "market",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  109,
+                  97,
+                  114,
+                  107,
+                  101,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "mint_token"
+              }
+            ]
+          }
+        },
+        {
+          "name": "vault",
+          "docs": [
+            "The single cash vault. During bonding it always covers the curve area of",
+            "the circulating supply; at graduation it is emptied into the pool."
+          ],
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  118,
+                  97,
+                  117,
+                  108,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "market"
+              }
+            ]
+          }
+        },
+        {
+          "name": "creator_claim",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  114,
+                  101,
+                  97,
+                  116,
+                  111,
+                  114,
+                  95,
+                  99,
+                  108,
+                  97,
+                  105,
+                  109
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "market"
+              }
+            ]
+          }
+        },
+        {
+          "name": "inventory",
+          "docs": [
+            "authority = market PDA. Same seeds and slot as a curve market's",
+            "`collateral_vault`: a program-owned market-token account."
+          ],
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  111,
+                  108,
+                  108,
+                  97,
+                  116,
+                  101,
+                  114,
+                  97,
+                  108,
+                  95,
+                  118,
+                  97,
+                  117,
+                  108,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "market"
+              }
+            ]
+          }
+        },
+        {
+          "name": "token_program_main",
+          "docs": [
+            "Token program owning wSOL (SPL Token)."
+          ]
+        },
+        {
+          "name": "token_program",
+          "docs": [
+            "Always Token-2022: the market mint carries the metadata extension."
+          ]
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        },
+        {
+          "name": "event_authority"
+        },
+        {
+          "name": "program"
+        }
+      ],
+      "args": [
+        {
+          "name": "args",
+          "type": {
+            "defined": {
+              "name": "InitLaunchMarketArgs"
+            }
+          }
         }
       ]
     },
@@ -1717,6 +2490,437 @@
               "name": "InitMarketArgs"
             }
           }
+        }
+      ]
+    },
+    {
+      "name": "launch_buy",
+      "docs": [
+        "Buy on a launch market's curve; fills up to the sale cap only."
+      ],
+      "discriminator": [
+        207,
+        238,
+        3,
+        20,
+        23,
+        255,
+        115,
+        170
+      ],
+      "accounts": [
+        {
+          "name": "buyer",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "market",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  109,
+                  97,
+                  114,
+                  107,
+                  101,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "market.mint_token",
+                "account": "Market"
+              }
+            ]
+          }
+        },
+        {
+          "name": "vault",
+          "writable": true
+        },
+        {
+          "name": "inventory",
+          "docs": [
+            "The inventory (the market's `collateral_vault` slot): source of every buy."
+          ],
+          "writable": true
+        },
+        {
+          "name": "creator_claim",
+          "writable": true
+        },
+        {
+          "name": "team_vault",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  116,
+                  101,
+                  97,
+                  109,
+                  95,
+                  118,
+                  97,
+                  117,
+                  108,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "mint_main"
+              }
+            ]
+          }
+        },
+        {
+          "name": "mint_main"
+        },
+        {
+          "name": "mint_token"
+        },
+        {
+          "name": "buyer_cash",
+          "docs": [
+            "Buyer's wSOL account — must already exist (the client wraps SOL into it)."
+          ],
+          "writable": true
+        },
+        {
+          "name": "buyer_token",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "account",
+                "path": "buyer"
+              },
+              {
+                "kind": "account",
+                "path": "token_program"
+              },
+              {
+                "kind": "account",
+                "path": "mint_token"
+              }
+            ],
+            "program": {
+              "kind": "const",
+              "value": [
+                140,
+                151,
+                37,
+                143,
+                78,
+                36,
+                137,
+                241,
+                187,
+                61,
+                16,
+                41,
+                20,
+                142,
+                13,
+                131,
+                11,
+                90,
+                19,
+                153,
+                218,
+                255,
+                16,
+                132,
+                4,
+                142,
+                123,
+                216,
+                219,
+                233,
+                248,
+                89
+              ]
+            }
+          }
+        },
+        {
+          "name": "token_program_main"
+        },
+        {
+          "name": "token_program"
+        },
+        {
+          "name": "associated_token_program",
+          "address": "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL"
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        },
+        {
+          "name": "event_authority"
+        },
+        {
+          "name": "program"
+        }
+      ],
+      "args": [
+        {
+          "name": "cash_in",
+          "type": "u64"
+        },
+        {
+          "name": "min_token_out",
+          "type": "u64"
+        }
+      ]
+    },
+    {
+      "name": "launch_sell",
+      "docs": [
+        "Sell back into a launch market's curve, never below the start price."
+      ],
+      "discriminator": [
+        72,
+        99,
+        58,
+        220,
+        83,
+        244,
+        8,
+        82
+      ],
+      "accounts": [
+        {
+          "name": "seller",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "market",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  109,
+                  97,
+                  114,
+                  107,
+                  101,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "market.mint_token",
+                "account": "Market"
+              }
+            ]
+          }
+        },
+        {
+          "name": "vault",
+          "writable": true
+        },
+        {
+          "name": "inventory",
+          "docs": [
+            "The inventory (the market's `collateral_vault` slot): sold tokens return here."
+          ],
+          "writable": true
+        },
+        {
+          "name": "creator_claim",
+          "writable": true
+        },
+        {
+          "name": "team_vault",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  116,
+                  101,
+                  97,
+                  109,
+                  95,
+                  118,
+                  97,
+                  117,
+                  108,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "mint_main"
+              }
+            ]
+          }
+        },
+        {
+          "name": "mint_main"
+        },
+        {
+          "name": "mint_token"
+        },
+        {
+          "name": "seller_cash",
+          "docs": [
+            "Seller's wSOL ATA, created if needed (the client unwraps afterwards)."
+          ],
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "account",
+                "path": "seller"
+              },
+              {
+                "kind": "account",
+                "path": "token_program_main"
+              },
+              {
+                "kind": "account",
+                "path": "mint_main"
+              }
+            ],
+            "program": {
+              "kind": "const",
+              "value": [
+                140,
+                151,
+                37,
+                143,
+                78,
+                36,
+                137,
+                241,
+                187,
+                61,
+                16,
+                41,
+                20,
+                142,
+                13,
+                131,
+                11,
+                90,
+                19,
+                153,
+                218,
+                255,
+                16,
+                132,
+                4,
+                142,
+                123,
+                216,
+                219,
+                233,
+                248,
+                89
+              ]
+            }
+          }
+        },
+        {
+          "name": "seller_token",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "account",
+                "path": "seller"
+              },
+              {
+                "kind": "account",
+                "path": "token_program"
+              },
+              {
+                "kind": "account",
+                "path": "mint_token"
+              }
+            ],
+            "program": {
+              "kind": "const",
+              "value": [
+                140,
+                151,
+                37,
+                143,
+                78,
+                36,
+                137,
+                241,
+                187,
+                61,
+                16,
+                41,
+                20,
+                142,
+                13,
+                131,
+                11,
+                90,
+                19,
+                153,
+                218,
+                255,
+                16,
+                132,
+                4,
+                142,
+                123,
+                216,
+                219,
+                233,
+                248,
+                89
+              ]
+            }
+          }
+        },
+        {
+          "name": "token_program_main"
+        },
+        {
+          "name": "token_program"
+        },
+        {
+          "name": "associated_token_program",
+          "address": "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL"
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        },
+        {
+          "name": "event_authority"
+        },
+        {
+          "name": "program"
+        }
+      ],
+      "args": [
+        {
+          "name": "token_in",
+          "type": "u64"
+        },
+        {
+          "name": "min_cash_out",
+          "type": "u64"
         }
       ]
     },
@@ -4309,6 +5513,19 @@
       ]
     },
     {
+      "name": "CurveParamsSetEvent",
+      "discriminator": [
+        242,
+        87,
+        233,
+        74,
+        178,
+        79,
+        59,
+        81
+      ]
+    },
+    {
       "name": "DepositEvent",
       "discriminator": [
         120,
@@ -4348,6 +5565,19 @@
       ]
     },
     {
+      "name": "LaunchReadyEvent",
+      "discriminator": [
+        120,
+        56,
+        178,
+        241,
+        23,
+        176,
+        181,
+        235
+      ]
+    },
+    {
       "name": "LeverageBuyEvent",
       "discriminator": [
         192,
@@ -4374,6 +5604,19 @@
       ]
     },
     {
+      "name": "LpFeesClaimedEvent",
+      "discriminator": [
+        103,
+        80,
+        242,
+        19,
+        212,
+        41,
+        44,
+        71
+      ]
+    },
+    {
       "name": "MarketFlagsSetEvent",
       "discriminator": [
         58,
@@ -4384,6 +5627,19 @@
         116,
         134,
         114
+      ]
+    },
+    {
+      "name": "MarketGraduatedEvent",
+      "discriminator": [
+        190,
+        6,
+        158,
+        202,
+        57,
+        252,
+        97,
+        28
       ]
     },
     {
@@ -4950,6 +6206,41 @@
       "code": 7009,
       "name": "RaiseStepTooSmall",
       "msg": "floor raise below the minimum step"
+    },
+    {
+      "code": 7010,
+      "name": "CurveContinuity",
+      "msg": "curve reshape breaks price continuity"
+    },
+    {
+      "code": 7011,
+      "name": "CurveOutOfDomain",
+      "msg": "curve reshape leaves the computable domain"
+    },
+    {
+      "code": 7012,
+      "name": "NotForLaunchMarket",
+      "msg": "instruction not available on a launch market"
+    },
+    {
+      "code": 7013,
+      "name": "LaunchWrongPhase",
+      "msg": "launch market is not in the required phase"
+    },
+    {
+      "code": 7014,
+      "name": "LaunchCapReached",
+      "msg": "the curve sale cap is already filled"
+    },
+    {
+      "code": 7015,
+      "name": "NotCrank",
+      "msg": "signer is not the graduation crank"
+    },
+    {
+      "code": 7016,
+      "name": "LaunchPoolMismatch",
+      "msg": "a Raydium pool or lock account does not match the launch market"
     }
   ],
   "types": [
@@ -5274,6 +6565,90 @@
       }
     },
     {
+      "name": "CurveParams",
+      "docs": [
+        "New `[q, k]` slots of `char_params` (`g2 = 2q/k²` in Q64.64 and `k` in",
+        "Q64.96, exactly the units `init_market` takes) plus the hinge. `hinge_x == 0`",
+        "means \"ignite at the current `token_supply`\"; any other value is stored as-is,",
+        "which lets the admin restore an older geometry."
+      ],
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "q",
+            "type": "i128"
+          },
+          {
+            "name": "k",
+            "type": "i128"
+          },
+          {
+            "name": "hinge_x",
+            "type": "u64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "CurveParamsSetEvent",
+      "docs": [
+        "Emitted when `update_market` reshapes a hinged-exponential market's curve",
+        "(`q`, `k`, hinge) at constant spot. Carries the full post-state geometry so",
+        "the indexer mirrors it without re-deriving anything."
+      ],
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "market",
+            "type": "pubkey"
+          },
+          {
+            "name": "char_params",
+            "type": {
+              "array": [
+                "i128",
+                4
+              ]
+            }
+          },
+          {
+            "name": "hinge_x",
+            "type": "u64"
+          },
+          {
+            "name": "y_shift",
+            "type": "i128"
+          },
+          {
+            "name": "ramp_start_x",
+            "type": "u64"
+          },
+          {
+            "name": "x2",
+            "type": "u64"
+          },
+          {
+            "name": "m_x1",
+            "type": "u128"
+          },
+          {
+            "name": "previous_price",
+            "type": "u128"
+          },
+          {
+            "name": "price",
+            "type": "u128"
+          },
+          {
+            "name": "state_seq",
+            "type": "u64"
+          }
+        ]
+      }
+    },
+    {
       "name": "DepositEvent",
       "type": {
         "kind": "struct",
@@ -5557,6 +6932,26 @@
       }
     },
     {
+      "name": "InitLaunchMarketArgs",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "vanity_seed",
+            "type": "u64"
+          },
+          {
+            "name": "metadata",
+            "type": {
+              "defined": {
+                "name": "MarketMetadata"
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
       "name": "InitMarketArgs",
       "type": {
         "kind": "struct",
@@ -5659,6 +7054,29 @@
               "last so old serialized args stay prefix-compatible."
             ],
             "type": "u16"
+          }
+        ]
+      }
+    },
+    {
+      "name": "LaunchReadyEvent",
+      "docs": [
+        "The curve sale cap was just filled: trading stops, the market waits for `graduate`."
+      ],
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "market",
+            "type": "pubkey"
+          },
+          {
+            "name": "state_seq",
+            "type": "u64"
+          },
+          {
+            "name": "slot",
+            "type": "u64"
           }
         ]
       }
@@ -5852,6 +7270,49 @@
           },
           {
             "name": "heal_spread",
+            "type": "u64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "LpFeesClaimedEvent",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "market",
+            "type": "pubkey"
+          },
+          {
+            "name": "sol_team",
+            "docs": [
+              "Everything is paid in SOL: the creator fee, the SOL half of the LP fees",
+              "and the token half swapped back on the pool, split team / creator."
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "sol_creator",
+            "type": "u64"
+          },
+          {
+            "name": "creator_fee_sol",
+            "docs": [
+              "Part of `sol_team + sol_creator` that came from Raydium's SOL-only pool",
+              "creator fee (the rest is the locked LP's share of the trade fee)."
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "tokens_swapped",
+            "docs": [
+              "Token-side LP fees swapped back into SOL on the pool, and what they fetched."
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "sol_from_swap",
             "type": "u64"
           }
         ]
@@ -6365,6 +7826,48 @@
             "type": "u64"
           },
           {
+            "name": "market_kind",
+            "docs": [
+              "`0` = curve market (every account created before launch mode reads 0),",
+              "`1` = launch market (fixed supply sold from an inventory, graduates to a",
+              "Raydium pool). Immutable. Carved out of `reserved` (46 → 27)."
+            ],
+            "type": "u8"
+          },
+          {
+            "name": "launch_phase",
+            "docs": [
+              "Launch markets only: `0` bonding, `1` ready to graduate, `2` graduated.",
+              "Only ever moves forward."
+            ],
+            "type": "u8"
+          },
+          {
+            "name": "sale_cap",
+            "docs": [
+              "Launch markets only: raw tokens sellable on the curve. `token_supply`",
+              "counts the circulating (sold) tokens and never exceeds it. The inventory",
+              "that supplies them (and the pool allocation) is `collateral_vault`."
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "pool_authority_bump",
+            "docs": [
+              "Bump of the `[\"pool_auth\", market]` PDA that creates the Raydium pool and",
+              "owns the locked LP's fee NFT. The pool, LP mint, vaults and lock accounts",
+              "are all derived from the market, so none is stored."
+            ],
+            "type": "u8"
+          },
+          {
+            "name": "graduated_slot",
+            "docs": [
+              "Slot of graduation (0 while bonding)."
+            ],
+            "type": "u64"
+          },
+          {
             "name": "reserved",
             "docs": [
               "Padding. Grew by 32 bytes when the withdrawn-fee counters and the",
@@ -6377,7 +7880,7 @@
             "type": {
               "array": [
                 "u8",
-                46
+                27
               ]
             }
           }
@@ -6403,6 +7906,73 @@
           },
           {
             "name": "state_seq",
+            "type": "u64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "MarketGraduatedEvent",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "market",
+            "type": "pubkey"
+          },
+          {
+            "name": "pool",
+            "docs": [
+              "Raydium CPMM pool (a PDA of this program), its LP mint, the lock state",
+              "and the fee NFT mint that owns the locked LP."
+            ],
+            "type": "pubkey"
+          },
+          {
+            "name": "lp_mint",
+            "type": "pubkey"
+          },
+          {
+            "name": "locked_liquidity",
+            "type": "pubkey"
+          },
+          {
+            "name": "fee_nft_mint",
+            "type": "pubkey"
+          },
+          {
+            "name": "sol_amount",
+            "docs": [
+              "What left the vault / inventory for the pool."
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "token_amount",
+            "type": "u64"
+          },
+          {
+            "name": "lp_amount",
+            "docs": [
+              "LP minted to the pool authority and permanently locked (`sqrt(sol × tokens) − 100`)."
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "state_seq",
+            "type": "u64"
+          },
+          {
+            "name": "slot",
+            "type": "u64"
+          },
+          {
+            "name": "migration_fee",
+            "docs": [
+              "SOL kept out of the pool to repay the crank: Raydium's creation fee plus",
+              "the rents, less the vault's own rent. Appended, so older decoders still",
+              "read the fields above."
+            ],
             "type": "u64"
           }
         ]
@@ -6518,6 +8088,13 @@
               "Appended last, per the prefix-compatibility rule above."
             ],
             "type": "u16"
+          },
+          {
+            "name": "market_kind",
+            "docs": [
+              "`0` curve market, `1` launch market. Appended last."
+            ],
+            "type": "u8"
           }
         ]
       }
@@ -7234,6 +8811,21 @@
               "option": {
                 "defined": {
                   "name": "GlideParams"
+                }
+              }
+            }
+          },
+          {
+            "name": "curve",
+            "docs": [
+              "Reshape the hinged-exponential characteristic at constant spot (see the",
+              "header, step 7). Appended last so the Borsh prefix of the earlier fields is",
+              "unchanged."
+            ],
+            "type": {
+              "option": {
+                "defined": {
+                  "name": "CurveParams"
                 }
               }
             }

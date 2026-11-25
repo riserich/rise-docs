@@ -159,6 +159,38 @@ GET /markets/{tokenMintOrRiseMarketAddress}
 | `mayflower_floor` | Floor price (can never go below this) |
 | `holders_count` | Unique holders |
 
+**Launch markets:** every market also carries the launch-mode fields below. They are `null` on classic markets, except `marketKind`, which is always set. A launch market is a fixed-supply SOL token sold on a curve until its sale cap, then migrated to a Raydium pool ([details](./PROGRAM_PRO.md#launch-markets)).
+
+```json
+{
+  "marketKind": 1,
+  "launchPhase": 0,
+  "launchProgress": {
+    "raisedLamports": "42500000000",
+    "gradTargetLamports": "84999550237",
+    "pct": 50,
+    "raisedUsd": 6375.0,
+    "gradTargetUsd": 12749.93,
+    "tokensSold": "512000000000000000",
+    "saleCap": "719000000000000000"
+  },
+  "launchPool": null,
+  "graduatedAt": null
+}
+```
+
+| Field | What it is |
+|-------|-----------|
+| `marketKind` | `0` = classic market, `1` = launch market |
+| `launchPhase` | `0` = bonding (trades on the curve), `1` = sale cap filled, migration in progress, `2` = graduated (trades on Raydium) |
+| `launchProgress.raisedLamports` / `gradTargetLamports` / `pct` | SOL raised so far, out of the graduation target (≈ 85 SOL). `pct` is the progress bar, pinned to 100 from phase 1. |
+| `launchProgress.raisedUsd` / `gradTargetUsd` | Same values in USD (`null` if the SOL price is unavailable) |
+| `launchProgress.tokensSold` / `saleCap` | Tokens sold on the curve, out of the 719M sale cap (raw, 9 decimals) |
+| `launchPool` | Raydium CPMM pool address once graduated |
+| `graduatedAt` | Migration time (ISO 8601) once graduated |
+
+The same `buyToken` / `sellToken` / `quote` calls work on launch markets. The backend uses the launch instructions while bonding and routes through the Raydium pool after graduation. During phase `1`, they return `409`.
+
 </details>
 
 ---
