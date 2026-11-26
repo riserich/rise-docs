@@ -74,7 +74,7 @@ Buy with an exact cash amount. Quotes by bisection on the exact forward cost, sp
 
 | # | Account | Seeds / source | W | S | Notes |
 |---|---|---|---|---|---|
-| 0 | `buyer` |  | ✓ | ✓ | The buyer - signs, pays `cash_in` from `buyer_cash`, and pays rent for `buyer_token` on a wallet's first buy. |
+| 0 | `buyer` |  |  | ✓ | The buyer - signs and pays `cash_in` from `buyer_cash` |
 | 1 | `market` | `["market", market.mint_token]` | ✓ |  | Rise market being bought into - PDA derived from `[MARKET_SEED, mint_token]`, signs the mint CPI and holds the reserves ledger updated by … |
 | 2 | `vault` |  | ✓ |  | Pinned by an `address` check against the key `Market` stored at creation, so a substituted account is rejected. |
 | 3 | `creator_claim` |  | ✓ |  | Creator claim account - receives the creator's leg of the buy fee. Pinned by an `address` check against the key `Market` stored at creation. |
@@ -82,12 +82,12 @@ Buy with an exact cash amount. Quotes by bisection on the exact forward cost, sp
 | 5 | `reflection_vault` | `["reflection_vault", market]` | ✓ |  | on reflection markets; on a `reflection_bps == 0` market (incl. every pre-upgrade market) it may not exist and is never touched. |
 | 6 | `mint_token` |  | ✓ |  | Market token mint - `token_out` is minted from it to the buyer. Validated to match `market.mint_token`, so a foreign mint is rejected. |
 | 7 | `mint_main` |  |  |  | Base currency mint (e.g., USDC) - buyer pays in this token. Validated to match `market.mint_main`; needed for `transfer_checked` decimals. |
-| 8 | `buyer_cash` |  | ✓ |  | Buyer's base-currency account - source of `cash_in`, debited by the three transfer legs. |
-| 9 | `buyer_token` | `[buyer, token_program, mint_token]` | ✓ |  | The buyer's canonical ATA for the market token, created on the fly on a wallet's first buy (`init_if_needed` — a no-op when it exists, rent … |
+| 8 | `buyer_cash` |  | ✓ |  | Source of `cash_in`: any account of `mint_main` the buyer can spend from (owner or delegate). |
+| 9 | `buyer_token` |  | ✓ |  | Receives `token_out`. Any **existing** token account of `mint_token` — the buyer's ATA or another wallet's (any owner). Not created by the program: create it first (e.g. `createAssociatedTokenAccountIdempotent`). The market's own accounts are refused (`ProtocolAccountAsReceiver`, 7018). |
 | 10 | `token_program_main` |  |  |  | Token program for base-currency transfers (vault, creator and team legs). |
 | 11 | `token_program` |  |  |  | Token program for the market token - used by the mint CPI and `buyer_token`. |
-| 12 | `associated_token_program` |  |  |  | Associated token program - required by `init_if_needed` on `buyer_token`. |
-| 13 | `system_program` |  |  |  | System program for account creation (`buyer_token` rent on a first buy). |
+| 12 | `associated_token_program` |  |  |  | Unused — kept so the account list does not change. |
+| 13 | `system_program` |  |  |  | Unused — kept so the account list does not change. |
 | 14 | `event_authority` |  |  |  | Anchor event-CPI self-invoke authority (fixed PDA). |
 | 15 | `program` |  |  |  | This program — target of the event self-CPI. |
 
@@ -108,7 +108,7 @@ Sell tokens back into the curve. The exit is unconditional (Law 1): the payout n
 
 | # | Account | Seeds / source | W | S | Notes |
 |---|---|---|---|---|---|
-| 0 | `seller` |  | ✓ | ✓ | Seller - signs the burn of their tokens and receives the payout. Mutable because it pays rent if `seller_cash` has to be created. |
+| 0 | `seller` |  |  | ✓ | Seller - signs the burn of the tokens in `seller_token` |
 | 1 | `market` | `["market", market.mint_token]` | ✓ |  | Rise market being sold into - PDA derived from ["market", mint_token]. Vault authority: signs every payout leg out of the vault. |
 | 2 | `vault` |  | ✓ |  | Market vault holding both cash ledgers (floor reserve + above-floor book). Validated to match `market.vault` - source of every payout leg. |
 | 3 | `creator_claim` |  | ✓ |  | Creator claim account - receives the creator's fee leg, swept later via `claim_creator_fees`. Validated to match `market.creator_claim`. |
@@ -116,12 +116,12 @@ Sell tokens back into the curve. The exit is unconditional (Law 1): the payout n
 | 5 | `reflection_vault` | `["reflection_vault", market]` | ✓ |  | on reflection markets; on a `reflection_bps == 0` market (incl. every pre-upgrade market) it may not exist and is never touched. |
 | 6 | `mint_token` |  | ✓ |  | Market token mint - the sold tokens are burned against it, shrinking supply. Validated to match `market.mint_token`. |
 | 7 | `mint_main` |  |  |  | Base currency mint (e.g., USDC) - seller is paid in this token. Validated to match `market.mint_main`. |
-| 8 | `seller_cash` | `[seller, token_program_main, mint_main]` | ✓ |  | Receives the payout — created on the fly if the seller has never held the collateral (init_if_needed, rent paid by the seller). |
-| 9 | `seller_token` | `[seller, token_program, mint_token]` | ✓ |  | The burn source, pinned to the seller's canonical ATA — same discipline as `buy`'s `buyer_token`. |
+| 8 | `seller_cash` |  | ✓ |  | Receives the payout. Any **existing** token account of `mint_main` — the seller's ATA or another wallet's (any owner). Not created by the program: create it first (e.g. `createAssociatedTokenAccountIdempotent`). The market's own accounts are refused (`ProtocolAccountAsReceiver`, 7018). |
+| 9 | `seller_token` |  | ✓ |  | The burn source: any account of `mint_token` the seller can burn from (owner or delegate). |
 | 10 | `token_program_main` |  |  |  | Token program for base currency transfers (vault payouts). |
 | 11 | `token_program` |  |  |  | Token program for the market token (the burn). |
-| 12 | `associated_token_program` |  |  |  | Associated token program - creates `seller_cash` if it does not exist yet. |
-| 13 | `system_program` |  |  |  | System program for account creation. |
+| 12 | `associated_token_program` |  |  |  | Unused — kept so the account list does not change. |
+| 13 | `system_program` |  |  |  | Unused — kept so the account list does not change. |
 | 14 | `event_authority` |  |  |  | Anchor event-CPI self-invoke authority (fixed PDA). |
 | 15 | `program` |  |  |  | This program — target of the event self-CPI. |
 
@@ -373,7 +373,7 @@ Sweep a market's accrued creator fees. Signed by whoever is **currently** `marke
 
 A launch market (`market_kind = 1`) is a fixed-supply SOL token. It sells on a fixed exponential curve until a sale cap is filled, then migrates automatically to a Raydium CPMM pool whose LP is locked forever. Three instructions are user-facing: [`init_launch_market`](#11-init_launch_market), [`launch_buy`](#12-launch_buy) and [`launch_sell`](#13-launch_sell). Migration (`graduate`) is run by Rise's crank. Nobody else can call it, and nothing is needed from the integrator.
 
-The classic instructions (`buy`, `sell`, `deposit`, `borrow`, `leverage_*`, raises, reflection) reject a launch market with `NotForLaunchMarket` (7012). `claim_creator_fees` works as on any market.
+The classic instructions (`buy`, `sell`, `deposit`, `borrow`, `leverage_*`, `raise_floor_excess_liquidity`, reflection) reject a launch market with `NotForLaunchMarket` (7012). The permissionless `raise_floor_preserve_area` does work on launch markets: it is the only thing that raises their floor (Rise's crank sends it after buys). `claim_creator_fees` works as on any market.
 
 ### At a glance
 
@@ -384,11 +384,11 @@ The classic instructions (`buy`, `sell`, `deposit`, `borrow`, `leverage_*`, rais
 | Total supply | **1,000,000,000** tokens (`1e18` raw). All of it is minted once into the market's inventory at creation, then the **mint authority is revoked**. |
 | Sale cap (`sale_cap`) | **719,000,000** tokens (`719e15` raw), sold on the curve. The other **281,000,000** tokens seed the Raydium pool. |
 | Curve | `P(x) = P0 · e^(k·x)`, where `x` = tokens sold (`market.token_supply`, raw). It is **×10** from the first token to the cap (`k · sale_cap = ln 10`). The curve is identical for every launch market and has no creator parameters. |
-| Raise | Mainnet: **≈ 85 SOL** fills the cap (84.9996 SOL net of fees). Devnet: ≈ 10 SOL (P0 is 8.5× lower). |
-| Price | Mainnet: 3.0246e-8 SOL per token at launch (≈ 30.2 SOL market cap) and 3.0246e-7 at the cap (≈ 302 SOL market cap). |
-| Floor (`floor_price`) | The **average price paid**, `vault SOL / tokens sold`. It starts at `P0`, only ratchets up on buys, and ends at ≈ 39 % of the price at the cap. While the curve is below the floor, tokens trade **flat at the floor**, and sells never pay below it. |
+| Raise | **≈ 85 SOL** fills the cap (84.9996 SOL net of fees), on mainnet and devnet. |
+| Price | 3.0246e-8 SOL per token at launch (≈ 30.2 SOL market cap) and 3.0246e-7 at the cap (≈ 302 SOL market cap). |
+| Floor (`floor_price`) | Starts at `P0`. Buys never move it: only `raise_floor_preserve_area` raises it, capped at **70 % of `vault SOL / tokens sold`** (`LaunchFloorCapExceeded`, 7017). Trades price on the effective curve (floor band, ramp, curve); sells are paid the curve value and never below the floor. |
 | Fees | `buy_fee_mbps` / `sell_fee_mbps` are snapshotted from the current fee config at creation. The fee splits team / creator only: `fees_floor = 0` and there is no reflection. |
-| Flags | `CAN_BUY \| CAN_SELL` |
+| Flags | `CAN_BUY \| CAN_SELL \| CAN_RAISE_FLOOR` |
 
 ### Phases (`market.launch_phase`)
 
@@ -410,24 +410,24 @@ Decode the `Market` account with the IDL. The fields a script needs:
 | Phase | `launch_phase` (u8 at offset **680**) |
 | Tokens sold (`x`) | `token_supply` |
 | Sale cap | `sale_cap` (u64 at offset **681**) |
-| Curve | `char_params = [P0, P0·k, P0, k]`, with `P0` in Q64.64 lamports per raw token and `k` in Q64.96 per raw token (`curve_kind = 3`). Read it from the account rather than hard-coding it, because P0 differs between mainnet and devnet. |
+| Curve | `char_params` (`[P0, P0·k, P0, k]` at creation; `P0` Q64.64 lamports per raw token, `k` Q64.96 per raw token, `curve_kind = 3`), plus `hinge_x`, `ramp_start_x`, `ramp_scalar`, `x2_cached`, `m_x1_cached`. A sell can rewrite them (`LaunchCurveRefitEvent`), so **always quote from the account's current fields**. |
 | Floor | `floor_price` (Q64.64 lamports per raw token) |
-| SOL in the vault | The **SPL balance of `vault`** (u64 at offset 64 of the token account). Launch markets do **not** update `floor_reserve`; the vault balance is the backing. |
+| SOL in the vault | The **SPL balance of `vault`** (u64 at offset 64 of the token account). `floor_reserve` mirrors it after every launch trade. |
 | Graduation slot | `graduated_slot` (0 until phase 2) |
 
 `curve_kind = 2` marks a market from a retired launch curve. Those markets are frozen and cannot be traded.
 
-**Quoting.** A buy first takes the fee off `cash_in` (`fee = ceil(cash_in × buy_fee_mbps / 1e6)`). It then fills the net amount: first the flat floor band at `floor_price`, then the curve area `∫ P0·e^(k·x) dx`. The program inverts the curve with a fixed-point `ln` and two Newton steps, so an off-chain quote must reproduce that to land on the exact raw amount. The [SDK](https://github.com/riserich/SDK) ships a bit-exact mirror: `v2.quoteLaunchBuy(market, cashIn, vaultBalance)` and `v2.quoteLaunchSell(market, tokenIn, vaultBalance)`. For a human-readable estimate, the spot price is `max(floor_price, P0 · e^(k·x)) / 2^64` SOL per token.
+**Quoting.** A buy first takes the fee off `cash_in` (`fee = ceil(cash_in × buy_fee_mbps / 1e6)`), then fills the net amount along the effective curve (floor band, ramp, curve) built from the market's current fields. An off-chain quote must reproduce the program's fixed-point math to land on the exact raw amount. The [SDK](https://github.com/riserich/SDK) ships a bit-exact mirror: `v2.quoteLaunchBuy(market, cashIn, vaultBalance)` and `v2.quoteLaunchSell(market, tokenIn, vaultBalance)`; `v2.launchSpotPrice` gives the current price.
 
 ### Building the transactions
 
 | Step | `launch_buy` | `launch_sell` |
 |---|---|---|
-| 1 | Create the trader's wSOL ATA (idempotent), transfer `cash_in` lamports to it, `syncNative` | — |
-| 2 | `launch_buy(cash_in, min_token_out)` | `launch_sell(token_in, min_cash_out)` |
+| 1 | Create the trader's wSOL ATA and token ATA (idempotent), transfer `cash_in` lamports to the wSOL ATA, `syncNative` | Create the trader's wSOL ATA (idempotent) |
+| 2 | `launch_buy(cash_in, min_token_out)` | `launch_sell(token_in, min_cash_out, None)` |
 | 3 | Close the wSOL ATA to unwrap. On a cap-filling buy this also **refunds the unused SOL**. | Close the wSOL ATA to unwrap the payout |
 
-A compute budget of 200k CU is enough: a buy uses ≤ 151k CU and a sell ≈ 100k CU. The token ATA is created by the instruction on the first buy. Every account below is a fixed derivation from the mint, so no lookup is needed beyond the market account.
+Use 200k CU for a buy and **400k CU for a sell**. The program creates no accounts: the receiving account must already exist. Every account below is a fixed derivation from the mint, so no lookup is needed beyond the market account.
 
 ---
 
@@ -475,9 +475,8 @@ Data layout (Borsh): `disc [60,8,52,165,149,222,130,152]` · `vanity_seed u64 LE
 Buy with an exact SOL amount, while the market is bonding.
 
 1. The fee comes off the top, split team / creator.
-2. The net amount fills the floor band, then the curve.
-3. Tokens are **transferred from the inventory**, not minted.
-4. The floor ratchets up to the new average price (`vault / sold`), which emits `FloorRaisedEvent`.
+2. The net amount fills the effective curve (floor band, ramp, curve).
+3. Tokens are **transferred from the inventory**, not minted. The floor does not move.
 
 **Partial fill at the cap.** If `cash_in` buys more than the tokens left under `sale_cap`, the buy fills **exactly** the remaining tokens. Only the cash that fill needs is taken (cost grossed up for the fee). The rest of `cash_in` stays in the buyer's wSOL ATA, and the closing unwrap returns it. `BuyEvent.cash_in` reports the cash actually used. That buy sets `launch_phase = 1` and emits `LaunchReadyEvent`.
 
@@ -494,7 +493,7 @@ Data: `disc [207,238,3,20,23,255,115,170]` · `cash_in u64 LE` · `min_token_out
 
 | # | Account | Seeds / source | W | S | Notes |
 |---|---|---|---|---|---|
-| 0 | `buyer` |  | ✓ | ✓ | Signs, pays, and pays rent for `buyer_token` on a first buy. |
+| 0 | `buyer` |  |  | ✓ | **Read-only signer**: signs and pays from `buyer_cash` (owner or delegate). |
 | 1 | `market` | `["market", mint_token]` | ✓ |  | Must be a launch market in phase 0. |
 | 2 | `vault` | `["vault", market]` | ✓ |  | Receives the net SOL. |
 | 3 | `inventory` | `["collateral_vault", market]` | ✓ |  | Source of the tokens. |
@@ -502,24 +501,24 @@ Data: `disc [207,238,3,20,23,255,115,170]` · `cash_in u64 LE` · `min_token_out
 | 5 | `team_vault` | `["team_vault", mint_main]` | ✓ |  | Team fee leg (shared by every SOL market). |
 | 6 | `mint_main` | wSOL |  |  |  |
 | 7 | `mint_token` | `market.mint_token` |  |  | Read-only: nothing is minted. |
-| 8 | `buyer_cash` | ATA `[buyer, token_program_main, mint_main]` | ✓ |  | Buyer's wSOL ATA. **Must already exist and hold `cash_in`**: wrap first. |
-| 9 | `buyer_token` | ATA `[buyer, token_program, mint_token]` | ✓ |  | Created if missing. |
+| 8 | `buyer_cash` |  | ✓ |  | Any wSOL account the buyer can spend from. **Must already exist and hold `cash_in`**: wrap first. |
+| 9 | `buyer_token` |  | ✓ |  | Receives the tokens. Any **existing** token account of `mint_token`, any owner. Not created by the program: create it first (idempotent ATA). The market's own accounts are refused (`ProtocolAccountAsReceiver`, 7018). |
 | 10 | `token_program_main` | SPL Token |  |  |  |
 | 11 | `token_program` | Token-2022 |  |  |  |
-| 12 | `associated_token_program` | `ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL` |  |  |  |
-| 13 | `system_program` | `11111111111111111111111111111111` |  |  |  |
+| 12 | `associated_token_program` | `ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL` |  |  | Unused — kept so the account list does not change. |
+| 13 | `system_program` | `11111111111111111111111111111111` |  |  | Unused — kept so the account list does not change. |
 | 14 | `event_authority` | `["__event_authority"]` |  |  |  |
 | 15 | `program` |  |  |  | This program. |
 
-**Events:** `BuyEvent` (on launch markets `floor_reserve` = vault balance after the trade and `price_reserve` = 0), `FloorRaisedEvent` when the floor moves, and `LaunchReadyEvent` on the cap-filling buy.
+**Events:** `BuyEvent` (on launch markets `floor_reserve` = vault balance after the trade and `price_reserve` = 0), and `LaunchReadyEvent` on the cap-filling buy.
 
-**Errors:** `LaunchWrongPhase` 7013 (not a launch market, or not bonding), `LaunchCapReached` 7014, `TradeBelowMinimum` 6401, `DustTrade` 6403, `DustOutput` 6404, `SlippageExceeded` 6405.
+**Errors:** `LaunchWrongPhase` 7013 (not a launch market, or not bonding), `LaunchCapReached` 7014, `ProtocolAccountAsReceiver` 7018, `TradeBelowMinimum` 6401, `DustTrade` 6403, `DustOutput` 6404, `SlippageExceeded` 6405.
 
 ---
 
 ### 13. `launch_sell`
 
-Sell tokens back into the curve while the market is bonding. The tokens **return to the inventory** (nothing is burned). The payout is the curve value (floor band plus curve, rounded down), clamped so the tokens still out stay fully backed at the floor. That makes the payout never below the floor value of the tokens sold. The sell fee is taken from the payout.
+Sell tokens back into the curve while the market is bonding. The tokens **return to the inventory** (nothing is burned). The payout is the effective-curve value (floor band, ramp, curve, rounded down), clamped so the tokens still out stay fully backed at the floor. That makes the payout never below the floor value of the tokens sold. The sell fee is taken from the payout.
 
 **Args**
 
@@ -527,14 +526,15 @@ Sell tokens back into the curve while the market is bonding. The tokens **return
 |---|---|---|
 | `token_in` | `u64` | Tokens to sell (raw, 9 decimals). |
 | `min_cash_out` | `u64` | Slippage gate on the lamports received, after the fee. |
+| `k_hint` | `Option<u128>` | Optional: pass `None` and the program computes it on-chain. |
 
-Data: `disc [72,99,58,220,83,244,8,82]` · `token_in u64 LE` · `min_cash_out u64 LE`.
+Data: `disc [72,99,58,220,83,244,8,82]` · `token_in u64 LE` · `min_cash_out u64 LE` · `k_hint` (Borsh option: `0` for `None`).
 
 **Accounts**
 
 | # | Account | Seeds / source | W | S | Notes |
 |---|---|---|---|---|---|
-| 0 | `seller` |  | ✓ | ✓ | Signs; pays rent if `seller_cash` has to be created. |
+| 0 | `seller` |  |  | ✓ | **Read-only signer**: signs the transfer from `seller_token` (owner or delegate). |
 | 1 | `market` | `["market", mint_token]` | ✓ |  | Must be a launch market in phase 0. |
 | 2 | `vault` | `["vault", market]` | ✓ |  | Source of the payout. |
 | 3 | `inventory` | `["collateral_vault", market]` | ✓ |  | Receives the tokens sold. |
@@ -542,18 +542,18 @@ Data: `disc [72,99,58,220,83,244,8,82]` · `token_in u64 LE` · `min_cash_out u6
 | 5 | `team_vault` | `["team_vault", mint_main]` | ✓ |  | Team fee leg. |
 | 6 | `mint_main` | wSOL |  |  |  |
 | 7 | `mint_token` | `market.mint_token` |  |  |  |
-| 8 | `seller_cash` | ATA `[seller, token_program_main, mint_main]` | ✓ |  | Seller's wSOL ATA, created if missing. Close it afterwards to unwrap. |
-| 9 | `seller_token` | ATA `[seller, token_program, mint_token]` | ✓ |  | Source of `token_in`. |
+| 8 | `seller_cash` |  | ✓ |  | Receives the payout. Any **existing** token account of wSOL, any owner. Not created by the program: create it first (idempotent ATA). The market's own accounts are refused (`ProtocolAccountAsReceiver`, 7018). Close it afterwards to unwrap. |
+| 9 | `seller_token` |  | ✓ |  | Source of `token_in`: any account of `mint_token` the seller can spend from. |
 | 10 | `token_program_main` | SPL Token |  |  |  |
 | 11 | `token_program` | Token-2022 |  |  |  |
-| 12 | `associated_token_program` | `ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL` |  |  |  |
-| 13 | `system_program` | `11111111111111111111111111111111` |  |  |  |
+| 12 | `associated_token_program` | `ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL` |  |  | Unused — kept so the account list does not change. |
+| 13 | `system_program` | `11111111111111111111111111111111` |  |  | Unused — kept so the account list does not change. |
 | 14 | `event_authority` | `["__event_authority"]` |  |  |  |
 | 15 | `program` |  |  |  | This program. |
 
-**Events:** `SellEvent`. `book_shortfall` is the part of the curve value removed by the backing clamp.
+**Events:** `SellEvent`. `book_shortfall` is the part of the curve value removed by the backing clamp. `LaunchCurveRefitEvent` when the sell updates the market's curve fields.
 
-**Errors:** `LaunchWrongPhase` 7013, `DustTrade` 6403, `SupplyUnderflow` 6501 (`token_in` > tokens sold), `DustOutput` 6404, `TradeBelowMinimum` 6401 (gross below `min_trade_amount`), `SlippageExceeded` 6405.
+**Errors:** `LaunchWrongPhase` 7013, `ProtocolAccountAsReceiver` 7018, `DustTrade` 6403, `SupplyUnderflow` 6501 (`token_in` > tokens sold), `DustOutput` 6404, `TradeBelowMinimum` 6401 (gross below `min_trade_amount`), `SlippageExceeded` 6405.
 
 ---
 
