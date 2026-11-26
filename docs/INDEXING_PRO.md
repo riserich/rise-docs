@@ -70,6 +70,7 @@ Everything else (`glideCredit`, `x2`, `yShift`, `mX1`, `bookShortfall`, `healSpr
 | `DepositEvent` | `78 f8 3d 53 1f 8e 6b 90` |
 | `FeeConfigPublishedEvent` | `36 79 e2 e6 ed ca 8b b6` |
 | `FloorRaisedEvent` | `b4 96 93 fc ee 93 ae ec` |
+| `LaunchCurveRefitEvent` | `99 a5 70 31 c6 70 0d 21` |
 | `LaunchReadyEvent` | `78 38 b2 f1 17 b0 b5 eb` |
 | `LeverageBuyEvent` | `c0 fb f5 42 95 57 4f c3` |
 | `LeverageSellEvent` | `53 cc d2 60 ce d7 0c 9a` |
@@ -97,8 +98,9 @@ Everything else (`glideCredit`, `x2`, `yShift`, `mX1`, `bookShortfall`, `healSpr
 | `LeverageBuyEvent` / `LeverageSellEvent` | `leverage_buy` / `leverage_sell` | tx row, position (collateral+debt), candles |
 | `DepositEvent` / `WithdrawEvent` | `deposit` / `withdraw` | position collateral, market totals |
 | `BorrowEvent` / `RepayEvent` | `borrow` / `repay` | position debt, reserves, market totals |
-| `FloorRaisedEvent` | both raise instructions, `launch_buy` | floor, x1/x2 geometry, candles |
+| `FloorRaisedEvent` | both raise instructions | floor, x1/x2 geometry, candles |
 | `MarketInitializedEvent` | `init_market`, `init_launch_market` | create the market row (`market_kind` tells which) |
+| `LaunchCurveRefitEvent` | `launch_sell` (some sells) | the market's curve fields |
 | `LaunchReadyEvent` / `MarketGraduatedEvent` | `launch_buy` (cap filled) / `graduate` | launch phase `1` / `2`, pool address |
 | `LpFeesClaimedEvent` | Rise's LP-fee collection on graduated markets | fee counters |
 | `MarketFlagsSetEvent` / `MarketUpdatedEvent` | admin | flags / creator & fee splits |
@@ -458,7 +460,29 @@ Discriminator: `[171, 226, 187, 175, 75, 174, 244, 139]`
 
 ## Launch events
 
-Launch markets (`market_kind = 1`, see [Launch markets](./PROGRAM_PRO.md#launch-markets)) reuse the trade events. On `BuyEvent` / `SellEvent`, `floorReserve` **[post]** is the SOL vault balance, and `priceReserve` and `totalDebt` are `0`. A buy that lifts the average-price floor also emits `FloorRaisedEvent` (`preserve_area = false`, geometry fields `0`). Three events are specific to launch markets:
+Launch markets (`market_kind = 1`, see [Launch markets](./PROGRAM_PRO.md#launch-markets)) reuse the trade events. On `BuyEvent` / `SellEvent`, `floorReserve` **[post]** is the SOL vault balance, and `priceReserve` and `totalDebt` are `0`. Their floor is raised only by `raise_floor_preserve_area` (a normal `FloorRaisedEvent`). Four events are specific to launch markets:
+
+### LaunchCurveRefitEvent
+Discriminator: `[153, 165, 112, 49, 198, 112, 13, 33]`
+
+Emitted by a `launch_sell` that updates the market's curve fields (after the `SellEvent`, same `state_seq`). Write these fields to the market row; quotes must use them.
+
+| Field | Type | Description |
+|---|---|---|
+| `market` | pubkey |  |
+| `char_params` | i128[4] | New curve parameters |
+| `hinge_x` | u64 | Start of the curve (raw supply) |
+| `ramp_start_x` | u64 | End of the floor band (`x1`) |
+| `x2` | u64 | End of the ramp (`0` = no ramp) |
+| `m_x1` | u128 | Curve price at `x1` (Q64.64) |
+| `ramp_scalar` | u128 | Ramp scalar (Q64.64) |
+| `floor` | u128 | Floor (unchanged) |
+| `end_price` | u128 | Price at the sale cap (unchanged) |
+| `target_area` | u128 | Area to the sale cap before (Q64.64 lamports) |
+| `area` | u128 | Area to the sale cap after |
+| `mode` | u8 | How it was solved |
+| `evals` | u8 | Evaluations used |
+| `state_seq` | u64 |  |
 
 ### LaunchReadyEvent
 Discriminator: `[120, 56, 178, 241, 23, 176, 181, 235]`
