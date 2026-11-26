@@ -1,7 +1,5 @@
 # Rise Pro (v2) — Program
 
-> The receiving-account rules on `buy` / `sell` / `launch_buy` / `launch_sell` (read-only signer, receiver created by the client) and the launch-mode floor and pricing described here are live on **devnet**; the **mainnet** upgrade is pending.
-
 | | |
 |---|---|
 | **Program (Mainnet)** | `RiseP9yY3UnMxd1df7mgGJiR39frg9QGsr1ro3zxrDq` |
@@ -76,7 +74,7 @@ Buy with an exact cash amount. Quotes by bisection on the exact forward cost, sp
 
 | # | Account | Seeds / source | W | S | Notes |
 |---|---|---|---|---|---|
-| 0 | `buyer` |  |  | ✓ | The buyer - signs and pays `cash_in` from `buyer_cash` (owner or delegate). **Read-only signer**: nothing is created or paid for on its behalf. |
+| 0 | `buyer` |  |  | ✓ | The buyer - signs and pays `cash_in` from `buyer_cash` |
 | 1 | `market` | `["market", market.mint_token]` | ✓ |  | Rise market being bought into - PDA derived from `[MARKET_SEED, mint_token]`, signs the mint CPI and holds the reserves ledger updated by … |
 | 2 | `vault` |  | ✓ |  | Pinned by an `address` check against the key `Market` stored at creation, so a substituted account is rejected. |
 | 3 | `creator_claim` |  | ✓ |  | Creator claim account - receives the creator's leg of the buy fee. Pinned by an `address` check against the key `Market` stored at creation. |
@@ -110,7 +108,7 @@ Sell tokens back into the curve. The exit is unconditional (Law 1): the payout n
 
 | # | Account | Seeds / source | W | S | Notes |
 |---|---|---|---|---|---|
-| 0 | `seller` |  |  | ✓ | Seller - signs the burn of the tokens in `seller_token` (owner or delegate). **Read-only signer**: nothing is created or paid for on its behalf. |
+| 0 | `seller` |  |  | ✓ | Seller - signs the burn of the tokens in `seller_token` |
 | 1 | `market` | `["market", market.mint_token]` | ✓ |  | Rise market being sold into - PDA derived from ["market", mint_token]. Vault authority: signs every payout leg out of the vault. |
 | 2 | `vault` |  | ✓ |  | Market vault holding both cash ledgers (floor reserve + above-floor book). Validated to match `market.vault` - source of every payout leg. |
 | 3 | `creator_claim` |  | ✓ |  | Creator claim account - receives the creator's fee leg, swept later via `claim_creator_fees`. Validated to match `market.creator_claim`. |
